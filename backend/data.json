@@ -1,0 +1,1216 @@
+{
+  "questions": [
+    {
+      "subjectId": 4,
+      "questionText": "What does CPU stand for?",
+      "options": [
+        "Central Processing Unit",
+        "Computer Personal Unit",
+        "Central Process Unit",
+        "Central Processor Unit"
+      ],
+      "correctOptionIndex": 0,
+      "difficultyLevel": 150
+    },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a volatile memory?",
+    "options": [
+      "ROM",
+      "HDD",
+      "RAM",
+      "SSD"
+    ],
+    "correctOptionIndex": 2,
+    "difficultyLevel": 220
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the main function of an Operating System?",
+    "options": [
+      "To manage hardware and software resources",
+      "To provide a user interface",
+      "To run applications",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 280
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is not an input device?",
+    "options": [
+      "Keyboard",
+      "Mouse",
+      "Monitor",
+      "Scanner"
+    ],
+    "correctOptionIndex": 2,
+    "difficultyLevel": 120
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'URL' stand for?",
+    "options": [
+      "Uniform Resource Locator",
+      "Universal Resource Locator",
+      "Uniform Resource Link",
+      "Universal Resource Link"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 180
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which programming language is known as the language of the web?",
+    "options": [
+      "Python",
+      "Java",
+      "JavaScript",
+      "C++"
+    ],
+    "correctOptionIndex": 2,
+    "difficultyLevel": 250
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the binary equivalent of the decimal number 10?",
+    "options": [
+      "1010",
+      "1100",
+      "1001",
+      "1110"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 310
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a type of computer network?",
+    "options": [
+      "LAN",
+      "WAN",
+      "MAN",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 190
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'HTTP' stand for?",
+    "options": [
+      "HyperText Transfer Protocol",
+      "HyperText Transmission Protocol",
+      "HyperText Transfer Page",
+      "HyperText Transmission Page"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 230
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which company developed the first graphical user interface (GUI)?",
+    "options": [
+      "Microsoft",
+      "Apple",
+      "Xerox",
+      "IBM"
+    ],
+    "correctOptionIndex": 2,
+    "difficultyLevel": 340
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the file extension for a Python source file?",
+    "options": [
+      ".py",
+      ".java",
+      ".js",
+      ".c"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 110
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is not a web browser?",
+    "options": [
+      "Chrome",
+      "Firefox",
+      "Safari",
+      "Apache"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 160
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'SQL' stand for?",
+    "options": [
+      "Structured Query Language",
+      "Standard Query Language",
+      "Simple Query Language",
+      "System Query Language"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 270
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a firewall?",
+    "options": [
+      "To protect a network from unauthorized access",
+      "To speed up internet connection",
+      "To store data",
+      "To create websites"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 290
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a cloud computing service?",
+    "options": [
+      "Amazon Web Services (AWS)",
+      "Microsoft Azure",
+      "Google Cloud Platform (GCP)",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 210
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'IP' stand for in IP address?",
+    "options": [
+      "Internet Protocol",
+      "Internet Provider",
+      "Internal Protocol",
+      "Internal Provider"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 140
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a version control system?",
+    "options": [
+      "Git",
+      "Subversion",
+      "Mercurial",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 320
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the main component of a computer that executes instructions?",
+    "options": [
+      "CPU",
+      "RAM",
+      "Motherboard",
+      "Hard Drive"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 170
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which data structure uses a Last-In, First-Out (LIFO) approach?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Array",
+      "Linked List"
+    ],
+    "correctOptionIndex": 1,
+    "difficultyLevel": 300
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'BIOS' stand for?",
+    "options": [
+      "Basic Input/Output System",
+      "Binary Input/Output System",
+      "Basic Internal Operating System",
+      "Binary Internal Operating System"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 260
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a markup language?",
+    "options": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Python"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 130
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of a router in a network?",
+    "options": [
+      "To connect different networks together",
+      "To amplify the signal",
+      "To filter network traffic",
+      "To store data"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 240
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'malware'?",
+    "options": [
+      "Malicious software",
+      "Hardware malfunction",
+      "A type of computer network",
+      "A programming language"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 200
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'SaaS' stand for?",
+    "options": [
+      "Software as a Service",
+      "System as a Service",
+      "Software as a System",
+      "System as a Software"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 330
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a component of the CPU?",
+    "options": [
+      "ALU",
+      "Control Unit",
+      "Registers",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 350
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of an algorithm?",
+    "options": [
+      "To solve a problem step-by-step",
+      "To store data",
+      "To display information",
+      "To connect to the internet"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 180
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a database management system?",
+    "options": [
+      "MySQL",
+      "PostgreSQL",
+      "MongoDB",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 280
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a set of rules that governs the communication between computers on a network?",
+    "options": [
+      "Protocol",
+      "Algorithm",
+      "Syntax",
+      "Program"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 220
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'GUI' stand for?",
+    "options": [
+      "Graphical User Interface",
+      "General User Interface",
+      "Graphical Utility Interface",
+      "General Utility Interface"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 150
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which layer of the OSI model is responsible for routing?",
+    "options": [
+      "Network Layer",
+      "Data Link Layer",
+      "Transport Layer",
+      "Physical Layer"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 340
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the primary purpose of an index in a database?",
+    "options": [
+      "To speed up data retrieval",
+      "To ensure data integrity",
+      "To store backup data",
+      "To create user accounts"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 310
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is an example of an open-source operating system?",
+    "options": [
+      "Linux",
+      "Windows",
+      "macOS",
+      "iOS"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 190
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of a compiler?",
+    "options": [
+      "To convert source code into machine code",
+      "To debug code",
+      "To run code",
+      "To write code"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 270
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'DNS' stand for?",
+    "options": [
+      "Domain Name System",
+      "Digital Network System",
+      "Domain Naming Service",
+      "Digital Naming Service"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 230
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a small piece of data sent from a website and stored on the user's computer by the user's web browser?",
+    "options": [
+      "Cookie",
+      "Cache",
+      "Session",
+      "Script"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 250
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a characteristic of object-oriented programming?",
+    "options": [
+      "Inheritance",
+      "Encapsulation",
+      "Polymorphism",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 320
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of the 'ping' command?",
+    "options": [
+      "To test the reachability of a host on an IP network",
+      "To download a file",
+      "To send an email",
+      "To create a directory"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 200
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is not a programming paradigm?",
+    "options": [
+      "Imperative",
+      "Declarative",
+      "Object-Oriented",
+      "Algorithmic"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 330
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the smallest unit of data in a computer?",
+    "options": [
+      "Bit",
+      "Byte",
+      "Nibble",
+      "Word"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 110
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a network topology?",
+    "options": [
+      "Star",
+      "Bus",
+      "Ring",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 160
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of the 'motherboard' in a computer?",
+    "options": [
+      "To connect all the components of the computer",
+      "To process data",
+      "To store data permanently",
+      "To display output"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 240
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'API' stand for?",
+    "options": [
+      "Application Programming Interface",
+      "Application Program Interface",
+      "Applied Programming Interface",
+      "Applied Program Interface"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 290
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of an 'if' statement in programming?",
+    "options": [
+      "To execute a block of code only if a certain condition is true",
+      "To loop through a block of code",
+      "To define a function",
+      "To store a value"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 170
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which data structure is used to implement a recursive function call?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Tree",
+      "Graph"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 350
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the process of finding and fixing errors in a program called?",
+    "options": [
+      "Debugging",
+      "Compiling",
+      "Running",
+      "Testing"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 140
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a way to represent a color in web design?",
+    "options": [
+      "Hex code",
+      "RGB value",
+      "Color name",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 210
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'phishing'?",
+    "options": [
+      "A fraudulent attempt to obtain sensitive information",
+      "A type of computer virus",
+      "A method of data encryption",
+      "A network protocol"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 260
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the difference between '==' and '===' in JavaScript?",
+    "options": [
+      "'==' performs type coercion, while '===' does not",
+      "'===' performs type coercion, while '==' does not",
+      "There is no difference",
+      "They are used for different data types"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 300
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'CSS' stand for?",
+    "options": [
+      "Cascading Style Sheets",
+      "Creative Style Sheets",
+      "Computer Style Sheets",
+      "Colorful Style Sheets"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 120
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'for' loop in programming?",
+    "options": [
+      "To iterate over a sequence of elements",
+      "To make a decision",
+      "To define a reusable block of code",
+      "To handle errors"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 180
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is an example of a compiled programming language?",
+    "options": [
+      "C++",
+      "Python",
+      "JavaScript",
+      "Ruby"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 280
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of a DHCP server?",
+    "options": [
+      "To automatically assign IP addresses to devices on a network",
+      "To resolve domain names to IP addresses",
+      "To store and serve web pages",
+      "To filter network traffic"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 310
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a program that replicates itself and spreads to other computers?",
+    "options": [
+      "Worm",
+      "Virus",
+      "Trojan horse",
+      "Spyware"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 230
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'function' in programming?",
+    "options": [
+      "To group a set of statements to perform a specific task",
+      "To store a collection of data",
+      "To control the flow of execution",
+      "To define a new data type"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 150
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is not a data type in JavaScript?",
+    "options": [
+      "Character",
+      "String",
+      "Number",
+      "Boolean"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 250
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'LAN' stand for?",
+    "options": [
+      "Local Area Network",
+      "Large Area Network",
+      "Logical Area Network",
+      "Linked Area Network"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 130
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the difference between a 'class' and an 'object' in object-oriented programming?",
+    "options": [
+      "A class is a blueprint, while an object is an instance of a class",
+      "An object is a blueprint, while a class is an instance of an object",
+      "They are the same thing",
+      "A class is a function, while an object is a variable"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 340
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the command to list files in a directory in a Unix-like operating system?",
+    "options": [
+      "ls",
+      "dir",
+      "list",
+      "show"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 190
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of the 'alt' attribute in an HTML 'img' tag?",
+    "options": [
+      "To provide alternative text for an image if it cannot be displayed",
+      "To set the alignment of the image",
+      "To define the source of the image",
+      "To specify the width and height of the image"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 220
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'big data'?",
+    "options": [
+      "Extremely large data sets that may be analyzed computationally to reveal patterns, trends, and associations",
+      "A type of database",
+      "A programming language",
+      "A hardware component"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 270
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a visual representation of a program's logic?",
+    "options": [
+      "Flowchart",
+      "Pseudocode",
+      "Algorithm",
+      "Diagram"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 160
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a type of software testing?",
+    "options": [
+      "Unit testing",
+      "Integration testing",
+      "System testing",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 290
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of a 'switch' statement in programming?",
+    "options": [
+      "To select one of many code blocks to be executed",
+      "To create a loop",
+      "To define a variable",
+      "To handle an error"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 200
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'machine learning'?",
+    "options": [
+      "A field of artificial intelligence that uses statistical techniques to give computer systems the ability to 'learn' from data",
+      "A type of computer hardware",
+      "A network protocol",
+      "A graphical user interface"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 320
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of the 'git clone' command?",
+    "options": [
+      "To create a copy of a remote repository on your local machine",
+      "To create a new branch",
+      "To commit changes to a repository",
+      "To push changes to a remote repository"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 260
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'IDE' stand for?",
+    "options": [
+      "Integrated Development Environment",
+      "Internal Development Environment",
+      "Integrated Design Environment",
+      "Internal Design Environment"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 240
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'recursion'?",
+    "options": [
+      "A function calling itself",
+      "A loop that never ends",
+      "A type of data structure",
+      "A sorting algorithm"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 330
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a web framework for Python?",
+    "options": [
+      "Django",
+      "Flask",
+      "Pyramid",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 300
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the 'cloud' in cloud computing?",
+    "options": [
+      "A network of remote servers hosted on the Internet to store, manage, and process data",
+      "A type of personal computer",
+      "A physical storage device",
+      "A software application"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 170
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'try-catch' block in programming?",
+    "options": [
+      "To handle exceptions or errors that may occur in the code",
+      "To create a loop",
+      "To define a function",
+      "To declare a variable"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 280
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the difference between 'HTTP' and 'HTTPS'?",
+    "options": [
+      "HTTPS is a secure version of HTTP",
+      "HTTP is a secure version of HTTPS",
+      "There is no difference",
+      "They are used for different types of websites"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 210
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a unique identifier for a row in a database table?",
+    "options": [
+      "Primary Key",
+      "Foreign Key",
+      "Index",
+      "Field"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 250
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a mobile operating system?",
+    "options": [
+      "Android",
+      "iOS",
+      "Both A and B",
+      "None of the above"
+    ],
+    "correctOptionIndex": 2,
+    "difficultyLevel": 110
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'open source' software?",
+    "options": [
+      "Software with source code that anyone can inspect, modify, and enhance",
+      "Software that is free to use",
+      "Software that is available online",
+      "Software that is easy to use"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 180
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'constructor' in object-oriented programming?",
+    "options": [
+      "To initialize the state of an object when it is created",
+      "To destroy an object when it is no longer needed",
+      "To define the methods of a class",
+      "To create a copy of an object"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 350
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a type of computer memory?",
+    "options": [
+      "Cache",
+      "RAM",
+      "ROM",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 140
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the command to create a new directory in a Unix-like operating system?",
+    "options": [
+      "mkdir",
+      "newdir",
+      "createdir",
+      "md"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 190
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of an 'array' in programming?",
+    "options": [
+      "To store a collection of elements of the same data type",
+      "To perform mathematical calculations",
+      "To define the structure of a program",
+      "To handle user input"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 160
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the 'Internet of Things' (IoT)?",
+    "options": [
+      "A network of physical devices, vehicles, home appliances and other items embedded with electronics, software, sensors, actuators, and connectivity which enables these objects to connect and exchange data",
+      "A new version of the internet",
+      "A type of social media platform",
+      "A virtual reality technology"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 320
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a software program that is designed to damage or disrupt a computer system?",
+    "options": [
+      "Virus",
+      "Firewall",
+      "Antivirus",
+      "Operating System"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 200
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a front-end JavaScript framework?",
+    "options": [
+      "React",
+      "Angular",
+      "Vue.js",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 310
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'variable' in programming?",
+    "options": [
+      "To store a value that can be changed",
+      "To perform a specific action",
+      "To define a constant value",
+      "To organize code"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 120
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the difference between 'let' and 'const' in JavaScript?",
+    "options": [
+      "'let' allows you to reassign the variable, while 'const' does not",
+      "'const' allows you to reassign the variable, while 'let' does not",
+      "There is no difference",
+      "They are used for different scopes"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 270
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for the process of converting data into a format that cannot be easily understood by unauthorized parties?",
+    "options": [
+      "Encryption",
+      "Decryption",
+      "Compression",
+      "Decompression"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 230
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a sorting algorithm?",
+    "options": [
+      "Bubble Sort",
+      "Merge Sort",
+      "Quick Sort",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 290
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the function of the 'this' keyword in JavaScript?",
+    "options": [
+      "It refers to the object that is executing the current function",
+      "It refers to the global object",
+      "It refers to the parent object",
+      "It is a placeholder for a value"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 340
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'agile' software development?",
+    "options": [
+      "An iterative and incremental approach to software development",
+      "A linear and sequential approach to software development",
+      "A methodology that focuses on extensive documentation",
+      "A process that involves minimal customer feedback"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 330
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What does 'WAN' stand for?",
+    "options": [
+      "Wide Area Network",
+      "Wireless Area Network",
+      "Wired Area Network",
+      "World Area Network"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 150
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'cookie' on a website?",
+    "options": [
+      "To store user information on the user's computer",
+      "To display advertisements",
+      "To play videos",
+      "To create animations"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 220
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a NoSQL database?",
+    "options": [
+      "MongoDB",
+      "Cassandra",
+      "Redis",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 300
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the 'DOM' in web development?",
+    "options": [
+      "Document Object Model",
+      "Data Object Model",
+      "Design Object Model",
+      "Display Object Model"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 260
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the command to display the current working directory in a Unix-like operating system?",
+    "options": [
+      "pwd",
+      "cwd",
+      "dir",
+      "path"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 180
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'pair programming'?",
+    "options": [
+      "An agile software development technique in which two programmers work together at one workstation",
+      "A method of programming with a partner",
+      "A way to debug code with another person",
+      "A process of reviewing code written by a colleague"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 240
+  },
+  {
+    "subjectId": 4,
+    "questionText": "Which of the following is a back-end programming language?",
+    "options": [
+      "Node.js",
+      "PHP",
+      "Ruby on Rails",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 280
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'foreign key' in a database?",
+    "options": [
+      "To link two tables together",
+      "To uniquely identify a record in a table",
+      "To speed up data retrieval",
+      "To enforce data integrity"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 310
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'responsive web design'?",
+    "options": [
+      "A web design approach that makes web pages render well on a variety of devices and window or screen sizes",
+      "A web design that responds quickly to user input",
+      "A web design that uses a lot of animations and transitions",
+      "A web design that is easy to navigate"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 250
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the term for a collection of related web pages?",
+    "options": [
+      "Website",
+      "Web server",
+      "Web browser",
+      "Web application"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 110
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'version control system'?",
+    "options": [
+      "To track changes to files over time",
+      "To store different versions of a software application",
+      "To collaborate with other developers on a project",
+      "All of the above"
+    ],
+    "correctOptionIndex": 3,
+    "difficultyLevel": 270
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the difference between 'null' and 'undefined' in JavaScript?",
+    "options": [
+      "'null' is an assigned value, while 'undefined' means a variable has been declared but has not yet been assigned a value",
+      "'undefined' is an assigned value, while 'null' means a variable has been declared but has not yet been assigned a value",
+      "They are the same",
+      "They are used for different data types"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 350
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is 'cybersecurity'?",
+    "options": [
+      "The practice of protecting systems, networks, and programs from digital attacks",
+      "A type of computer software",
+      "A career in the tech industry",
+      "A method of data storage"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 170
+  },
+  {
+    "subjectId": 4,
+    "questionText": "What is the purpose of a 'break' statement in a loop?",
+    "options": [
+      "To terminate the loop",
+      "To skip the current iteration and continue with the next one",
+      "To pause the execution of the loop",
+      "To restart the loop"
+    ],
+    "correctOptionIndex": 0,
+    "difficultyLevel": 190
+  }
+  ]
+}

@@ -1,0 +1,10 @@
+subject,grade,questionText,optionA,optionB,optionC,optionD,correctAnswer,difficultyLevel,competencyCodes
+Computer Science,Grade 1,What does CPU stand for?,Central Processing Unit,Computer Personal Unit,Central Process Unit,Central Processor Unit,A,150,LOG001,TEC001
+Computer Science,Grade 1,Which of the following is a volatile memory?,ROM,HDD,RAM,SSD,C,220,TEC001,PRO001
+Computer Science,Grade 1,What is the main function of an Operating System?,To manage hardware and software resources,To provide a user interface,To run applications,All of the above,D,280,C1,LOG001
+Computer Science,Grade 2,What is the file extension for a Python source file?,.py,.java,.js,.c,A,110,TEC001,COM001
+Science,Grade 1,Mitochondria is ______ of the cell.,Brain,Powerhouse,Nucleus,Factory,B,167,LOG001,PRO001
+Science,Grade 1,The gas essential for breathing is ______,Carbon dioxide,Nitrogen,Oxygen,Hydrogen,C,216,PRO001,LOG001
+Science,Grade 1,The largest planet in our solar system is ______.,Earth,Saturn,Mars,Jupiter,D,257,LOG001,COM001
+Maths,Grade 1,What is 2 + 2?,3,4,5,6,B,100,LOG001
+Maths,Grade 1,What is 5 x 5?,20,25,30,35,B,120,PRO001,LOG001
