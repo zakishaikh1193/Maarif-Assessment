@@ -1,0 +1,7 @@
+subject,grade,questionText,questionType,difficultyLevel,dokLevel,description,competencyCodes
+Science,Grade 1,Explain the process of photosynthesis in your own words.,ShortAnswer,200,3,Provide a brief explanation (100 words or less),LOG001,PRO001
+Mathematics,Grade 1,Describe how you would solve the equation 2x + 5 = 15.,ShortAnswer,180,2,Show your step-by-step reasoning,LOG001,PRO001
+Computer Science,Grade 1,What is the difference between RAM and ROM?,ShortAnswer,220,2,Explain in 2-3 sentences,LOG001,TEC001
+Science,Grade 1,What are the three states of matter? Give an example of each.,ShortAnswer,190,1,Provide examples for each state,LOG001,PRO001
+
+Note: DOK Level is REQUIRED for Short Answer questions (1-4)

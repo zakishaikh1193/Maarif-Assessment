@@ -549,11 +549,27 @@ export const createQuestion = async (req, res) => {
         optionsArray = [];
       }
 
-    // Validate difficulty level
+    // Validate difficulty level (RIT Score) - required for all question types
     if (difficultyLevel < 100 || difficultyLevel > 350) {
       return res.status(400).json({
-        error: 'Difficulty level must be between 100 and 350',
+        error: 'RIT Score (Difficulty level) must be between 100 and 350',
         code: 'INVALID_DIFFICULTY_LEVEL'
+      });
+    }
+
+    // Validate DOK level - only required for ShortAnswer and Essay
+    if (qType === 'ShortAnswer' || qType === 'Essay') {
+      if (dokLevel === undefined || dokLevel === null || !Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
+        return res.status(400).json({
+          error: 'DOK level is required and must be an integer between 1 and 4 for Short Answer and Essay questions',
+          code: 'INVALID_DOK_LEVEL'
+        });
+      }
+    } else if (dokLevel !== undefined && dokLevel !== null) {
+      // If DOK is provided for other question types, don't allow it
+      return res.status(400).json({
+        error: 'DOK level is only applicable to Short Answer and Essay questions',
+        code: 'INVALID_DOK_LEVEL'
       });
     }
 
@@ -650,10 +666,11 @@ export const createQuestion = async (req, res) => {
       finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
     }
 
-    // Insert question
+    // Insert question - only set dok_level for ShortAnswer and Essay
+    const finalDokLevel = (qType === 'ShortAnswer' || qType === 'Essay') ? dokLevel : null;
     const result = await executeQuery(
       'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, dokLevel || null, req.user.id]
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, req.user.id]
     );
     
     // Verify the inserted data
@@ -1239,11 +1256,27 @@ export const updateQuestion = async (req, res) => {
         optionsArray = [];
       }
 
-    // Validate difficulty level
+    // Validate difficulty level (RIT Score) - required for all question types
     if (difficultyLevel < 100 || difficultyLevel > 350) {
       return res.status(400).json({
-        error: 'Difficulty level must be between 100 and 350',
+        error: 'RIT Score (Difficulty level) must be between 100 and 350',
         code: 'INVALID_DIFFICULTY_LEVEL'
+      });
+    }
+
+    // Validate DOK level - only required for ShortAnswer and Essay
+    if (qType === 'ShortAnswer' || qType === 'Essay') {
+      if (dokLevel === undefined || dokLevel === null || !Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
+        return res.status(400).json({
+          error: 'DOK level is required and must be an integer between 1 and 4 for Short Answer and Essay questions',
+          code: 'INVALID_DOK_LEVEL'
+        });
+      }
+    } else if (dokLevel !== undefined && dokLevel !== null) {
+      // If DOK is provided for other question types, don't allow it
+      return res.status(400).json({
+        error: 'DOK level is only applicable to Short Answer and Essay questions',
+        code: 'INVALID_DOK_LEVEL'
       });
     }
 
@@ -1300,10 +1333,11 @@ export const updateQuestion = async (req, res) => {
       finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
     }
 
-    // Update question
+    // Update question - only set dok_level for ShortAnswer and Essay
+    const finalDokLevel = (qType === 'ShortAnswer' || qType === 'Essay') ? dokLevel : null;
     await executeQuery(
       'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, dok_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, dokLevel || null, id]
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, id]
     );
 
     // Update competency relationships
@@ -2385,38 +2419,98 @@ export const importQuestionsFromCSV = async (req, res) => {
       const rowNumber = i + 1; // 1-based row number for error reporting
       
       try {
+        // Determine question type
+        const questionType = (row.questionType || '').trim().toLowerCase();
+        const isMultipleSelect = questionType === 'multipleselect' || questionType === 'multiple select' || !!row.correctAnswers;
+        const isShortAnswer = questionType === 'shortanswer' || questionType === 'short answer';
+        const isEssay = questionType === 'essay';
+        const isFillInBlank = questionType === 'fillinblank' || questionType === 'fill in blank' || questionType === 'fill-in-blank' || !!row.blankOptions;
+        const isTextBased = isShortAnswer || isEssay;
+        
+        let qType = 'MCQ';
+        if (isMultipleSelect) {
+          qType = 'MultipleSelect';
+        } else if (isShortAnswer) {
+          qType = 'ShortAnswer';
+        } else if (isEssay) {
+          qType = 'Essay';
+        } else if (isFillInBlank) {
+          qType = 'FillInBlank';
+        }
+
         // Validate required fields
-        if (!row.subject || !row.grade || !row.questionText || !row.correctAnswer || !row.difficultyLevel) {
+        if (!row.subject || !row.grade || !row.questionText || !row.difficultyLevel) {
           results.errors.push({
             row: rowNumber,
-            error: 'Missing required fields: subject, grade, questionText, correctAnswer, and difficultyLevel are required',
+            error: 'Missing required fields: subject, grade, questionText, and difficultyLevel are required',
             data: row
           });
           results.summary.failed++;
           continue;
         }
 
-        // Validate options
-        if (!row.optionA || !row.optionB || !row.optionC || !row.optionD) {
+        // For text-based and FillInBlank questions, questionType is required
+        if ((isTextBased || isFillInBlank) && !row.questionType) {
           results.errors.push({
             row: rowNumber,
-            error: 'Missing required options: optionA, optionB, optionC, and optionD are required',
+            error: 'Missing required field: questionType is required for Short Answer, Essay, and Fill in the Blanks questions',
             data: row
           });
           results.summary.failed++;
           continue;
+        }
+
+        // Validate correct answer(s) based on question type
+        if (isMultipleSelect && !row.correctAnswers) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required field: correctAnswers is required for Multiple Select questions',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        } else if (isFillInBlank && (!row.blankOptions || !row.blankCorrects)) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required fields: blankOptions and blankCorrects are required for Fill in the Blanks questions',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        } else if (!isMultipleSelect && !isTextBased && !isFillInBlank && !row.correctAnswer) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required field: correctAnswer is required for MCQ questions',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        }
+
+        // Validate options (not required for ShortAnswer/Essay/FillInBlank)
+        if (!isTextBased && !isFillInBlank) {
+          if (!row.optionA || !row.optionB || !row.optionC || !row.optionD) {
+            results.errors.push({
+              row: rowNumber,
+              error: 'Missing required options: optionA, optionB, optionC, and optionD are required',
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
         }
 
         // Clean and validate data
         const subjectName = row.subject.trim();
         const gradeName = row.grade.trim();
         const questionText = row.questionText.trim();
-        const optionA = row.optionA.trim();
-        const optionB = row.optionB.trim();
-        const optionC = row.optionC.trim();
-        const optionD = row.optionD.trim();
-        const correctAnswer = row.correctAnswer.trim().toUpperCase();
+        const optionA = row.optionA ? row.optionA.trim() : '';
+        const optionB = row.optionB ? row.optionB.trim() : '';
+        const optionC = row.optionC ? row.optionC.trim() : '';
+        const optionD = row.optionD ? row.optionD.trim() : '';
+        const description = row.description ? row.description.trim() : '';
         const difficultyLevel = parseInt(row.difficultyLevel);
+        const dokLevel = row.dokLevel ? parseInt(row.dokLevel) : null;
 
         // Extract competency codes - handle both single and multiple codes
         const competencyCodes = [];
@@ -2426,15 +2520,170 @@ export const importQuestionsFromCSV = async (req, res) => {
           competencyCodes.push(...codes);
         }
 
-        // Validate correct answer format
-        if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
-          results.errors.push({
-            row: rowNumber,
-            error: `Invalid correct answer: '${correctAnswer}'. Must be A, B, C, or D`,
-            data: row
-          });
-          results.summary.failed++;
-          continue;
+        // Validate and process correct answer(s) based on question type
+        let correctOptionIndices = [];
+        let correctAnswerJSON = null;
+        let questionMetadata = null;
+
+        if (isFillInBlank) {
+          // For FillInBlank: parse blankOptions and blankCorrects
+          // blankOptions format: "opt1,opt2,opt3;opt1,opt2,opt3" (semicolon separates blanks)
+          // blankCorrects format: "A;B" or "0;1" (semicolon separates correct answers)
+          const blankOptionsStr = row.blankOptions.trim();
+          const blankCorrectsStr = row.blankCorrects.trim();
+          
+          // Split by semicolon to get options for each blank
+          const blankOptionsArray = blankOptionsStr.split(';').map(blk => blk.trim()).filter(blk => blk);
+          const blankCorrectsArray = blankCorrectsStr.split(';').map(blk => blk.trim()).filter(blk => blk);
+          
+          if (blankOptionsArray.length === 0 || blankCorrectsArray.length === 0) {
+            results.errors.push({
+              row: rowNumber,
+              error: 'Fill in the Blanks questions must have at least one blank with options and correct answer',
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          
+          if (blankOptionsArray.length !== blankCorrectsArray.length) {
+            results.errors.push({
+              row: rowNumber,
+              error: `Number of blanks in blankOptions (${blankOptionsArray.length}) does not match blankCorrects (${blankCorrectsArray.length})`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          
+          // Parse each blank
+          const blanks = [];
+          const allCorrectIndices = [];
+          let hasError = false;
+          
+          for (let i = 0; i < blankOptionsArray.length; i++) {
+            const optionsForBlank = blankOptionsArray[i].split(',').map(opt => opt.trim()).filter(opt => opt);
+            const correctForBlank = blankCorrectsArray[i].trim().toUpperCase();
+            
+            if (optionsForBlank.length < 2) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Blank ${i + 1} must have at least 2 options`,
+                data: row
+              });
+              hasError = true;
+              break;
+            }
+            
+            // Convert correct answer to index (A=0, B=1, C=2, D=3, or numeric 0,1,2,3)
+            let correctIndex;
+            if (['A', 'B', 'C', 'D'].includes(correctForBlank)) {
+              correctIndex = correctForBlank === 'A' ? 0 : correctForBlank === 'B' ? 1 : correctForBlank === 'C' ? 2 : 3;
+            } else if (!isNaN(parseInt(correctForBlank))) {
+              correctIndex = parseInt(correctForBlank);
+            } else {
+              results.errors.push({
+                row: rowNumber,
+                error: `Blank ${i + 1} correct answer must be A, B, C, D, or a number (0-${optionsForBlank.length - 1})`,
+                data: row
+              });
+              hasError = true;
+              break;
+            }
+            
+            if (correctIndex < 0 || correctIndex >= optionsForBlank.length) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Blank ${i + 1} correct index ${correctIndex} is out of range (0-${optionsForBlank.length - 1})`,
+                data: row
+              });
+              hasError = true;
+              break;
+            }
+            
+            blanks.push({
+              options: optionsForBlank,
+              correctIndex: correctIndex
+            });
+            allCorrectIndices.push(correctIndex);
+          }
+          
+          if (hasError) {
+            results.summary.failed++;
+            continue;
+          }
+          
+          // Store in questionMetadata
+          questionMetadata = {
+            blanks: blanks
+          };
+          correctAnswerJSON = JSON.stringify(allCorrectIndices);
+          correctOptionIndices = [allCorrectIndices[0]]; // First blank's index for backward compatibility
+          
+        } else if (isTextBased) {
+          // For ShortAnswer and Essay, no correct answer needed
+          // Store description in questionMetadata
+          questionMetadata = {
+            description: description,
+            maxWords: isShortAnswer ? 100 : null // ShortAnswer has 100 word limit
+          };
+          correctOptionIndices = [0]; // Default for backward compatibility
+          correctAnswerJSON = null;
+        } else if (isMultipleSelect) {
+          // For Multiple Select: parse comma-separated answers (e.g., "A,B" or "A,B,C")
+          const correctAnswersStr = row.correctAnswers.trim().toUpperCase();
+          const answerLetters = correctAnswersStr.split(',').map(a => a.trim()).filter(a => a);
+          
+          if (answerLetters.length === 0) {
+            results.errors.push({
+              row: rowNumber,
+              error: 'Multiple Select questions must have at least one correct answer',
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+
+          // Convert letters to indices
+          for (const letter of answerLetters) {
+            if (!['A', 'B', 'C', 'D'].includes(letter)) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Invalid correct answer letter: '${letter}'. Must be A, B, C, or D`,
+                data: row
+              });
+              results.summary.failed++;
+              continue;
+            }
+            const index = letter === 'A' ? 0 : letter === 'B' ? 1 : letter === 'C' ? 2 : 3;
+            if (!correctOptionIndices.includes(index)) {
+              correctOptionIndices.push(index);
+            }
+          }
+
+          if (correctOptionIndices.length === 0) {
+            results.summary.failed++;
+            continue;
+          }
+
+          // Store as JSON array for Multiple Select
+          correctAnswerJSON = JSON.stringify(correctOptionIndices);
+        } else {
+          // For MCQ: single answer
+          const correctAnswer = row.correctAnswer.trim().toUpperCase();
+          if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+            results.errors.push({
+              row: rowNumber,
+              error: `Invalid correct answer: '${correctAnswer}'. Must be A, B, C, or D`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          const correctOptionIndex = correctAnswer === 'A' ? 0 : 
+                                    correctAnswer === 'B' ? 1 : 
+                                    correctAnswer === 'C' ? 2 : 3;
+          correctOptionIndices = [correctOptionIndex];
         }
 
         // Validate difficulty level
@@ -2442,6 +2691,28 @@ export const importQuestionsFromCSV = async (req, res) => {
           results.errors.push({
             row: rowNumber,
             error: `Invalid difficulty level: ${row.difficultyLevel}. Must be between 100 and 350`,
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        }
+
+        // Validate DOK level - only required for ShortAnswer and Essay
+        if (isShortAnswer || isEssay) {
+          if (dokLevel === null || isNaN(dokLevel) || dokLevel < 1 || dokLevel > 4) {
+            results.errors.push({
+              row: rowNumber,
+              error: `DOK level is required and must be between 1 and 4 for Short Answer and Essay questions`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+        } else if (dokLevel !== null && (isNaN(dokLevel) || dokLevel < 1 || dokLevel > 4)) {
+          // If DOK is provided for non-ShortAnswer/Essay questions, validate it but don't require it
+          results.errors.push({
+            row: rowNumber,
+            error: `Invalid DOK level: ${row.dokLevel}. DOK level is only applicable to Short Answer and Essay questions`,
             data: row
           });
           results.summary.failed++;
@@ -2500,18 +2771,20 @@ export const importQuestionsFromCSV = async (req, res) => {
           continue;
         }
 
-        // Convert correct answer to index
-        const correctOptionIndex = correctAnswer === 'A' ? 0 : 
-                                  correctAnswer === 'B' ? 1 : 
-                                  correctAnswer === 'C' ? 2 : 3;
+        // Create options array (empty for text-based and FillInBlank questions)
+        const options = (isTextBased || isFillInBlank) ? [] : [optionA, optionB, optionC, optionD];
 
-        // Create options array
-        const options = [optionA, optionB, optionC, optionD];
+        // For Multiple Select, store first index in correct_option_index for backward compatibility
+        // and all indices as JSON in correct_answer
+        const correctOptionIndex = correctOptionIndices[0];
+        const finalCorrectAnswer = isMultipleSelect ? correctAnswerJSON : null;
+        const finalQuestionMetadata = questionMetadata ? JSON.stringify(questionMetadata) : null;
 
-        // Insert question
+        // Insert question - only set dok_level for ShortAnswer and Essay
+        const finalDokLevel = (isShortAnswer || isEssay) ? dokLevel : null;
         const insertResult = await executeQuery(
-          'INSERT INTO questions (subject_id, grade_id, question_text, options, correct_option_index, difficulty_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [subjectId, gradeId, questionText, JSON.stringify(options), correctOptionIndex, difficultyLevel, userId]
+          'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [subjectId, gradeId, questionText, qType, JSON.stringify(options), correctOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, userId]
         );
 
         const newQuestionId = insertResult.insertId;
@@ -2543,13 +2816,25 @@ export const importQuestionsFromCSV = async (req, res) => {
           }
         }
 
+        // Format correct answer for display
+        let correctAnswerDisplay = '-';
+        if (isFillInBlank) {
+          correctAnswerDisplay = row.blankCorrects || '-';
+        } else if (isTextBased) {
+          correctAnswerDisplay = description || 'AI Graded';
+        } else if (isMultipleSelect) {
+          correctAnswerDisplay = correctOptionIndices.map(idx => ['A', 'B', 'C', 'D'][idx]).join(',');
+        } else {
+          correctAnswerDisplay = ['A', 'B', 'C', 'D'][correctOptionIndex];
+        }
+
         results.success.push({
           row: rowNumber,
           questionId: newQuestionId,
           questionText,
           subjectName: subjects.find(s => s.id === subjectId)?.name,
           gradeName: grades.find(g => g.id === gradeId)?.display_name,
-          correctAnswer,
+          correctAnswer: correctAnswerDisplay,
           difficultyLevel,
           competencyCount: competencyIds.length,
           foundCompetencies,

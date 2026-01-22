@@ -299,11 +299,14 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       }
 
       if (formData.difficultyLevel < 100 || formData.difficultyLevel > 350) {
-        throw new Error('Difficulty level must be between 100 and 350');
+        throw new Error('RIT Score (Difficulty level) must be between 100 and 350');
       }
 
-      if (formData.dokLevel !== undefined && (formData.dokLevel < 1 || formData.dokLevel > 4)) {
-        throw new Error('DOK level must be between 1 and 4');
+      // DOK level is only required for ShortAnswer and Essay
+      if (questionType === 'ShortAnswer' || questionType === 'Essay') {
+        if (formData.dokLevel === undefined || formData.dokLevel < 1 || formData.dokLevel > 4) {
+          throw new Error('DOK level is required and must be between 1 and 4 for Short Answer and Essay questions');
+        }
       }
 
       const questionData: any = {
@@ -1055,7 +1058,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Difficulty Level: {formData.difficultyLevel} ({getDifficultyLabel(formData.difficultyLevel)})
+            RIT Score (Difficulty Level): {formData.difficultyLevel} ({getDifficultyLabel(formData.difficultyLevel)})
           </label>
           <input
             type="range"
@@ -1071,29 +1074,35 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             <span>200 (Medium)</span>
             <span>350 (Hard)</span>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            DOK Level (Depth of Knowledge) *
-          </label>
-          <select
-            value={formData.dokLevel === undefined ? '' : formData.dokLevel}
-            onChange={(e) => setFormData({ ...formData, dokLevel: e.target.value === '' ? undefined : Number(e.target.value) })}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!questionType}
-          >
-            <option value="">Select DOK Level</option>
-            <option value="1">Level 1 - Recall (Remember facts, terms, basic concepts)</option>
-            <option value="2">Level 2 - Skill/Concept (Apply skills and concepts)</option>
-            <option value="3">Level 3 - Strategic Thinking (Reasoning, planning, using evidence)</option>
-            <option value="4">Level 4 - Extended Thinking (Complex reasoning, investigation, research)</option>
-          </select>
           <p className="mt-2 text-sm text-gray-500">
-            Select the Depth of Knowledge level for this question. This will be used for analysis and reporting.
+            RIT Score is required for all question types and indicates the difficulty level.
           </p>
         </div>
+
+        {/* DOK Level - Only for Short Answer and Essay */}
+        {(questionType === 'ShortAnswer' || questionType === 'Essay') && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              DOK Level (Depth of Knowledge) *
+            </label>
+            <select
+              value={formData.dokLevel === undefined ? '' : formData.dokLevel}
+              onChange={(e) => setFormData({ ...formData, dokLevel: e.target.value === '' ? undefined : Number(e.target.value) })}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!questionType}
+            >
+              <option value="">Select DOK Level</option>
+              <option value="1">Level 1 - Recall (Remember facts, terms, basic concepts)</option>
+              <option value="2">Level 2 - Skill/Concept (Apply skills and concepts)</option>
+              <option value="3">Level 3 - Strategic Thinking (Reasoning, planning, using evidence)</option>
+              <option value="4">Level 4 - Extended Thinking (Complex reasoning, investigation, research)</option>
+            </select>
+            <p className="mt-2 text-sm text-gray-500">
+              Select the Depth of Knowledge level for this question. DOK level is required for Short Answer and Essay questions.
+            </p>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
