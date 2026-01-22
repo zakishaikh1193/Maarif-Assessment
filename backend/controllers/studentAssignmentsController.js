@@ -343,7 +343,7 @@ export const startStandardAssignment = async (req, res) => {
       studentId,
       assignment.subjectId,
       assignment.gradeId,
-      'Fall', // Default period for assignments
+      'BOY', // Default period for assignments (Beginning of Year)
       currentYear,
       assignment.totalQuestions,
       assignment.timeLimitMinutes,
@@ -536,7 +536,7 @@ export const startAdaptiveAssignment = async (req, res) => {
       studentId,
       assignment.subjectId,
       assignment.gradeId,
-      'Fall',
+      'BOY', // Default period for assignments (Beginning of Year)
       currentYear,
       assignment.totalQuestions,
       assignment.timeLimitMinutes,
@@ -552,7 +552,7 @@ export const startAdaptiveAssignment = async (req, res) => {
       assessmentId: assessmentId,
       studentId: studentId,
       subjectId: assignment.subjectId,
-      period: 'Fall', // Default period for assignments
+      period: 'BOY', // Default period for assignments (Beginning of Year)
       currentDifficulty: firstQuestion.difficulty_level,
       questionCount: 0,
       maxQuestions: assignment.totalQuestions,

@@ -91,9 +91,8 @@ export const getStudentGrowth = async (req, res) => {
       WHERE rn = 1
       ORDER BY year ASC, 
         CASE assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [studentId, subjectId]);
 
@@ -114,9 +113,8 @@ export const getStudentGrowth = async (req, res) => {
       GROUP BY a.assessment_period, a.year
       ORDER BY a.year ASC, 
         CASE a.assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [subjectId, school_id, grade_id]);
 
@@ -136,9 +134,8 @@ export const getStudentGrowth = async (req, res) => {
       GROUP BY a.assessment_period, a.year
       ORDER BY a.year ASC, 
         CASE a.assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [subjectId, grade_id]);
 
@@ -162,9 +159,8 @@ export const getStudentGrowth = async (req, res) => {
       GROUP BY a.assessment_period, a.year
       ORDER BY a.year ASC, 
         CASE a.assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [subjectId, school_id, grade_id]);
 
@@ -376,7 +372,7 @@ export const createBulkQuestions = async (req, res) => {
 // Create new question
 export const createQuestion = async (req, res) => {
   try {
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
 
     // Default to MCQ if not specified
     const qType = questionType || 'MCQ';
@@ -656,8 +652,8 @@ export const createQuestion = async (req, res) => {
 
     // Insert question
     const result = await executeQuery(
-      'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, req.user.id]
+      'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, dokLevel || null, req.user.id]
     );
     
     // Verify the inserted data
@@ -681,7 +677,7 @@ export const createQuestion = async (req, res) => {
 
     // Get the created question
     const questions = await executeQuery(
-      'SELECT id, subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, created_at FROM questions WHERE id = ?',
+      'SELECT id, subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_at FROM questions WHERE id = ?',
       [result.insertId]
     );
 
@@ -719,6 +715,7 @@ export const createQuestion = async (req, res) => {
         correctAnswer: question.correct_answer,
         questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
+        dokLevel: question.dok_level,
         createdAt: question.created_at
       }
     });
@@ -750,6 +747,7 @@ export const getQuestionById = async (req, res) => {
         q.correct_answer,
         q.question_metadata,
         q.difficulty_level,
+        q.dok_level,
         q.created_at,
         u.username as created_by_username,
         g.display_name as grade_name
@@ -827,6 +825,7 @@ export const getQuestionById = async (req, res) => {
       correctAnswer: correctAnswer,
       questionMetadata: parsedMetadata,
       difficultyLevel: question.difficulty_level,
+      dokLevel: question.dok_level,
       competencies: competencyRelationships,
       createdAt: question.created_at,
       createdByUsername: question.created_by_username,
@@ -909,6 +908,7 @@ export const getQuestionsBySubject = async (req, res) => {
         q.correct_answer,
         q.question_metadata,
         q.difficulty_level,
+        q.dok_level,
         q.created_at,
         u.username as created_by_username,
         g.display_name as grade_name
@@ -991,6 +991,7 @@ export const getQuestionsBySubject = async (req, res) => {
         correctAnswer: correctAnswer,
         questionMetadata: parsedMetadata,
         difficultyLevel: q.difficulty_level,
+        dokLevel: q.dok_level,
         createdBy: q.created_by,
         createdAt: q.created_at,
         createdByUsername: q.created_by_username,
@@ -1023,7 +1024,7 @@ export const getQuestionsBySubject = async (req, res) => {
 export const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
 
     // Check if question exists and get current question type
     const existingQuestions = await executeQuery(
@@ -1301,8 +1302,8 @@ export const updateQuestion = async (req, res) => {
 
     // Update question
     await executeQuery(
-      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, id]
+      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, dok_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, dokLevel || null, id]
     );
 
     // Update competency relationships
@@ -1332,6 +1333,7 @@ export const updateQuestion = async (req, res) => {
         q.correct_answer,
         q.question_metadata,
         q.difficulty_level,
+        q.dok_level,
         q.created_at,
         u.username as created_by_username,
         g.display_name as grade_name
@@ -1375,6 +1377,7 @@ export const updateQuestion = async (req, res) => {
         correctAnswer: question.correct_answer,
         questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
+        dokLevel: question.dok_level,
         createdAt: question.created_at,
         createdByUsername: question.created_by_username
       }
@@ -1722,17 +1725,16 @@ export const getSubjectPerformanceDashboard = async (req, res) => {
       SELECT 
         s.id as subject_id,
         s.name as subject_name,
-        AVG(CASE WHEN a.assessment_period = 'Fall' THEN a.rit_score END) as fall_avg,
-        AVG(CASE WHEN a.assessment_period = 'Winter' THEN a.rit_score END) as winter_avg,
-        AVG(CASE WHEN a.assessment_period = 'Spring' THEN a.rit_score END) as spring_avg,
+        AVG(CASE WHEN a.assessment_period = 'BOY' THEN a.rit_score END) as boy_avg,
+        AVG(CASE WHEN a.assessment_period = 'EOY' THEN a.rit_score END) as eoy_avg,
         COUNT(DISTINCT a.student_id) as student_count
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       JOIN subjects s ON a.subject_id = s.id
       ${whereClause}
       GROUP BY s.id, s.name
-      HAVING fall_avg IS NOT NULL AND spring_avg IS NOT NULL
-      ORDER BY (spring_avg - fall_avg) DESC
+      HAVING boy_avg IS NOT NULL AND eoy_avg IS NOT NULL
+      ORDER BY (eoy_avg - boy_avg) DESC
     `, params);
 
     // Get year-over-year trends
@@ -2013,9 +2015,8 @@ export const getCompetencyGrowthTracking = async (req, res) => {
       GROUP BY c.id, c.name, a.assessment_period, a.year
       ORDER BY c.name, a.year, 
         CASE a.assessment_period 
-          WHEN 'Fall' THEN 1 
-          WHEN 'Winter' THEN 2 
-          WHEN 'Spring' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END
     `, params);
 
@@ -2612,9 +2613,8 @@ export const getStudentCompetencyGrowth = async (req, res) => {
       WHERE scs.student_id = ? AND scs.subject_id = ?
       ORDER BY c.name, a.year, 
         CASE a.assessment_period 
-          WHEN 'Fall' THEN 1 
-          WHEN 'Winter' THEN 2 
-          WHEN 'Spring' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END
     `, [studentId, subjectId]);
 

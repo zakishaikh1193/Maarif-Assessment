@@ -43,10 +43,10 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
   };
 
      const getGrowthRate = (subject: any) => {
-     const fallAvg = Number(subject.fall_avg) || 0;
-     const springAvg = Number(subject.spring_avg) || 0;
-     if (!fallAvg || !springAvg) return null;
-     return ((springAvg - fallAvg) / fallAvg * 100).toFixed(1);
+     const boyAvg = Number(subject.boy_avg) || 0;
+     const eoyAvg = Number(subject.eoy_avg) || 0;
+     if (!boyAvg || !eoyAvg) return null;
+     return ((eoyAvg - boyAvg) / boyAvg * 100).toFixed(1);
    };
 
   const getGrowthIcon = (growthRate: number) => {
@@ -143,7 +143,7 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
-              Growth Rates (Fall to Spring)
+              Growth Rates (BOY to EOY)
             </h3>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                {data.growthRates && data.growthRates.map((subject: any, index: number) => {
@@ -156,16 +156,12 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
                     </div>
                     <div className="space-y-1 text-sm">
                                              <div className="flex justify-between">
-                         <span className="text-gray-600">Fall:</span>
-                         <span className="font-medium">{subject.fall_avg ? Number(subject.fall_avg).toFixed(1) : 'N/A'}</span>
+                         <span className="text-gray-600">BOY:</span>
+                         <span className="font-medium">{subject.boy_avg ? Number(subject.boy_avg).toFixed(1) : 'N/A'}</span>
                        </div>
                        <div className="flex justify-between">
-                         <span className="text-gray-600">Winter:</span>
-                         <span className="font-medium">{subject.winter_avg ? Number(subject.winter_avg).toFixed(1) : 'N/A'}</span>
-                       </div>
-                       <div className="flex justify-between">
-                         <span className="text-gray-600">Spring:</span>
-                         <span className="font-medium">{subject.spring_avg ? Number(subject.spring_avg).toFixed(1) : 'N/A'}</span>
+                         <span className="text-gray-600">EOY:</span>
+                         <span className="font-medium">{subject.eoy_avg ? Number(subject.eoy_avg).toFixed(1) : 'N/A'}</span>
                        </div>
                       <div className="border-t pt-1 mt-2">
                         <div className="flex justify-between">

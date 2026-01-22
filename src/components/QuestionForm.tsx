@@ -34,6 +34,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     matchingPairs: [] as Array<{ leftItem: string; rightItem: string; correctMatch: number }>, // For Matching - left items, right items, and correct matches
     description: '', // For ShortAnswer and Essay - additional description/instructions
     difficultyLevel: 200,
+    dokLevel: undefined as number | undefined, // Depth of Knowledge level (1-4)
     competencies: [] as Array<{ id: number; code: string; name: string }>
   });
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -148,6 +149,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         matchingPairs: matchingPairs,
         description: editingQuestion.questionMetadata?.description || '',
         difficultyLevel: editingQuestion.difficultyLevel,
+        dokLevel: editingQuestion.dokLevel,
         competencies: editingQuestion.competencies || []
       });
       
@@ -188,6 +190,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         ],
         description: '',
         difficultyLevel: 200,
+        dokLevel: undefined,
         competencies: []
       });
     }
@@ -299,12 +302,17 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         throw new Error('Difficulty level must be between 100 and 350');
       }
 
+      if (formData.dokLevel !== undefined && (formData.dokLevel < 1 || formData.dokLevel > 4)) {
+        throw new Error('DOK level must be between 1 and 4');
+      }
+
       const questionData: any = {
         subjectId: formData.subjectId,
         gradeId: formData.gradeId,
         questionText: formData.questionText, // Keep HTML for rich text
         questionType: questionType,
         difficultyLevel: formData.difficultyLevel,
+        dokLevel: formData.dokLevel,
         competencies: formData.competencies.length > 0 ? formData.competencies.map(c => ({ id: c.id })) : undefined
       };
 
@@ -581,7 +589,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                   correctAnswerIndices: [],
                   fillInBlanks: [],
                   matchingPairs: [],
-                  description: ''
+                  description: '',
+                  dokLevel: undefined
                 });
               }}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -1062,6 +1071,28 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             <span>200 (Medium)</span>
             <span>350 (Hard)</span>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            DOK Level (Depth of Knowledge) *
+          </label>
+          <select
+            value={formData.dokLevel === undefined ? '' : formData.dokLevel}
+            onChange={(e) => setFormData({ ...formData, dokLevel: e.target.value === '' ? undefined : Number(e.target.value) })}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!questionType}
+          >
+            <option value="">Select DOK Level</option>
+            <option value="1">Level 1 - Recall (Remember facts, terms, basic concepts)</option>
+            <option value="2">Level 2 - Skill/Concept (Apply skills and concepts)</option>
+            <option value="3">Level 3 - Strategic Thinking (Reasoning, planning, using evidence)</option>
+            <option value="4">Level 4 - Extended Thinking (Complex reasoning, investigation, research)</option>
+          </select>
+          <p className="mt-2 text-sm text-gray-500">
+            Select the Depth of Knowledge level for this question. This will be used for analysis and reporting.
+          </p>
         </div>
 
         <div>

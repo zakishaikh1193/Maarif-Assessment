@@ -194,8 +194,8 @@ export const validateAssessmentStart = [
     .withMessage('Subject ID must be a positive integer'),
   
   body('period')
-    .isIn(['Fall', 'Winter', 'Spring'])
-    .withMessage('Period must be Fall, Winter, or Spring'),
+    .isIn(['BOY', 'EOY'])
+    .withMessage('Period must be BOY (Beginning of Year) or EOY (End of Year)'),
   
   handleValidationErrors
 ];

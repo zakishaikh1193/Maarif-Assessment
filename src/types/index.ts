@@ -60,6 +60,7 @@ export interface Question {
   options: string[];
   correctOptionIndex: number;
   difficultyLevel: number;
+  dokLevel?: number; // Depth of Knowledge level (1-4)
   questionType?: QuestionType;
   correctAnswer?: string; // For non-MCQ types
   questionMetadata?: any; // For complex question types (e.g., FillInBlank blanks structure)
@@ -85,7 +86,7 @@ export interface Assessment {
   id: number;
   studentId: number;
   subjectId: number;
-  assessmentPeriod: 'Fall' | 'Winter' | 'Spring';
+  assessmentPeriod: 'BOY' | 'EOY';
   ritScore?: number;
   correctAnswers?: number;
   totalQuestions: number;

@@ -43,10 +43,10 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
     };
   });
 
-  // Sort by year + assessment period order (Winter → Spring → Fall)
+  // Sort by year + assessment period order (BOY → EOY)
   chartData.sort((a, b) => {
     if (a.year !== b.year) return a.year - b.year;
-    const periodOrder = { 'Winter': 1, 'Spring': 2, 'Fall': 3 };
+    const periodOrder = { 'BOY': 1, 'EOY': 2 };
     return periodOrder[a.assessmentPeriod as keyof typeof periodOrder] -
            periodOrder[b.assessmentPeriod as keyof typeof periodOrder];
   });

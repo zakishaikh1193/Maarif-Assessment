@@ -130,9 +130,9 @@ export const startAssessment = async (req, res) => {
       });
     }
 
-    if (!['Fall', 'Winter', 'Spring'].includes(period)) {
+    if (!['BOY', 'EOY'].includes(period)) {
       return res.status(400).json({
-        error: 'Period must be Fall, Winter, or Spring',
+        error: 'Period must be BOY (Beginning of Year) or EOY (End of Year)',
         code: 'INVALID_PERIOD'
       });
     }
@@ -841,9 +841,8 @@ export const getResultsBySubject = async (req, res) => {
       WHERE a.student_id = ? AND a.subject_id = ? AND a.rit_score IS NOT NULL
       ORDER BY a.year DESC,
         CASE a.assessment_period 
-          WHEN 'Fall' THEN 1 
-          WHEN 'Winter' THEN 2 
-          WHEN 'Spring' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END,
         a.date_taken DESC
     `, [studentId, subjectId]);
@@ -904,9 +903,8 @@ export const getAssessmentResults = async (req, res) => {
       AND rit_score IS NOT NULL
       ORDER BY year DESC, 
         CASE assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END DESC,
         date_taken DESC 
       LIMIT 1
@@ -1066,9 +1064,8 @@ export const getLatestAssessmentDetails = async (req, res) => {
       AND rit_score IS NOT NULL
       ORDER BY year DESC, 
         CASE assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END DESC,
         date_taken DESC 
       LIMIT 1
@@ -1227,9 +1224,8 @@ export const getGrowthOverTime = async (req, res) => {
         WHERE rn = 1
         ORDER BY year ASC, 
           CASE assessment_period 
-            WHEN 'Winter' THEN 1 
-            WHEN 'Spring' THEN 2 
-            WHEN 'Fall' THEN 3 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
           END ASC
       `, [studentId, subjectId]);
       
@@ -1251,9 +1247,8 @@ export const getGrowthOverTime = async (req, res) => {
       GROUP BY a.assessment_period, a.year
       ORDER BY a.year ASC, 
         CASE a.assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [subjectId, school_id, grade_id]);
 
@@ -1301,9 +1296,8 @@ export const getGrowthOverTime = async (req, res) => {
       GROUP BY a.assessment_period, a.year
       ORDER BY a.year ASC, 
         CASE a.assessment_period 
-          WHEN 'Winter' THEN 1 
-          WHEN 'Spring' THEN 2 
-          WHEN 'Fall' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END ASC
     `, [subjectId, school_id, grade_id]);
 
@@ -1404,9 +1398,8 @@ export const getDashboardData = async (req, res) => {
       WHERE a.student_id = ? AND a.rit_score IS NOT NULL
       ORDER BY s.name, a.year DESC,
         CASE a.assessment_period 
-          WHEN 'Fall' THEN 1 
-          WHEN 'Winter' THEN 2 
-          WHEN 'Spring' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END
     `, [studentId]);
 
@@ -1543,9 +1536,8 @@ export const getCompetencyGrowth = async (req, res) => {
       WHERE scs.student_id = ? AND scs.subject_id = ?
       ORDER BY c.name, a.year, 
         CASE a.assessment_period 
-          WHEN 'Fall' THEN 1 
-          WHEN 'Winter' THEN 2 
-          WHEN 'Spring' THEN 3 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
         END
     `, [studentId, subjectId]);
 

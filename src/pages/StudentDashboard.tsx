@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Subject, DashboardData, AssessmentConfiguration } from '../types';
-import { subjectsAPI, studentAPI } from '../services/api';
+import { studentAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Navigation from '../components/Navigation';
 import { 
@@ -35,17 +35,16 @@ const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Get current season based on date
-  // Academic year progression: Winter (Jan-Mar) → Spring (Apr-Jul) → Fall (Aug-Nov)
-  const getCurrentSeason = () => {
+  // Get current period based on date
+  // BOY (Beginning of Year): Aug-Jan, EOY (End of Year): Feb-Jul
+  const getCurrentPeriod = () => {
     const month = new Date().getMonth();
-    if (month >= 7 && month <= 10) return 'Fall';     // Aug, Sep, Oct, Nov
-    if (month >= 0 && month <= 2) return 'Winter';   // Jan, Feb, Mar
-    return 'Spring';                                   // Apr, May, Jun, Jul
+    // Aug (7) through Jan (0) = BOY, Feb (1) through Jul (6) = EOY
+    if (month >= 7 || month <= 0) return 'BOY';     // Aug, Sep, Oct, Nov, Dec, Jan
+    return 'EOY';                                   // Feb, Mar, Apr, May, Jun, Jul
   };
 
-  const currentSeason = getCurrentSeason();
-  const periods = [currentSeason] as const;
+  const currentPeriod = getCurrentPeriod();
 
   useEffect(() => {
     if (hasLoadedRef.current) return;
@@ -250,32 +249,6 @@ const StudentDashboard: React.FC = () => {
     });
   };
 
-  const getPerformanceTrend = () => {
-    const allAssessments = dashboardData.flatMap(subject => 
-      subject.assessments.map(assessment => ({
-        ...assessment,
-        subjectName: subject.subjectName
-      }))
-    );
-    
-    return allAssessments
-      .sort((a, b) => new Date(a.dateTaken).getTime() - new Date(b.dateTaken).getTime())
-      .map((assessment, index) => ({
-        date: new Date(assessment.dateTaken).toLocaleDateString(),
-        score: (assessment as any).rit_score || assessment.ritScore || 0,
-        subject: assessment.subjectName,
-        period: assessment.assessmentPeriod
-      }));
-  };
-
-  const getAccuracyStats = () => {
-    const allAssessments = dashboardData.flatMap(subject => subject.assessments);
-    const totalQuestions = allAssessments.reduce((sum, assessment) => sum + (assessment.totalQuestions || 0), 0);
-    const totalCorrect = allAssessments.reduce((sum, assessment) => sum + (assessment.correctAnswers || 0), 0);
-    const overallAccuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-    
-    return { totalQuestions, totalCorrect, overallAccuracy };
-  };
 
   const getGrowthRate = () => {
     const allAssessments = dashboardData.flatMap(subject => subject.assessments);
@@ -344,9 +317,6 @@ const StudentDashboard: React.FC = () => {
   }
 
   const overallStats = getOverallStats();
-  const subjectPerformance = getSubjectPerformance();
-  const performanceTrend = getPerformanceTrend();
-  const accuracyStats = getAccuracyStats();
   const growthRate = getGrowthRate();
   const strengthsWeaknesses = getStrengthsAndWeaknesses();
   const consistencyScore = getConsistencyScore();
@@ -378,7 +348,7 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
           <p className="text-gray-600">
-            Track your academic progress and take {currentSeason} assessments for your grade level
+            Track your academic progress and take {currentPeriod} assessments for your grade level
           </p>
         </div>
 
@@ -611,7 +581,7 @@ const StudentDashboard: React.FC = () => {
                 <h2 className="text-xl font-bold text-gray-900">Your Subjects</h2>
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                   <Calendar className="h-4 w-4" />
-                  <span>{currentSeason} Season</span>
+                  <span>{currentPeriod} Assessment</span>
                 </div>
               </div>
 
@@ -619,8 +589,7 @@ const StudentDashboard: React.FC = () => {
                 {subjects.map((subject) => {
                   const completedAssessments = getCompletedAssessments(subject.id);
                   const latestRITScore = getLatestRITScore(subject.id);
-                  const averageRITScore = getAverageRITScore(subject.id);
-                  const isCompleted = isAssessmentCompleted(subject.id, currentSeason);
+                  const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
                   const config = assessmentConfigs[subject.id];
 
                   return (
@@ -714,7 +683,7 @@ const StudentDashboard: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
                             <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-gray-700">{currentSeason} Assessment</span>
+                              <span className="text-sm font-medium text-gray-700">{currentPeriod} Assessment</span>
                               {isCompleted ? (
                                 <div className="flex items-center space-x-1 text-green-600">
                                   <CheckCircle className="h-4 w-4" />
@@ -753,19 +722,19 @@ const StudentDashboard: React.FC = () => {
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-gray-600">Growth Metric Score:</span>
                                   <span className="font-semibold text-yellow-600">
-                                    {completedAssessments.find(a => a.assessmentPeriod === currentSeason)?.ritScore}
+                                    {completedAssessments.find(a => a.assessmentPeriod === currentPeriod)?.ritScore}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-gray-600">Accuracy:</span>
                                   <span className="font-semibold text-green-600">
-                                    {Math.round((completedAssessments.find(a => a.assessmentPeriod === currentSeason)?.correctAnswers || 0) / 10 * 100)}%
+                                    {Math.round((completedAssessments.find(a => a.assessmentPeriod === currentPeriod)?.correctAnswers || 0) / 10 * 100)}%
                                   </span>
                                 </div>
                               </div>
                             ) : (
                               <button
-                                onClick={() => startAssessment(subject.id, currentSeason)}
+                                onClick={() => startAssessment(subject.id, currentPeriod)}
                                 className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 font-medium"
                               >
                                 <Play className="h-4 w-4" />
@@ -886,12 +855,12 @@ const StudentDashboard: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 {subjects.map((subject) => {
-                  const isCompleted = isAssessmentCompleted(subject.id, currentSeason);
+                  const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
                   return (
                     <div key={subject.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">{subject.name}</h4>
-                        <p className="text-sm text-gray-600">{currentSeason} Assessment</p>
+                        <p className="text-sm text-gray-600">{currentPeriod} Assessment</p>
                       </div>
                       {isCompleted ? (
                         <div className="flex items-center space-x-2 text-green-600">
@@ -900,7 +869,7 @@ const StudentDashboard: React.FC = () => {
                         </div>
                       ) : (
                         <button
-                          onClick={() => startAssessment(subject.id, currentSeason)}
+                          onClick={() => startAssessment(subject.id, currentPeriod)}
                           className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
                         >
                           <Play className="h-3 w-3" />

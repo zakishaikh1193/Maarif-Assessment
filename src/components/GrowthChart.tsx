@@ -9,10 +9,10 @@ interface GrowthChartProps {
 }
 
 const GrowthChart: React.FC<GrowthChartProps> = ({ data, subjectName }) => {
-  // Sort and prepare data for chart (Winter → Spring → Fall)
+  // Sort and prepare data for chart (BOY → EOY)
   const chartData = data
     .sort((a, b) => {
-      const periodOrder = { 'Winter': 1, 'Spring': 2, 'Fall': 3 };
+      const periodOrder = { 'BOY': 1, 'EOY': 2 };
       return periodOrder[a.assessmentPeriod] - periodOrder[b.assessmentPeriod];
     })
     .map((assessment) => ({

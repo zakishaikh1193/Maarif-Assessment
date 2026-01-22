@@ -91,6 +91,7 @@ export const adminAPI = {
     correctAnswer?: string; // For True/False and other non-MCQ types
     questionMetadata?: any; // For FillInBlank and other complex types
     difficultyLevel: number;
+    dokLevel?: number; // Depth of Knowledge level (1-4)
     competencies?: Array<{ id: number }>;
   }) => {
     const response = await api.post('/admin/questions', questionData);
@@ -123,6 +124,7 @@ export const adminAPI = {
     correctAnswer?: string; // For True/False and other non-MCQ types
     questionMetadata?: any; // For FillInBlank and other complex types
     difficultyLevel: number;
+    dokLevel?: number; // Depth of Knowledge level (1-4)
     competencies?: Array<{ id: number }>;
   }) => {
     const response = await api.put(`/admin/questions/${questionId}`, questionData);

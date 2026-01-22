@@ -175,7 +175,7 @@ const AssessmentPage: React.FC = () => {
       
       const response: StartAssessmentResponse = await studentAPI.startAssessment(
         state.subjectId, 
-        state.period as 'Fall' | 'Winter' | 'Spring'
+        state.period as 'BOY' | 'EOY'
       );
       setAssessmentId(response.assessmentId);
       setCurrentQuestion(response.question);
