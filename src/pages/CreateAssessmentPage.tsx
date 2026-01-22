@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Grade, Subject, School, Question } from '../types';
 import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown } from 'lucide-react';
+import { exportAssessmentToPDF } from '../utils/pdfExport';
 
 type AssessmentMode = 'Standard' | 'Adaptive';
 
@@ -175,38 +176,51 @@ const CreateAssessmentPage: React.FC = () => {
   };
 
   const validateAssign = (): boolean => {
+    // Assignment is now optional - user can choose not to assign
+    // Only validate if they've started filling in assignment data
+    const hasStartedAssignment = 
+      assignData.selectedSchools.length > 0 || 
+      assignData.selectedGrades.length > 0 ||
+      assignData.startDate || 
+      assignData.endDate;
+
+    if (!hasStartedAssignment) {
+      // No assignment data - this is valid (optional assignment)
+      return true;
+    }
+
+    let isValid = true;
     const newErrors: Record<string, string> = {};
-    
-    if (assignData.selectedSchools.length === 0) {
-      newErrors.schools = 'Please select at least one school';
-    }
-    if (assignData.selectedGrades.length === 0) {
-      newErrors.grades = 'Please select at least one grade';
-    }
-    if (!assignData.startDate) {
-      newErrors.startDate = 'Start date is required';
-    }
-    if (!assignData.startTime) {
-      newErrors.startTime = 'Start time is required';
-    }
-    if (!assignData.endDate) {
-      newErrors.endDate = 'End date is required';
-    }
-    if (!assignData.endTime) {
-      newErrors.endTime = 'End time is required';
-    }
-    
-    // Validate date/time logic
-    if (assignData.startDate && assignData.endDate) {
-      const startDateTime = new Date(`${assignData.startDate}T${assignData.startTime}`);
-      const endDateTime = new Date(`${assignData.endDate}T${assignData.endTime}`);
-      if (endDateTime <= startDateTime) {
-        newErrors.endDate = 'End date/time must be after start date/time';
+
+    if (assignData.selectedSchools.length === 0 && assignData.selectedGrades.length === 0) {
+      // If they started filling but didn't complete, show error
+      if (assignData.startDate || assignData.endDate) {
+        newErrors.schools = 'Please select at least one school or grade';
+        isValid = false;
       }
     }
-    
+
+    if (assignData.startDate && !assignData.startTime) {
+      newErrors.startTime = 'Start time is required when start date is provided';
+      isValid = false;
+    }
+
+    if (assignData.endDate && !assignData.endTime) {
+      newErrors.endTime = 'End time is required when end date is provided';
+      isValid = false;
+    }
+
+    if (assignData.startDate && assignData.endDate) {
+      const startDateTime = new Date(`${assignData.startDate}T${assignData.startTime || '00:00'}`);
+      const endDateTime = new Date(`${assignData.endDate}T${assignData.endTime || '00:00'}`);
+      if (endDateTime <= startDateTime) {
+        newErrors.endDate = 'End date/time must be after start date/time';
+        isValid = false;
+      }
+    }
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
   const getSteps = (): Step[] => {
@@ -240,6 +254,36 @@ const CreateAssessmentPage: React.FC = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    if (mode !== 'Standard' || selectedQuestions.length === 0) {
+      alert('Please select questions first (Standard mode only)');
+      return;
+    }
+
+    try {
+      // Get full question data for selected questions
+      const selectedQuestionsData = availableQuestions.filter(q => selectedQuestions.includes(q.id));
+      
+      // Get subject and grade names
+      const subject = subjects.find(s => s.id === generalData.subjectId);
+      const grade = grades.find(g => g.id === generalData.gradeId);
+
+      const metadata = {
+        title: generalData.title || 'Untitled Assessment',
+        subject: subject?.name || 'Unknown Subject',
+        grade: grade?.display_name || 'Unknown Grade',
+        timeLimitMinutes: generalData.timeLimitMinutes,
+        difficultyLevel: generalData.difficultyLevel,
+        questionCount: selectedQuestionsData.length
+      };
+
+      await exportAssessmentToPDF(selectedQuestionsData, metadata);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateAssign()) {
       setCurrentStep('assign');
@@ -248,11 +292,25 @@ const CreateAssessmentPage: React.FC = () => {
 
     setSubmitting(true);
     try {
+      // Check if assignment data is provided (optional)
+      const hasAssignmentData = 
+        assignData.selectedSchools.length > 0 || 
+        assignData.selectedGrades.length > 0 ||
+        assignData.startDate || 
+        assignData.endDate;
+
       const assignmentData = {
         mode,
         general: generalData,
         questions: mode === 'Standard' ? selectedQuestions : [],
-        assign: assignData
+        assign: hasAssignmentData ? assignData : {
+          selectedSchools: [],
+          selectedGrades: [],
+          startDate: '',
+          startTime: '',
+          endDate: '',
+          endTime: ''
+        }
       };
 
       await assignmentsAPI.create(assignmentData);
@@ -771,14 +829,28 @@ const CreateAssessmentPage: React.FC = () => {
               {currentStep === 'assign' && (
                 <div className="space-y-6">
                   <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Assign to Schools & Classes</h2>
-                    <p className="text-gray-600 mt-1">Select schools, classes, and set availability dates</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Assign to Schools & Classes</h2>
+                        <p className="text-gray-600 mt-1">Select schools, classes, and set availability dates (optional)</p>
+                      </div>
+                      {mode === 'Standard' && selectedQuestions.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleExportPDF}
+                          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center space-x-2"
+                        >
+                          <FileDown className="h-4 w-4" />
+                          <span>Export PDF</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Schools Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Schools *
+                      Select Schools (Optional)
                     </label>
                     {errors.schools && (
                       <p className="mb-2 text-sm text-red-600">{errors.schools}</p>
@@ -807,7 +879,7 @@ const CreateAssessmentPage: React.FC = () => {
                   {/* Grades Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Grades/Classes *
+                      Select Grades/Classes (Optional)
                     </label>
                     {errors.grades && (
                       <p className="mb-2 text-sm text-red-600">{errors.grades}</p>
@@ -869,7 +941,7 @@ const CreateAssessmentPage: React.FC = () => {
                     {/* End Date/Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date & Time *
+                        End Date & Time (Optional)
                       </label>
                       <div className="space-y-2">
                         <input

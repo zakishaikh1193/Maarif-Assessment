@@ -25,6 +25,7 @@ import assessmentConfigRoutes from './routes/assessmentConfig.js';
 import competenciesRoutes from './routes/competencies.js';
 import ssoRoutes from './routes/sso.js';
 import assignmentsRoutes from './routes/assignments.js';
+import uploadsRoutes from './routes/uploads.js';
 import rateLimit from 'express-rate-limit';
 
 // Load environment variables
@@ -66,6 +67,7 @@ app.use('/api/admin/assessment-configs', assessmentConfigRoutes);
 app.use('/api/admin/competencies', competenciesRoutes);
 app.use('/api/admin/assignments', assignmentsRoutes);
 app.use('/api/sso', ssoRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

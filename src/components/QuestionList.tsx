@@ -154,7 +154,10 @@ const QuestionList: React.FC<QuestionListProps> = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-900 font-medium mb-3">{question.questionText}</p>
+                  <div 
+                    className="text-gray-900 font-medium mb-3 prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: question.questionText }}
+                  />
                   
                   {/* For ShortAnswer and Essay, show description if available */}
                   {(question.questionType === 'ShortAnswer' || question.questionType === 'Essay') && question.questionMetadata?.description && (

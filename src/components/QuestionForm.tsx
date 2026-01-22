@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Subject, Question, Grade, Competency, QuestionType } from '../types';
 import { adminAPI, gradesAPI, competenciesAPI } from '../services/api';
 import { AlertCircle, Save, X, Plus, Trash2, List, CheckCircle2, Type, FileText, ArrowLeftRight, Droplets, Minus } from 'lucide-react';
+import RichTextEditor from './RichTextEditor';
 
 interface QuestionFormProps {
   subjects: Subject[];
@@ -203,7 +204,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         throw new Error('Please select a question type');
       }
 
-      if (!formData.questionText.trim()) {
+      // Strip HTML tags for validation (but keep rich text in storage)
+      const textContent = formData.questionText.replace(/<[^>]*>/g, '').trim();
+      if (!textContent) {
         throw new Error('Question text is required');
       }
 
@@ -224,11 +227,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           throw new Error('Please select at least one correct answer');
         }
       } else if (questionType === 'FillInBlank') {
-        if (!formData.questionText.trim()) {
+        // Strip HTML for blank detection
+        const textContent = formData.questionText.replace(/<[^>]*>/g, '').trim();
+        if (!textContent) {
           throw new Error('Question text is required');
         }
         // Count blanks in question text (___ or {0}, {1}, etc.)
-        const blankMatches = formData.questionText.match(/___|\{[0-9]+\}/g);
+        const blankMatches = textContent.match(/___|\{[0-9]+\}/g);
         const blankCount = blankMatches ? blankMatches.length : 0;
         if (blankCount === 0) {
           throw new Error('Question text must contain at least one blank (use ___ or {0}, {1}, etc.)');
@@ -250,7 +255,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           }
         }
       } else if (questionType === 'Matching') {
-        if (!formData.questionText.trim()) {
+        const textContent = formData.questionText.replace(/<[^>]*>/g, '').trim();
+        if (!textContent) {
           throw new Error('Question text is required');
         }
         if (formData.matchingPairs.length < 2) {
@@ -282,7 +288,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           throw new Error('Right column items must be unique');
         }
       } else if (questionType === 'ShortAnswer' || questionType === 'Essay') {
-        if (!formData.questionText.trim()) {
+        const textContent = formData.questionText.replace(/<[^>]*>/g, '').trim();
+        if (!textContent) {
           throw new Error('Question text is required');
         }
         // Description is optional but can be provided
@@ -295,7 +302,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       const questionData: any = {
         subjectId: formData.subjectId,
         gradeId: formData.gradeId,
-        questionText: formData.questionText.trim(),
+        questionText: formData.questionText, // Keep HTML for rich text
         questionType: questionType,
         difficultyLevel: formData.difficultyLevel,
         competencies: formData.competencies.length > 0 ? formData.competencies.map(c => ({ id: c.id })) : undefined
@@ -584,20 +591,20 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           </div>
         )}
 
-        {questionType !== 'FillInBlank' && questionType !== 'Matching' && questionType !== 'ShortAnswer' && questionType !== 'Essay' && (
+        {questionType && questionType !== 'FillInBlank' && questionType !== 'Matching' && questionType !== 'ShortAnswer' && questionType !== 'Essay' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text
+              Question Text *
             </label>
-            <textarea
+            <RichTextEditor
               value={formData.questionText}
-              onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-              rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter the question text..."
-              required
-              disabled={!questionType}
+              onChange={(value) => setFormData({ ...formData, questionText: value })}
+              placeholder="Enter the question text... You can add images, videos, audio, and format text."
+              height="250px"
             />
+            <p className="mt-2 text-sm text-gray-500">
+              Tip: Use the toolbar to add images, videos, audio, and format your question text.
+            </p>
           </div>
         )}
 
@@ -867,14 +874,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Question Text *
               </label>
-              <textarea
+              <RichTextEditor
                 value={formData.questionText}
-                onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter the question text (e.g., 'Match the following words with their meanings')"
-                required
+                onChange={(value) => setFormData({ ...formData, questionText: value })}
+                placeholder="Enter the question text (e.g., 'Match the following words with their meanings')... You can add images, videos, audio, and format text."
+                height="200px"
               />
+              <p className="mt-2 text-sm text-gray-500">
+                Tip: Use the toolbar to add images, videos, audio, and format your question text.
+              </p>
             </div>
 
             <div>
@@ -894,7 +902,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                           onClick={() => {
                             const newPairs = formData.matchingPairs.filter((_, i) => i !== pairIndex);
                             // Reset correctMatch indices for remaining pairs
-                            const updatedPairs = newPairs.map((p, idx) => ({
+                            const updatedPairs = newPairs.map((p) => ({
                               ...p,
                               correctMatch: p.correctMatch >= newPairs.length ? 0 : p.correctMatch
                             }));
@@ -1000,14 +1008,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Question Text *
               </label>
-              <textarea
+              <RichTextEditor
                 value={formData.questionText}
-                onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter the question text..."
-                required
+                onChange={(value) => setFormData({ ...formData, questionText: value })}
+                placeholder="Enter the question text... You can add images, videos, audio, and format text."
+                height="250px"
               />
+              <p className="mt-2 text-sm text-gray-500">
+                Tip: Use the toolbar to add images, videos, audio, and format your question text.
+              </p>
             </div>
 
             <div>

@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Uploads
+backend/uploads/
+uploads/
+
 node_modules
 dist.zip
 dist

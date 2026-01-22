@@ -191,6 +191,15 @@ export const adminAPI = {
     if (filters?.competencyId) params.append('competencyId', filters.competencyId.toString());
     const response = await api.get(`/admin/analytics/competency-growth?${params}`);
     return response.data;
+  },
+
+  uploadFile: async (formData: FormData) => {
+    const response = await api.post('/uploads/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
   }
 };
 

@@ -675,7 +675,8 @@ const AssessmentPage: React.FC = () => {
                 {questionType === 'FillInBlank' ? (
                   // Render FillInBlank question with dropdowns inline
                   (() => {
-                    const text = currentQuestion.text;
+                    // Strip HTML tags for blank detection in FillInBlank
+                    const text = currentQuestion.text.replace(/<[^>]*>/g, '');
                     
                     // Check if we have metadata with blanks
                     if (!questionMetadata?.blanks || !Array.isArray(questionMetadata.blanks) || questionMetadata.blanks.length === 0) {
@@ -780,8 +781,11 @@ const AssessmentPage: React.FC = () => {
                     );
                   })()
                 ) : (
-                  // Regular question text
-                  currentQuestion.text
+                  // Regular question text (render HTML if present)
+                  <div 
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: currentQuestion.text }}
+                  />
                 )}
               </h2>
             </div>
