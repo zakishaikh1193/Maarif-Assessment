@@ -50,6 +50,8 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
+export type QuestionType = 'MCQ' | 'TrueFalse' | 'Matching' | 'FillInBlank' | 'ShortAnswer' | 'Essay' | 'MultipleSelect';
+
 export interface Question {
   id: number;
   subjectId: number;
@@ -58,6 +60,9 @@ export interface Question {
   options: string[];
   correctOptionIndex: number;
   difficultyLevel: number;
+  questionType?: QuestionType;
+  correctAnswer?: string; // For non-MCQ types
+  questionMetadata?: any; // For complex question types (e.g., FillInBlank blanks structure)
   createdBy?: number;
   createdAt?: string;
   createdByUsername?: string;
@@ -66,6 +71,13 @@ export interface Question {
     id: number;
     code: string;
     name: string;
+  }>;
+}
+
+export interface FillInBlankData {
+  blanks: Array<{
+    options: string[];
+    correctIndex: number;
   }>;
 }
 
@@ -89,6 +101,8 @@ export interface AssessmentQuestion {
   options: string[];
   questionNumber: number;
   totalQuestions: number;
+  questionType?: 'MCQ' | 'TrueFalse' | 'MultipleSelect' | 'Matching' | 'FillInBlank' | 'ShortAnswer' | 'Essay';
+  questionMetadata?: any; // For FillInBlank and other complex types
 }
 
 export interface AssessmentResponse {

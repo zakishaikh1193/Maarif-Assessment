@@ -147,7 +147,7 @@ ADD INDEX `idx_questions_type_grade` (`question_type`, `grade_id`);
 -- - Matching: JSON array of correct pairs [{"left": 1, "right": 2}, ...]
 -- - FillInBlank: JSON array of acceptable answers ["answer1", "answer2", ...]
 -- - MultipleSelect: JSON array of correct indices [0, 2, 3]
--- - ShortAnswer/Essay: NULL (manual grading)
+-- - ShortAnswer/Essay: NULL (automatic grading by AI)
 
 -- --------------------------------------------------------
 -- 9. Data Migration Notes

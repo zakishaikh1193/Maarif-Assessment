@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { User, Subject, Question, Assessment, AssessmentResponse, DashboardData, AdminStats, School, Grade, AssessmentConfiguration, Competency, CompetencyStats, PaginationInfo, StartAssessmentResponse } from '../types';
 
-// const API_BASE_URL = 'https://map-test.bylinelms.com/api';
+// const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -85,8 +85,11 @@ export const adminAPI = {
     subjectId: number;
     gradeId: number;
     questionText: string;
-    options: string[];
-    correctOptionIndex: number;
+    questionType?: 'MCQ' | 'TrueFalse' | 'Matching' | 'FillInBlank' | 'ShortAnswer' | 'Essay' | 'MultipleSelect';
+    options?: string[];
+    correctOptionIndex?: number;
+    correctAnswer?: string; // For True/False and other non-MCQ types
+    questionMetadata?: any; // For FillInBlank and other complex types
     difficultyLevel: number;
     competencies?: Array<{ id: number }>;
   }) => {
@@ -114,8 +117,11 @@ export const adminAPI = {
     subjectId: number;
     gradeId: number;
     questionText: string;
-    options: string[];
-    correctOptionIndex: number;
+    questionType?: 'MCQ' | 'TrueFalse' | 'Matching' | 'FillInBlank' | 'ShortAnswer' | 'Essay' | 'MultipleSelect';
+    options?: string[];
+    correctOptionIndex?: number;
+    correctAnswer?: string; // For True/False and other non-MCQ types
+    questionMetadata?: any; // For FillInBlank and other complex types
     difficultyLevel: number;
     competencies?: Array<{ id: number }>;
   }) => {
@@ -322,7 +328,7 @@ export const studentAPI = {
     return response.data;
   },
 
-  submitAnswer: async (questionId: number, answerIndex: number, assessmentId: number): Promise<AssessmentResponse> => {
+  submitAnswer: async (questionId: number, answerIndex: number | number[] | string, assessmentId: number): Promise<AssessmentResponse> => {
     const response = await api.post('/student/assessments/answer', {
       questionId,
       answerIndex,

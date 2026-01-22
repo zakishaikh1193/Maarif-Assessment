@@ -313,6 +313,8 @@ export const startStandardAssignment = async (req, res) => {
         q.id,
         q.question_text as questionText,
         q.options,
+        q.question_type,
+        q.question_metadata,
         q.correct_option_index as correctOptionIndex,
         q.difficulty_level as difficultyLevel,
         aq.question_order as questionOrder,
@@ -367,10 +369,23 @@ export const startStandardAssignment = async (req, res) => {
         correctIndex = optionsWithIndex.findIndex((item) => item.idx === correctIndex);
       }
 
+      // Parse question_metadata if present
+      let parsedMetadata = q.question_metadata;
+      if (parsedMetadata && typeof parsedMetadata === 'string') {
+        try {
+          parsedMetadata = JSON.parse(parsedMetadata);
+        } catch (e) {
+          console.error('Error parsing question_metadata:', e);
+          parsedMetadata = null;
+        }
+      }
+
       return {
         id: q.id,
         text: q.questionText,
         options: options,
+        questionType: q.question_type || 'MCQ',
+        questionMetadata: parsedMetadata,
         correctOptionIndex: correctIndex,
         difficultyLevel: q.difficultyLevel,
         questionOrder: q.questionOrder,
@@ -569,6 +584,8 @@ export const startAdaptiveAssignment = async (req, res) => {
         id: firstQuestion.id,
         text: firstQuestion.question_text,
         options: options,
+        questionType: firstQuestion.question_type || 'MCQ',
+        questionMetadata: firstQuestion.question_metadata ? (typeof firstQuestion.question_metadata === 'string' ? JSON.parse(firstQuestion.question_metadata) : firstQuestion.question_metadata) : null,
         questionNumber: 1,
         totalQuestions: assignment.totalQuestions
       }

@@ -32,7 +32,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     
     // Find closest question to TARGET difficulty (not just harder/easier)
     questions = await executeQuery(`
-      SELECT id, question_text, options, difficulty_level 
+      SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
       FROM questions 
       WHERE subject_id = ? 
       AND (grade_id = ? OR grade_id IS NULL)
@@ -47,7 +47,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     // If no questions found, fall back to any available question
     if (questions.length === 0) {
       questions = await executeQuery(`
-        SELECT id, question_text, options, difficulty_level 
+        SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
         FROM questions 
         WHERE subject_id = ?
         AND (grade_id = ? OR grade_id IS NULL)
@@ -63,7 +63,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     // If only assessmentId exists, exclude already used questions from database
     // Find closest question to TARGET difficulty
     questions = await executeQuery(`
-      SELECT id, question_text, options, difficulty_level 
+      SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
       FROM questions 
       WHERE subject_id = ? 
       AND (grade_id = ? OR grade_id IS NULL)
@@ -77,7 +77,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     // If no questions found, fall back to any available question
     if (questions.length === 0) {
       questions = await executeQuery(`
-        SELECT id, question_text, options, difficulty_level 
+        SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
         FROM questions 
         WHERE subject_id = ?
         AND id NOT IN (
@@ -91,7 +91,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     // If no assessmentId (first question), find the closest question to the starting difficulty
     // For high Growth Metric scores, we want to start with questions at or near that level
     questions = await executeQuery(`
-      SELECT id, question_text, options, difficulty_level 
+      SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
       FROM questions 
       WHERE subject_id = ? 
       AND (grade_id = ? OR grade_id IS NULL)
@@ -102,7 +102,7 @@ export const findClosestQuestion = async (currentDifficulty, isCorrect, subjectI
     // If no questions found, fall back to any available question
     if (questions.length === 0) {
       questions = await executeQuery(`
-        SELECT id, question_text, options, difficulty_level 
+        SELECT id, question_text, options, question_type, question_metadata, difficulty_level 
         FROM questions 
         WHERE subject_id = ?
         AND (grade_id = ? OR grade_id IS NULL)
@@ -244,6 +244,18 @@ export const startAssessment = async (req, res) => {
           }
           return firstQuestion.options;
         })(),
+        questionType: firstQuestion.question_type || 'MCQ',
+        questionMetadata: (() => {
+          if (!firstQuestion.question_metadata) return null;
+          try {
+            return typeof firstQuestion.question_metadata === 'string' 
+              ? JSON.parse(firstQuestion.question_metadata) 
+              : firstQuestion.question_metadata;
+          } catch (e) {
+            console.error('Error parsing question_metadata for first question:', e);
+            return null;
+          }
+        })(),
         questionNumber: 1,
         totalQuestions: questionCount
       }
@@ -346,9 +358,9 @@ export const submitAnswer = async (req, res) => {
       };
     }
 
-    // Get question details
+    // Get question details including question type
     const questions = await executeQuery(
-      'SELECT correct_option_index, difficulty_level FROM questions WHERE id = ?',
+      'SELECT correct_option_index, correct_answer, question_type, question_metadata, difficulty_level FROM questions WHERE id = ?',
       [questionId]
     );
 
@@ -360,7 +372,196 @@ export const submitAnswer = async (req, res) => {
     }
 
     const question = questions[0];
-    const isCorrect = answerIndex === question.correct_option_index;
+    
+    // Determine if answer is correct based on question type
+    let isCorrect = false;
+    let selectedIndices = [];
+    let finalAnswerIndex = answerIndex; // Store the final value to save to database
+    
+    // Handle MultipleSelect: answerIndex should be an array
+    if (question.question_type === 'MultipleSelect') {
+      // Parse answerIndex as array if it's a string
+      if (typeof answerIndex === 'string') {
+        try {
+          selectedIndices = JSON.parse(answerIndex);
+        } catch (e) {
+          selectedIndices = [answerIndex];
+        }
+      } else if (Array.isArray(answerIndex)) {
+        selectedIndices = answerIndex;
+      } else {
+        selectedIndices = [answerIndex];
+      }
+      
+      // Get correct answer indices
+      let correctIndices = [];
+      if (question.correct_answer) {
+        try {
+          correctIndices = JSON.parse(question.correct_answer);
+        } catch (e) {
+          // Fallback to single correct_option_index
+          correctIndices = [question.correct_option_index];
+        }
+      } else {
+        correctIndices = [question.correct_option_index];
+      }
+      
+      // Sort both arrays for comparison
+      selectedIndices.sort((a, b) => a - b);
+      correctIndices.sort((a, b) => a - b);
+      
+      // Check if all correct answers are selected and no incorrect ones
+      isCorrect = selectedIndices.length === correctIndices.length &&
+                  selectedIndices.every((val, idx) => val === correctIndices[idx]);
+      
+      // Store selected indices as JSON string for database
+      finalAnswerIndex = JSON.stringify(selectedIndices);
+    } else if (question.question_type === 'FillInBlank') {
+      // For FillInBlank: answerIndex should be an array of selected indices for each blank
+      // Parse answerIndex as array if it's a string
+      try {
+        let parsedIndices = [];
+        if (typeof answerIndex === 'string') {
+          try {
+            parsedIndices = JSON.parse(answerIndex);
+          } catch (e) {
+            // If parsing fails, treat as single value
+            parsedIndices = [Number(answerIndex)];
+          }
+        } else if (Array.isArray(answerIndex)) {
+          parsedIndices = answerIndex;
+        } else {
+          // Single number value
+          parsedIndices = [Number(answerIndex)];
+        }
+        
+        // Ensure all values are numbers
+        selectedIndices = parsedIndices.map(idx => {
+          const num = Number(idx);
+          if (isNaN(num)) {
+            throw new Error(`Invalid answer index: ${idx}`);
+          }
+          return num;
+        });
+        
+        // Get correct answer indices from correct_answer
+        let correctIndices = [];
+        if (question.correct_answer) {
+          try {
+            const parsed = JSON.parse(question.correct_answer);
+            if (Array.isArray(parsed)) {
+              correctIndices = parsed.map(idx => Number(idx));
+            } else {
+              correctIndices = [Number(parsed)];
+            }
+          } catch (e) {
+            // Fallback to single correct_option_index
+            correctIndices = [Number(question.correct_option_index)];
+          }
+        } else {
+          correctIndices = [Number(question.correct_option_index)];
+        }
+        
+        // Validate that we have the same number of answers as blanks
+        if (selectedIndices.length === 0) {
+          throw new Error('No answers provided for FillInBlank question');
+        }
+        
+        // For FillInBlank, check that all blanks are answered correctly
+        // Each blank must have the correct option selected
+        if (selectedIndices.length !== correctIndices.length) {
+          isCorrect = false;
+        } else {
+          isCorrect = selectedIndices.every((selectedIdx, blankIdx) => 
+            selectedIdx === correctIndices[blankIdx]
+          );
+        }
+        
+        // Store selected indices as JSON string for database
+        finalAnswerIndex = JSON.stringify(selectedIndices);
+      } catch (error) {
+        console.error('Error processing FillInBlank answer:', error);
+        return res.status(400).json({
+          error: `Invalid FillInBlank answer format: ${error.message}`,
+          code: 'INVALID_FILLINBLANK_ANSWER'
+        });
+      }
+    } else if (question.question_type === 'Matching') {
+      // For Matching: answerIndex should be an array of selected right indices for each left item
+      try {
+        let parsedIndices = [];
+        if (typeof answerIndex === 'string') {
+          try {
+            parsedIndices = JSON.parse(answerIndex);
+          } catch (e) {
+            parsedIndices = [Number(answerIndex)];
+          }
+        } else if (Array.isArray(answerIndex)) {
+          parsedIndices = answerIndex;
+        } else {
+          parsedIndices = [Number(answerIndex)];
+        }
+        
+        // Ensure all values are numbers
+        selectedIndices = parsedIndices.map(idx => {
+          const num = Number(idx);
+          if (isNaN(num)) {
+            throw new Error(`Invalid answer index: ${idx}`);
+          }
+          return num;
+        });
+        
+        // Get correct pairs from correct_answer
+        let correctPairs = [];
+        if (question.correct_answer) {
+          try {
+            const parsed = JSON.parse(question.correct_answer);
+            if (Array.isArray(parsed)) {
+              correctPairs = parsed;
+            } else {
+              throw new Error('Invalid correct pairs format');
+            }
+          } catch (e) {
+            throw new Error('Invalid correct pairs format in question');
+          }
+        } else {
+          throw new Error('No correct pairs found in question');
+        }
+        
+        // Validate that we have the same number of answers as left items
+        if (selectedIndices.length === 0) {
+          throw new Error('No answers provided for Matching question');
+        }
+        if (selectedIndices.length !== correctPairs.length) {
+          throw new Error(`Expected ${correctPairs.length} answers, got ${selectedIndices.length}`);
+        }
+        
+        // For Matching, check that each left item is matched to the correct right item
+        // correctPairs is array of {left: index, right: index}
+        isCorrect = selectedIndices.every((selectedRightIdx, leftIdx) => {
+          const correctPair = correctPairs.find((p) => p.left === leftIdx);
+          return correctPair && correctPair.right === selectedRightIdx;
+        });
+        
+        // Store selected matches as JSON string for database
+        finalAnswerIndex = JSON.stringify(selectedIndices);
+      } catch (error) {
+        console.error('Error processing Matching answer:', error);
+        return res.status(400).json({
+          error: `Invalid Matching answer format: ${error.message}`,
+          code: 'INVALID_MATCHING_ANSWER'
+        });
+      }
+    } else if (question.question_type === 'ShortAnswer' || question.question_type === 'Essay') {
+      // For ShortAnswer and Essay, no automatic validation (automatic grading by AI later)
+      // Store the text answer as-is
+      isCorrect = null; // No automatic validation - will be graded by AI
+      finalAnswerIndex = typeof answerIndex === 'string' ? answerIndex : JSON.stringify(answerIndex);
+    } else {
+      // For MCQ and TrueFalse, answerIndex is a single number
+      isCorrect = answerIndex === question.correct_option_index;
+      finalAnswerIndex = answerIndex;
+    }
 
     // For Standard mode, get the question order from the request or calculate from existing responses
     let questionOrder = session.questionCount + 1;
@@ -385,9 +586,11 @@ export const submitAnswer = async (req, res) => {
     }
 
     // Save response with difficulty tracking
+    // For ShortAnswer and Essay, store text in selected_option_index (it's a TEXT field)
+    // For other types, store index/indices as JSON string
     await executeQuery(
       'INSERT INTO assessment_responses (assessment_id, question_id, question_order, selected_option_index, is_correct, question_difficulty) VALUES (?, ?, ?, ?, ?, ?)',
-      [assessmentId, questionId, questionOrder, answerIndex, isCorrect, question.difficulty_level]
+      [assessmentId, questionId, questionOrder, finalAnswerIndex, isCorrect, question.difficulty_level]
     );
 
     // Update session (only for Adaptive mode, Standard mode doesn't use session state)
@@ -590,6 +793,18 @@ export const submitAnswer = async (req, res) => {
             }
           }
           return nextQuestion.options;
+        })(),
+        questionType: nextQuestion.question_type || 'MCQ',
+        questionMetadata: (() => {
+          if (!nextQuestion.question_metadata) return null;
+          try {
+            return typeof nextQuestion.question_metadata === 'string' 
+              ? JSON.parse(nextQuestion.question_metadata) 
+              : nextQuestion.question_metadata;
+          } catch (e) {
+            console.error('Error parsing question_metadata for next question:', e);
+            return null;
+          }
         })(),
         questionNumber: session.questionCount + 1,
         totalQuestions: session.maxQuestions

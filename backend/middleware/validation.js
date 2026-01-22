@@ -133,7 +133,19 @@ export const validateQuestion = [
     .withMessage('Question text must be between 10 and 1000 characters'),
   
   body('options')
-    .custom((value) => {
+    .custom((value, { req }) => {
+      const questionType = req.body.questionType || 'MCQ';
+      
+      // For FillInBlank, Matching, ShortAnswer, and Essay questions, options can be empty (options are in questionMetadata or not needed)
+      if (questionType === 'FillInBlank' || questionType === 'Matching' || questionType === 'ShortAnswer' || questionType === 'Essay') {
+        // Allow empty array or undefined for these types
+        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
+          return true;
+        }
+        // If provided, still validate format
+      }
+      
+      // For other question types, validate options
       // Allow both array and string formats
       if (Array.isArray(value)) {
         if (value.length < 2 || value.length > 6) {
@@ -195,8 +207,33 @@ export const validateAnswerSubmission = [
     .withMessage('Question ID must be a positive integer'),
   
   body('answerIndex')
-    .isInt({ min: 0 })
-    .withMessage('Answer index must be a non-negative integer'),
+    .custom((value) => {
+      // Allow integer (for MCQ/TrueFalse), array (for MultipleSelect/FillInBlank/Matching), or string (for ShortAnswer/Essay)
+      if (typeof value === 'number' && Number.isInteger(value) && value >= 0) {
+        return true;
+      }
+      if (Array.isArray(value)) {
+        // Validate array contains only non-negative integers
+        if (value.length === 0) {
+          throw new Error('Answer index array cannot be empty');
+        }
+        for (let idx of value) {
+          if (!Number.isInteger(Number(idx)) || Number(idx) < 0) {
+            throw new Error('All answer indices must be non-negative integers');
+          }
+        }
+        return true;
+      }
+      if (typeof value === 'string') {
+        // Allow strings for ShortAnswer and Essay (text responses)
+        if (value.trim().length === 0) {
+          throw new Error('Text answer cannot be empty');
+        }
+        return true;
+      }
+      throw new Error('Answer index must be a non-negative integer, an array of non-negative integers, or a string');
+    })
+    .withMessage('Answer index must be a non-negative integer, an array of non-negative integers, or a string'),
   
   body('assessmentId')
     .isInt({ min: 1 })
@@ -221,7 +258,24 @@ export const validateBulkQuestions = [
     .withMessage('Question text must be between 10 and 1000 characters'),
   
   body('questions.*.options')
-    .custom((value) => {
+    .custom((value, { req, path }) => {
+      // Extract question index from path (e.g., "questions.0.questionType")
+      const pathParts = path.split('.');
+      const questionIndex = pathParts.length > 1 ? parseInt(pathParts[1]) : -1;
+      const questionType = (req.body.questions && questionIndex >= 0 && req.body.questions[questionIndex]) 
+        ? req.body.questions[questionIndex].questionType || 'MCQ'
+        : 'MCQ';
+      
+      // For FillInBlank, Matching, ShortAnswer, and Essay questions, options can be empty (options are in questionMetadata or not needed)
+      if (questionType === 'FillInBlank' || questionType === 'Matching' || questionType === 'ShortAnswer' || questionType === 'Essay') {
+        // Allow empty array or undefined for these types
+        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
+          return true;
+        }
+        // If provided, still validate format
+      }
+      
+      // For other question types, validate options
       if (Array.isArray(value)) {
         if (value.length < 2 || value.length > 6) {
           throw new Error('Options must have 2-6 items');

@@ -11,11 +11,9 @@ import {
   AlertTriangle,
   Brain,
   Target,
-  Timer,
   User,
   Building,
   GraduationCap,
-  Play,
   Zap,
   List
 } from 'lucide-react';
@@ -37,11 +35,17 @@ const AssessmentPage: React.FC = () => {
 
   const [currentQuestion, setCurrentQuestion] = useState<AssessmentQuestion | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]); // For MultipleSelect
+  const [fillInBlankAnswers, setFillInBlankAnswers] = useState<number[]>([]); // For FillInBlank - array of selected indices for each blank
+  const [matchingAnswers, setMatchingAnswers] = useState<number[]>([]); // For Matching - array of selected right indices for each left item
+  const [textAnswer, setTextAnswer] = useState<string>(''); // For ShortAnswer and Essay - text response
+  const [wordCount, setWordCount] = useState<number>(0); // For ShortAnswer word count
+  const [questionType, setQuestionType] = useState<AssessmentQuestion['questionType'] | null>(null);
+  const [questionMetadata, setQuestionMetadata] = useState<any>(null); // For FillInBlank/Matching/ShortAnswer/Essay structure
   const [assessmentId, setAssessmentId] = useState<number | null>(state?.assessmentId || null);
   const [loading, setLoading] = useState(!state?.assessmentId); // If assessment already started, don't show loading
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ isCorrect?: boolean; show: boolean }>({ show: false });
-  const [startTime, setStartTime] = useState<number>(Date.now());
   const [timeLimit, setTimeLimit] = useState<number>(state?.timeLimitMinutes || 30);
   const [totalQuestions, setTotalQuestions] = useState<number>(10);
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState<number>(1);
@@ -72,10 +76,28 @@ const AssessmentPage: React.FC = () => {
               ? JSON.parse(state.question.options) 
               : []),
         questionNumber: state.question.questionNumber || 1,
-        totalQuestions: state.question.totalQuestions || state.allQuestions?.length || 10
+        totalQuestions: state.question.totalQuestions || state.allQuestions?.length || 10,
+        questionType: state.question.questionType || 'MCQ'
       };
       
       setCurrentQuestion(question);
+      setQuestionType((question.questionType || 'MCQ') as AssessmentQuestion['questionType']);
+      setQuestionMetadata(state.question.questionMetadata || null);
+      // Initialize FillInBlank answers array if needed
+      if (question.questionType === 'FillInBlank' && state.question.questionMetadata?.blanks) {
+        setFillInBlankAnswers(Array(state.question.questionMetadata.blanks.length).fill(null));
+      } else {
+        setFillInBlankAnswers([]);
+      }
+      // Initialize Matching answers array if needed
+      if (question.questionType === 'Matching' && state.question.questionMetadata?.leftItems) {
+        setMatchingAnswers(Array(state.question.questionMetadata.leftItems.length).fill(null));
+      } else {
+        setMatchingAnswers([]);
+      }
+      // Initialize text answer for ShortAnswer/Essay
+      setTextAnswer('');
+      setWordCount(0);
       setTimeLimit(state.timeLimitMinutes || 30);
       setTimeRemaining((state.timeLimitMinutes || 30) * 60);
       setTotalQuestions(state.question.totalQuestions || state.allQuestions?.length || 10);
@@ -116,7 +138,22 @@ const AssessmentPage: React.FC = () => {
           if (newTime <= 0) {
             clearInterval(timer);
             // Auto-submit current answer if one is selected
-            if (selectedAnswer !== null && currentQuestion && assessmentId) {
+            const hasAnswer = questionType === 'MultipleSelect' 
+              ? selectedAnswers.length > 0 
+              : questionType === 'FillInBlank'
+              ? fillInBlankAnswers.length > 0 && fillInBlankAnswers.every((ans, idx) => 
+                  ans !== null && ans !== undefined && 
+                  questionMetadata?.blanks?.[idx]?.options?.[ans] !== undefined
+                )
+              : questionType === 'Matching'
+              ? matchingAnswers.length > 0 && matchingAnswers.every((ans) => 
+                  ans !== null && ans !== undefined && 
+                  questionMetadata?.rightItems?.[ans] !== undefined
+                )
+              : questionType === 'ShortAnswer' || questionType === 'Essay'
+              ? textAnswer.trim().length > 0
+              : selectedAnswer !== null;
+            if (hasAnswer && currentQuestion && assessmentId) {
               submitAnswer();
             }
             return 0;
@@ -142,7 +179,23 @@ const AssessmentPage: React.FC = () => {
       );
       setAssessmentId(response.assessmentId);
       setCurrentQuestion(response.question);
-      setStartTime(Date.now());
+      setQuestionType((response.question.questionType || 'MCQ') as AssessmentQuestion['questionType']);
+      setQuestionMetadata(response.question.questionMetadata || null);
+      // Initialize FillInBlank answers array if needed
+      if (response.question.questionType === 'FillInBlank' && response.question.questionMetadata?.blanks) {
+        setFillInBlankAnswers(Array(response.question.questionMetadata.blanks.length).fill(null));
+      } else {
+        setFillInBlankAnswers([]);
+      }
+      // Initialize Matching answers array if needed
+      if (response.question.questionType === 'Matching' && response.question.questionMetadata?.leftItems) {
+        setMatchingAnswers(Array(response.question.questionMetadata.leftItems.length).fill(null));
+      } else {
+        setMatchingAnswers([]);
+      }
+      // Initialize text answer for ShortAnswer/Essay
+      setTextAnswer('');
+      setWordCount(0);
       
       // Extract time limit and question count from the response
       if (response.question) {
@@ -165,13 +218,58 @@ const AssessmentPage: React.FC = () => {
   };
 
   const submitAnswer = async () => {
-    if (selectedAnswer === null || !currentQuestion || assessmentId === null) return;
+    // Validate based on question type
+    if (questionType === 'MultipleSelect') {
+      if (selectedAnswers.length === 0 || !currentQuestion || assessmentId === null) return;
+    } else if (questionType === 'FillInBlank') {
+      // For FillInBlank, check that all blanks have answers
+      const expectedBlankCount = questionMetadata?.blanks?.length || 0;
+      if (fillInBlankAnswers.length !== expectedBlankCount || 
+          fillInBlankAnswers.some(ans => ans === null || ans === undefined) || 
+          !currentQuestion || 
+          assessmentId === null) {
+        return;
+      }
+    } else if (questionType === 'Matching') {
+      // For Matching, check that all left items have matches
+      const expectedLeftCount = questionMetadata?.leftItems?.length || 0;
+      if (matchingAnswers.length !== expectedLeftCount || 
+          matchingAnswers.some(ans => ans === null || ans === undefined) || 
+          !currentQuestion || 
+          assessmentId === null) {
+        return;
+      }
+    } else if (questionType === 'ShortAnswer' || questionType === 'Essay') {
+      // For ShortAnswer and Essay, check that text is provided
+      if (!textAnswer.trim() || !currentQuestion || assessmentId === null) return;
+      // For ShortAnswer, check word limit
+      if (questionType === 'ShortAnswer' && wordCount > 100) {
+        alert('Short Answer must be 100 words or less. Please reduce your answer.');
+        return;
+      }
+    } else {
+      if (selectedAnswer === null || !currentQuestion || assessmentId === null) return;
+    }
 
     setSubmitting(true);
     try {
+      // For MultipleSelect, send array; for FillInBlank/Matching, send array of selected indices; for ShortAnswer/Essay, send text; otherwise send single index
+      let answerToSubmit: number | number[] | string;
+      if (questionType === 'MultipleSelect') {
+        answerToSubmit = selectedAnswers;
+      } else if (questionType === 'FillInBlank') {
+        answerToSubmit = fillInBlankAnswers;
+      } else if (questionType === 'Matching') {
+        answerToSubmit = matchingAnswers;
+      } else if (questionType === 'ShortAnswer' || questionType === 'Essay') {
+        answerToSubmit = textAnswer.trim();
+      } else {
+        answerToSubmit = selectedAnswer as number; // Type assertion safe because we checked for null above
+      }
+      
       const response: AssessmentResponse = await studentAPI.submitAnswer(
         currentQuestion.id,
-        selectedAnswer,
+        answerToSubmit,
         assessmentId
       );
 
@@ -184,7 +282,6 @@ const AssessmentPage: React.FC = () => {
       }
 
       // Wait for feedback display (only for Adaptive), then continue
-      const feedbackDelay = mode === 'Adaptive' ? 1500 : 0;
       setTimeout(async () => {
         // For Standard mode, use pre-loaded questions
         if (mode === 'Standard' && allQuestions.length > 0) {
@@ -193,15 +290,35 @@ const AssessmentPage: React.FC = () => {
           if (nextQuestionIndex < allQuestions.length) {
             // Move to next question (convert 1-based to 0-based index)
             const nextQuestion = allQuestions[nextQuestionIndex];
+            const nextQuestionType = (nextQuestion.questionType || 'MCQ') as AssessmentQuestion['questionType'];
             setCurrentQuestion({
               id: nextQuestion.id,
               text: nextQuestion.text,
               options: nextQuestion.options,
               questionNumber: nextQuestionIndex + 1,
-              totalQuestions: allQuestions.length
+              totalQuestions: allQuestions.length,
+              questionType: nextQuestionType
             });
+            setQuestionType(nextQuestionType);
+            setQuestionMetadata(nextQuestion.questionMetadata || null);
             setCurrentQuestionNumber(nextQuestionIndex + 1);
             setSelectedAnswer(null);
+            setSelectedAnswers([]);
+            // Initialize FillInBlank answers array if needed
+            if (nextQuestionType === 'FillInBlank' && nextQuestion.questionMetadata?.blanks) {
+              setFillInBlankAnswers(Array(nextQuestion.questionMetadata.blanks.length).fill(null));
+            } else {
+              setFillInBlankAnswers([]);
+            }
+            // Initialize Matching answers array if needed
+            if (nextQuestionType === 'Matching' && nextQuestion.questionMetadata?.leftItems) {
+              setMatchingAnswers(Array(nextQuestion.questionMetadata.leftItems.length).fill(null));
+            } else {
+              setMatchingAnswers([]);
+            }
+            // Initialize text answer for ShortAnswer/Essay
+            setTextAnswer('');
+            setWordCount(0);
             setFeedback({ show: false });
           } else {
             // All questions answered, fetch results
@@ -237,9 +354,28 @@ const AssessmentPage: React.FC = () => {
               navigate('/dashboard');
             }
           } else if (response.question) {
+            const nextQuestionType = (response.question.questionType || 'MCQ') as AssessmentQuestion['questionType'];
             setCurrentQuestion(response.question);
             setCurrentQuestionNumber(response.question.questionNumber);
+            setQuestionType(nextQuestionType);
+            setQuestionMetadata(response.question.questionMetadata || null);
             setSelectedAnswer(null);
+            setSelectedAnswers([]);
+            // Initialize FillInBlank answers array if needed
+            if (nextQuestionType === 'FillInBlank' && response.question.questionMetadata?.blanks) {
+              setFillInBlankAnswers(Array(response.question.questionMetadata.blanks.length).fill(null));
+            } else {
+              setFillInBlankAnswers([]);
+            }
+            // Initialize Matching answers array if needed
+            if (nextQuestionType === 'Matching' && response.question.questionMetadata?.leftItems) {
+              setMatchingAnswers(Array(response.question.questionMetadata.leftItems.length).fill(null));
+            } else {
+              setMatchingAnswers([]);
+            }
+            // Initialize text answer for ShortAnswer/Essay
+            setTextAnswer('');
+            setWordCount(0);
             setFeedback({ show: false });
           }
         }
@@ -536,45 +672,318 @@ const AssessmentPage: React.FC = () => {
 
             <div className="mb-8">
               <h2 className="text-xl font-medium text-gray-900 leading-relaxed">
-                {currentQuestion.text}
+                {questionType === 'FillInBlank' ? (
+                  // Render FillInBlank question with dropdowns inline
+                  (() => {
+                    const text = currentQuestion.text;
+                    
+                    // Check if we have metadata with blanks
+                    if (!questionMetadata?.blanks || !Array.isArray(questionMetadata.blanks) || questionMetadata.blanks.length === 0) {
+                      // Fallback: show question text with blanks highlighted but no dropdowns
+                      console.warn('FillInBlank question missing metadata or blanks array:', {
+                        questionId: currentQuestion.id,
+                        questionMetadata,
+                        questionText: text
+                      });
+                      return (
+                        <div>
+                          <span className="text-red-600">{text}</span>
+                          <p className="mt-2 text-sm text-red-600 italic">
+                            Warning: This question is missing blank configuration. Please contact your administrator.
+                          </p>
+                        </div>
+                      );
+                    }
+                    
+                    const blanks = questionMetadata.blanks;
+                    const parts: (string | number)[] = [];
+                    let lastIndex = 0;
+                    let blankIndex = 0;
+                    
+                    // Split text by blanks (___ or {0}, {1}, etc.)
+                    const blankPattern = /(___|\{[0-9]+\})/g;
+                    const matches: RegExpExecArray[] = [];
+                    let tempMatch;
+                    
+                    // Collect all matches first
+                    while ((tempMatch = blankPattern.exec(text)) !== null) {
+                      matches.push(tempMatch);
+                    }
+                    
+                    // Process matches
+                    for (const match of matches) {
+                      // Add text before blank
+                      if (match.index > lastIndex) {
+                        parts.push(text.substring(lastIndex, match.index));
+                      }
+                      // Add blank placeholder
+                      parts.push(blankIndex);
+                      blankIndex++;
+                      lastIndex = match.index + match[0].length;
+                    }
+                    
+                    // Add remaining text
+                    if (lastIndex < text.length) {
+                      parts.push(text.substring(lastIndex));
+                    }
+                    
+                    // Ensure we have the right number of blanks
+                    if (blankIndex !== blanks.length) {
+                      console.warn('Mismatch between detected blanks and configured blanks:', {
+                        detected: blankIndex,
+                        configured: blanks.length
+                      });
+                    }
+                    
+                    return (
+                      <div className="inline-flex flex-wrap items-center gap-2">
+                        {parts.map((part, idx) => {
+                          if (typeof part === 'number') {
+                            // This is a blank
+                            const blank = blanks[part];
+                            if (!blank || !blank.options || !Array.isArray(blank.options)) {
+                              console.error(`Blank ${part} is missing or invalid:`, blank);
+                              return (
+                                <span key={`blank-error-${part}`} className="text-red-600 font-medium">
+                                  [Blank {part + 1} - Configuration Error]
+                                </span>
+                              );
+                            }
+                            
+                            const isDisabled = mode === 'Standard' ? submitting : feedback.show;
+                            return (
+                              <select
+                                key={`blank-${part}`}
+                                value={fillInBlankAnswers[part] !== undefined && fillInBlankAnswers[part] !== null ? fillInBlankAnswers[part] : ''}
+                                onChange={(e) => {
+                                  const newAnswers = [...fillInBlankAnswers];
+                                  newAnswers[part] = Number(e.target.value);
+                                  setFillInBlankAnswers(newAnswers);
+                                }}
+                                disabled={isDisabled}
+                                className="inline-block px-3 py-2 border-2 border-blue-500 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-600 disabled:opacity-60 disabled:cursor-not-allowed min-w-[120px]"
+                              >
+                                <option value="">Select...</option>
+                                {blank.options.map((opt: string, optIdx: number) => (
+                                  <option key={optIdx} value={optIdx}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            );
+                          } else {
+                            // This is text
+                            return <span key={`text-${idx}`}>{part}</span>;
+                          }
+                        })}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  // Regular question text
+                  currentQuestion.text
+                )}
               </h2>
             </div>
 
-            <div className="space-y-4 mb-8">
-              {currentQuestion.options.map((option, index) => {
-                // For Standard mode, disable after submission (submitting state)
-                // For Adaptive mode, disable when feedback is shown
-                const isDisabled = mode === 'Standard' ? submitting : feedback.show;
-                return (
-                <button
-                  key={index}
-                  onClick={() => !isDisabled && setSelectedAnswer(index)}
-                  disabled={isDisabled}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                    selectedAnswer === index
-                      ? 'border-yellow-500 bg-yellow-50 shadow-md'
-                      : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 hover:shadow-sm'
-                  } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium ${
-                      selectedAnswer === index
-                        ? 'border-yellow-500 bg-yellow-500 text-white'
-                        : 'border-gray-300 text-gray-500'
-                    }`}>
-                      {String.fromCharCode(65 + index)}
+            {/* Show options only for MCQ, TrueFalse, and MultipleSelect */}
+            {(questionType === 'MCQ' || questionType === 'TrueFalse' || questionType === 'MultipleSelect') && (
+              <div className="space-y-4 mb-8">
+                {currentQuestion.options.map((option, index) => {
+                  // For Standard mode, disable after submission (submitting state)
+                  // For Adaptive mode, disable when feedback is shown
+                  const isDisabled = mode === 'Standard' ? submitting : feedback.show;
+                  const isMultipleSelect = questionType === 'MultipleSelect';
+                  const isSelected = isMultipleSelect 
+                    ? selectedAnswers.includes(index)
+                    : selectedAnswer === index;
+                  
+                  return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (isDisabled) return;
+                      if (isMultipleSelect) {
+                        setSelectedAnswers(prev => 
+                          prev.includes(index)
+                            ? prev.filter(i => i !== index)
+                            : [...prev, index]
+                        );
+                      } else {
+                        setSelectedAnswer(index);
+                      }
+                    }}
+                    disabled={isDisabled}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
+                      isSelected
+                        ? 'border-yellow-500 bg-yellow-50 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 hover:shadow-sm'
+                    } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      {isMultipleSelect ? (
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // Handled by button onClick
+                          className="w-5 h-5 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500"
+                          disabled={isDisabled}
+                        />
+                      ) : (
+                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium ${
+                          isSelected
+                            ? 'border-yellow-500 bg-yellow-500 text-white'
+                            : 'border-gray-300 text-gray-500'
+                        }`}>
+                          {String.fromCharCode(65 + index)}
+                        </div>
+                      )}
+                      <span className="text-gray-900 font-medium">{option}</span>
                     </div>
-                    <span className="text-gray-900 font-medium">{option}</span>
+                  </button>
+                  );
+                })}
+              </div>
+            )}
+            
+            {questionType === 'FillInBlank' && (
+              <p className="mb-4 text-sm text-gray-600 italic">
+                Select an option for each blank from the dropdowns above.
+              </p>
+            )}
+            
+            {(questionType === 'ShortAnswer' || questionType === 'Essay') && (
+              <div className="mb-8">
+                {questionMetadata?.description && (
+                  <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900 font-medium mb-1">Instructions:</p>
+                    <p className="text-sm text-blue-800">{questionMetadata.description}</p>
                   </div>
-                </button>
-                );
-              })}
-            </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Answer {questionType === 'ShortAnswer' && <span className="text-gray-500">(Maximum 100 words)</span>}
+                  </label>
+                  <textarea
+                    value={textAnswer}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      setTextAnswer(text);
+                      // Count words
+                      const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+                      setWordCount(words.length);
+                    }}
+                    rows={questionType === 'ShortAnswer' ? 5 : 10}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                    placeholder={questionType === 'ShortAnswer' ? 'Enter your answer (maximum 100 words)...' : 'Enter your essay answer...'}
+                    disabled={mode === 'Standard' ? submitting : feedback.show}
+                  />
+                  {questionType === 'ShortAnswer' && (
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        Word count: <span className={`font-medium ${wordCount > 100 ? 'text-red-600' : 'text-gray-900'}`}>{wordCount}</span> / 100
+                      </p>
+                      {wordCount > 100 && (
+                        <p className="text-sm text-red-600 font-medium">
+                          Exceeds word limit! Please reduce your answer.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {questionType === 'Essay' && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      Word count: <span className="font-medium">{wordCount}</span> (no limit)
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {questionType === 'Matching' && questionMetadata?.leftItems && questionMetadata?.rightItems && (
+              <div className="mb-8">
+                <p className="mb-4 text-sm text-gray-600 italic">
+                  Match each item in Column A with the correct item in Column B.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Column A */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Column A</h3>
+                    <div className="space-y-3">
+                      {questionMetadata.leftItems.map((_leftItem: string, leftIdx: number) => (
+                        <div key={leftIdx} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                          <span className="text-sm font-medium text-gray-700 min-w-[30px]">
+                            {leftIdx + 1}.
+                          </span>
+                          <span className="text-sm text-gray-900 flex-1">{questionMetadata.leftItems[leftIdx]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Column B with dropdowns */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Column B (Select Match)</h3>
+                    <div className="space-y-3">
+                      {questionMetadata.leftItems.map((_leftItem: string, leftIdx: number) => {
+                        const isDisabled = mode === 'Standard' ? submitting : feedback.show;
+                        return (
+                          <div key={leftIdx} className="p-3 border border-gray-200 rounded-lg bg-white">
+                            <div className="flex items-center space-x-3">
+                              <span className="text-sm font-medium text-gray-700 min-w-[30px]">
+                                {leftIdx + 1}.
+                              </span>
+                              <select
+                                value={matchingAnswers[leftIdx] !== undefined && matchingAnswers[leftIdx] !== null ? matchingAnswers[leftIdx] : ''}
+                                onChange={(e) => {
+                                  const newAnswers = [...matchingAnswers];
+                                  newAnswers[leftIdx] = Number(e.target.value);
+                                  setMatchingAnswers(newAnswers);
+                                }}
+                                disabled={isDisabled}
+                                className="flex-1 px-3 py-2 border-2 border-blue-500 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                <option value="">Select match...</option>
+                                {questionMetadata.rightItems.map((rightItem: string, rightIdx: number) => (
+                                  <option key={rightIdx} value={rightIdx}>
+                                    {String.fromCharCode(65 + rightIdx)}. {rightItem}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {questionType === 'MultipleSelect' && (
+              <p className="mb-4 text-sm text-gray-600 italic">
+                Select all correct answers. All selected answers must be correct for the question to be marked correct.
+              </p>
+            )}
 
             <div className="flex justify-end">
               <button
                 onClick={submitAnswer}
-                disabled={selectedAnswer === null || submitting || (mode === 'Adaptive' && feedback.show)}
+                disabled={
+                  (questionType === 'MultipleSelect' 
+                    ? selectedAnswers.length === 0 
+                    : questionType === 'FillInBlank'
+                    ? fillInBlankAnswers.length === 0 || 
+                      fillInBlankAnswers.length !== (questionMetadata?.blanks?.length || 0) ||
+                      fillInBlankAnswers.some(ans => ans === null || ans === undefined)
+                    : questionType === 'Matching'
+                    ? matchingAnswers.length === 0 || 
+                      matchingAnswers.length !== (questionMetadata?.leftItems?.length || 0) ||
+                      matchingAnswers.some(ans => ans === null || ans === undefined)
+                    : questionType === 'ShortAnswer' || questionType === 'Essay'
+                    ? !textAnswer.trim() || (questionType === 'ShortAnswer' && wordCount > 100)
+                    : selectedAnswer === null) ||
+                  submitting ||
+                  (mode === 'Adaptive' && feedback.show)
+                }
                 className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-yellow-500 to-pink-500 text-white rounded-xl hover:from-yellow-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 {submitting ? (

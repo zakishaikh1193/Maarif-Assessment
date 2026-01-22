@@ -142,34 +142,198 @@ const QuestionList: React.FC<QuestionListProps> = ({
                         {question.gradeName}
                       </span>
                     )}
+                    {question.questionType && question.questionType !== 'MCQ' && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {question.questionType === 'TrueFalse' ? 'True/False' : 
+                         question.questionType === 'MultipleSelect' ? 'Multiple Select' : 
+                         question.questionType === 'FillInBlank' ? 'Fill in the Blanks' :
+                         question.questionType === 'Matching' ? 'Matching' :
+                         question.questionType === 'ShortAnswer' ? 'Short Answer' :
+                         question.questionType === 'Essay' ? 'Essay' :
+                         question.questionType}
+                      </span>
+                    )}
                   </div>
                   <p className="text-gray-900 font-medium mb-3">{question.questionText}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {question.options.map((option: string, optionIndex: number) => (
-                      <div
-                        key={optionIndex}
-                        className={`flex items-center space-x-2 p-2 rounded ${
-                          optionIndex === question.correctOptionIndex
-                            ? 'bg-green-50 border border-green-200'
-                            : 'bg-gray-50'
-                        }`}
-                      >
-                        <span className="text-sm font-medium text-gray-600">
-                          {String.fromCharCode(65 + optionIndex)}.
-                        </span>
-                        <span className={`text-sm ${
-                          optionIndex === question.correctOptionIndex
-                            ? 'text-green-800 font-medium'
-                            : 'text-gray-700'
-                        }`}>
-                          {option}
-                        </span>
-                        {optionIndex === question.correctOptionIndex && (
-                          <span className="text-xs text-green-600 font-medium">(Correct)</span>
-                        )}
+                  
+                  {/* For ShortAnswer and Essay, show description if available */}
+                  {(question.questionType === 'ShortAnswer' || question.questionType === 'Essay') && question.questionMetadata?.description && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-900 font-medium mb-1">Instructions:</p>
+                      <p className="text-sm text-blue-800">{question.questionMetadata.description}</p>
+                      {question.questionType === 'ShortAnswer' && (
+                        <p className="text-xs text-blue-700 mt-2">
+                          <span className="font-medium">Word Limit:</span> Maximum 100 words (Automatic grading)
+                        </p>
+                      )}
+                      {question.questionType === 'Essay' && (
+                        <p className="text-xs text-blue-700 mt-2">
+                          <span className="font-medium">Grading:</span> Automatic grading (No word limit)
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* For Matching, show matching pairs */}
+                  {question.questionType === 'Matching' && question.questionMetadata && question.questionMetadata.leftItems && question.questionMetadata.rightItems ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Column A */}
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900 mb-2">Column A</h4>
+                          <div className="space-y-2">
+                            {question.questionMetadata.leftItems.map((leftItem: string, leftIdx: number) => {
+                              // Find correct match
+                              const correctPair = question.questionMetadata.correctPairs?.find((p: any) => p.left === leftIdx);
+                              const correctRightIdx = correctPair ? correctPair.right : -1;
+                              const correctRightItem = correctRightIdx >= 0 ? question.questionMetadata.rightItems[correctRightIdx] : '';
+                              
+                              return (
+                                <div key={leftIdx} className="p-2 border border-gray-200 rounded bg-gray-50">
+                                  <div className="text-sm text-gray-900">
+                                    <span className="font-medium">{leftIdx + 1}.</span> {leftItem}
+                                  </div>
+                                  {correctRightItem && (
+                                    <div className="text-xs text-green-700 mt-1 font-medium">
+                                      → Matches: {String.fromCharCode(65 + correctRightIdx)}. {correctRightItem}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        {/* Column B */}
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900 mb-2">Column B</h4>
+                          <div className="space-y-2">
+                            {question.questionMetadata.rightItems.map((rightItem: string, rightIdx: number) => (
+                              <div key={rightIdx} className="p-2 border border-gray-200 rounded bg-gray-50">
+                                <div className="text-sm text-gray-900">
+                                  <span className="font-medium">{String.fromCharCode(65 + rightIdx)}.</span> {rightItem}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ) : question.questionType === 'FillInBlank' && question.questionMetadata && question.questionMetadata.blanks ? (
+                    <div className="space-y-3">
+                      {question.questionMetadata.blanks.map((blank: any, blankIdx: number) => (
+                        <div key={blankIdx} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-900">Blank #{blankIdx + 1}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {blank.options.map((option: string, optIdx: number) => {
+                              const isCorrect = optIdx === blank.correctIndex;
+                              return (
+                                <div
+                                  key={optIdx}
+                                  className={`flex items-center space-x-2 p-2 rounded ${
+                                    isCorrect
+                                      ? 'bg-green-50 border border-green-200'
+                                      : 'bg-white border border-gray-200'
+                                  }`}
+                                >
+                                  <span className="text-sm font-medium text-gray-600">
+                                    {String.fromCharCode(65 + optIdx)}.
+                                  </span>
+                                  <span className={`text-sm ${
+                                    isCorrect
+                                      ? 'text-green-800 font-medium'
+                                      : 'text-gray-700'
+                                  }`}>
+                                    {option}
+                                  </span>
+                                  {isCorrect && (
+                                    <span className="text-xs text-green-600 font-medium">(Correct)</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (question.questionType === 'ShortAnswer' || question.questionType === 'Essay') ? (
+                    /* For ShortAnswer and Essay, show note about automatic grading */
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-900">
+                        <span className="font-medium">Note:</span> Answers will be automatically graded by AI based on Question and Description provided.
+                      </p>
+                    </div>
+                  ) : (
+                    /* For other question types, show options */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {question.options.map((option: string, optionIndex: number) => {
+                        // Determine if this option is correct based on question type
+                        let isCorrect = false;
+                        
+                        if (question.questionType === 'MultipleSelect') {
+                          // For MultipleSelect, parse correctAnswer JSON array
+                          if (question.correctAnswer) {
+                            try {
+                              // Handle both string and already-parsed array
+                              let correctIndices;
+                              if (typeof question.correctAnswer === 'string') {
+                                correctIndices = JSON.parse(question.correctAnswer);
+                              } else if (Array.isArray(question.correctAnswer)) {
+                                correctIndices = question.correctAnswer;
+                              } else {
+                                correctIndices = [question.correctOptionIndex];
+                              }
+                              
+                              if (Array.isArray(correctIndices)) {
+                                // Check if this option index is in the array of correct indices
+                                isCorrect = correctIndices.includes(optionIndex);
+                              } else {
+                                // Fallback to single correctOptionIndex if not an array
+                                isCorrect = optionIndex === question.correctOptionIndex;
+                              }
+                            } catch (e) {
+                              console.error('Error parsing correctAnswer for MultipleSelect:', e, question.correctAnswer);
+                              // Fallback to single correctOptionIndex if parsing fails
+                              isCorrect = optionIndex === question.correctOptionIndex;
+                            }
+                          } else {
+                            // Fallback to single correctOptionIndex if no correctAnswer
+                            isCorrect = optionIndex === question.correctOptionIndex;
+                          }
+                        } else {
+                          // For MCQ and TrueFalse, use correctOptionIndex
+                          isCorrect = optionIndex === question.correctOptionIndex;
+                        }
+                        
+                        return (
+                          <div
+                            key={optionIndex}
+                            className={`flex items-center space-x-2 p-2 rounded ${
+                              isCorrect
+                                ? 'bg-green-50 border border-green-200'
+                                : 'bg-gray-50'
+                            }`}
+                          >
+                            <span className="text-sm font-medium text-gray-600">
+                              {String.fromCharCode(65 + optionIndex)}.
+                            </span>
+                            <span className={`text-sm ${
+                              isCorrect
+                                ? 'text-green-800 font-medium'
+                                : 'text-gray-700'
+                            }`}>
+                              {option}
+                            </span>
+                            {isCorrect && (
+                              <span className="text-xs text-green-600 font-medium">(Correct)</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="flex space-x-2 ml-4">
                   <button

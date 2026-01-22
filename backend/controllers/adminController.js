@@ -376,26 +376,182 @@ export const createBulkQuestions = async (req, res) => {
 // Create new question
 export const createQuestion = async (req, res) => {
   try {
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies } = req.body;
+    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+
+    // Default to MCQ if not specified
+    const qType = questionType || 'MCQ';
 
     // Handle options format - convert string to array if needed
     let optionsArray = options;
-    if (typeof options === 'string') {
-      optionsArray = options.split(',').map(option => option.trim());
-    } else if (!Array.isArray(options)) {
-      return res.status(400).json({
-        error: 'Options must be an array or comma-separated string',
-        code: 'INVALID_OPTIONS_FORMAT'
-      });
-    }
+    if (qType === 'MCQ' || qType === 'MultipleSelect') {
+      if (typeof options === 'string') {
+        optionsArray = options.split(',').map(option => option.trim());
+      } else if (!Array.isArray(options)) {
+        return res.status(400).json({
+          error: 'Options must be an array or comma-separated string',
+          code: 'INVALID_OPTIONS_FORMAT'
+        });
+      }
 
-    // Validate correct option index
-    if (correctOptionIndex < 0 || correctOptionIndex >= optionsArray.length) {
-      return res.status(400).json({
-        error: 'Invalid correct option index',
-        code: 'INVALID_OPTION_INDEX'
-      });
-    }
+      // Validate correct option index for MCQ
+      if (qType === 'MCQ') {
+        if (correctOptionIndex < 0 || correctOptionIndex >= optionsArray.length) {
+          return res.status(400).json({
+            error: 'Invalid correct option index',
+            code: 'INVALID_OPTION_INDEX'
+          });
+        }
+      } else if (qType === 'MultipleSelect') {
+        // For MultipleSelect, validate correctAnswer is a JSON array of indices
+        if (!correctAnswer) {
+          return res.status(400).json({
+            error: 'For MultipleSelect questions, correctAnswer must be a JSON array of correct option indices',
+            code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+          });
+        }
+        let correctIndices;
+        try {
+          correctIndices = JSON.parse(correctAnswer);
+          if (!Array.isArray(correctIndices) || correctIndices.length === 0) {
+            return res.status(400).json({
+              error: 'correctAnswer must be a non-empty array of indices',
+              code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+            });
+          }
+          // Validate all indices are within range
+          for (const idx of correctIndices) {
+            if (idx < 0 || idx >= optionsArray.length) {
+              return res.status(400).json({
+                error: `Invalid correct answer index: ${idx}`,
+                code: 'INVALID_OPTION_INDEX'
+              });
+            }
+          }
+        } catch (e) {
+          return res.status(400).json({
+            error: 'correctAnswer must be a valid JSON array',
+            code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+          });
+        }
+      }
+    } else if (qType === 'TrueFalse') {
+      // For True/False, options are always ['True', 'False']
+      optionsArray = ['True', 'False'];
+      
+      // Validate correctAnswer
+      if (!correctAnswer || (correctAnswer !== 'true' && correctAnswer !== 'false')) {
+        return res.status(400).json({
+          error: 'For True/False questions, correctAnswer must be "true" or "false"',
+          code: 'INVALID_TRUE_FALSE_ANSWER'
+        });
+      }
+    } else if (qType === 'FillInBlank') {
+      // For FillInBlank, validate questionMetadata contains blanks structure
+      if (!questionMetadata) {
+        return res.status(400).json({
+          error: 'For FillInBlank questions, questionMetadata with blanks structure is required',
+          code: 'MISSING_FILLINBLANK_METADATA'
+        });
+      }
+      
+      let metadata;
+      try {
+        metadata = typeof questionMetadata === 'string' ? JSON.parse(questionMetadata) : questionMetadata;
+        if (!metadata.blanks || !Array.isArray(metadata.blanks) || metadata.blanks.length === 0) {
+          return res.status(400).json({
+            error: 'questionMetadata must contain a non-empty blanks array',
+            code: 'INVALID_FILLINBLANK_METADATA'
+          });
+        }
+        
+        // Validate each blank has options and correctIndex
+        for (let i = 0; i < metadata.blanks.length; i++) {
+          const blank = metadata.blanks[i];
+          if (!blank.options || !Array.isArray(blank.options) || blank.options.length < 2) {
+            return res.status(400).json({
+              error: `Blank ${i + 1} must have at least 2 options`,
+              code: 'INVALID_BLANK_OPTIONS'
+            });
+          }
+          if (blank.correctIndex === undefined || blank.correctIndex < 0 || blank.correctIndex >= blank.options.length) {
+            return res.status(400).json({
+              error: `Blank ${i + 1} must have a valid correctIndex`,
+              code: 'INVALID_BLANK_CORRECT_INDEX'
+            });
+          }
+        }
+      } catch (e) {
+        return res.status(400).json({
+          error: 'questionMetadata must be valid JSON',
+          code: 'INVALID_METADATA_JSON'
+        });
+      }
+      
+        // Options array is empty for FillInBlank (options are in metadata)
+        optionsArray = [];
+      } else if (qType === 'Matching') {
+        // For Matching, validate questionMetadata contains matching structure
+        if (!questionMetadata) {
+          return res.status(400).json({
+            error: 'For Matching questions, questionMetadata with leftItems, rightItems, and correctPairs is required',
+            code: 'MISSING_MATCHING_METADATA'
+          });
+        }
+        
+        let metadata;
+        try {
+          metadata = typeof questionMetadata === 'string' ? JSON.parse(questionMetadata) : questionMetadata;
+          if (!metadata.leftItems || !Array.isArray(metadata.leftItems) || metadata.leftItems.length < 2) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a leftItems array with at least 2 items',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          if (!metadata.rightItems || !Array.isArray(metadata.rightItems) || metadata.rightItems.length < 2) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a rightItems array with at least 2 items',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          if (!metadata.correctPairs || !Array.isArray(metadata.correctPairs) || metadata.correctPairs.length === 0) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a non-empty correctPairs array',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          
+          // Validate correctPairs structure
+          for (let i = 0; i < metadata.correctPairs.length; i++) {
+            const pair = metadata.correctPairs[i];
+            if (typeof pair.left !== 'number' || typeof pair.right !== 'number') {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} must have numeric left and right indices`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+            if (pair.left < 0 || pair.left >= metadata.leftItems.length) {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} has invalid left index`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+            if (pair.right < 0 || pair.right >= metadata.rightItems.length) {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} has invalid right index`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+          }
+        } catch (e) {
+          return res.status(400).json({
+            error: 'questionMetadata must be valid JSON',
+            code: 'INVALID_METADATA_JSON'
+          });
+        }
+        
+        // Options array is empty for Matching
+        optionsArray = [];
+      }
 
     // Validate difficulty level
     if (difficultyLevel < 100 || difficultyLevel > 350) {
@@ -431,11 +587,87 @@ export const createQuestion = async (req, res) => {
       });
     }
 
+    // Prepare correct_option_index and correct_answer based on question type
+    let finalCorrectOptionIndex = correctOptionIndex;
+    let finalCorrectAnswer = null;
+
+    if (qType === 'TrueFalse') {
+      // For True/False: 0 = True, 1 = False
+      finalCorrectOptionIndex = correctAnswer === 'true' ? 0 : 1;
+      finalCorrectAnswer = correctAnswer;
+    } else if (qType === 'MCQ') {
+      finalCorrectOptionIndex = correctOptionIndex;
+      finalCorrectAnswer = null; // MCQ uses correct_option_index
+    } else if (qType === 'MultipleSelect') {
+      // For MultipleSelect: store first index in correct_option_index for backward compatibility
+      // Store all correct indices as JSON in correct_answer
+      if (!correctAnswer) {
+        return res.status(400).json({
+          error: 'For MultipleSelect questions, correctAnswer is required',
+          code: 'MISSING_MULTIPLE_SELECT_ANSWER'
+        });
+      }
+      const correctIndices = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctIndices[0] || 0;
+      finalCorrectAnswer = correctAnswer; // Already a JSON string from frontend
+      
+      // Debug logging
+      console.log('MultipleSelect question creation:', {
+        correctAnswer,
+        correctIndices,
+        finalCorrectOptionIndex,
+        finalCorrectAnswer
+      });
+    } else if (qType === 'FillInBlank') {
+      // For FillInBlank: store correct indices array in correct_answer
+      // Store blanks structure in question_metadata
+      if (!correctAnswer) {
+        return res.status(400).json({
+          error: 'For FillInBlank questions, correctAnswer (array of correct indices) is required',
+          code: 'MISSING_FILLINBLANK_ANSWER'
+        });
+      }
+      const correctIndices = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctIndices[0] || 0; // First blank's correct index for backward compatibility
+      finalCorrectAnswer = correctAnswer; // JSON array of correct indices for each blank
+    } else if (qType === 'Matching') {
+      // For Matching: store correct pairs in correct_answer
+      // Store matching structure in question_metadata
+      if (!correctAnswer) {
+        return res.status(400).json({
+          error: 'For Matching questions, correctAnswer (array of correct pairs) is required',
+          code: 'MISSING_MATCHING_ANSWER'
+        });
+      }
+      const correctPairs = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctPairs[0]?.right || 0; // First pair's right index for backward compatibility
+      finalCorrectAnswer = correctAnswer; // JSON array of correct pairs
+    } else if (qType === 'ShortAnswer' || qType === 'Essay') {
+      // For ShortAnswer and Essay, no automatic validation
+      finalCorrectOptionIndex = 0; // Default for backward compatibility
+      finalCorrectAnswer = null; // No correct answer (automatic grading by AI)
+    }
+
+    // Prepare questionMetadata for insertion
+    let finalQuestionMetadata = null;
+    if ((qType === 'FillInBlank' || qType === 'Matching' || qType === 'ShortAnswer' || qType === 'Essay') && questionMetadata) {
+      finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
+    }
+
     // Insert question
     const result = await executeQuery(
-      'INSERT INTO questions (subject_id, grade_id, question_text, options, correct_option_index, difficulty_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [subjectId, gradeId, questionText, JSON.stringify(optionsArray), correctOptionIndex, difficultyLevel, req.user.id]
+      'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, req.user.id]
     );
+    
+    // Verify the inserted data
+    if (qType === 'MultipleSelect') {
+      const verifyQuestion = await executeQuery(
+        'SELECT correct_option_index, correct_answer FROM questions WHERE id = ?',
+        [result.insertId]
+      );
+      console.log('MultipleSelect question inserted:', verifyQuestion[0]);
+    }
 
     // Insert competency relationships if provided
     if (competencies && Array.isArray(competencies) && competencies.length > 0) {
@@ -449,7 +681,7 @@ export const createQuestion = async (req, res) => {
 
     // Get the created question
     const questions = await executeQuery(
-      'SELECT id, subject_id, grade_id, question_text, options, correct_option_index, difficulty_level, created_at FROM questions WHERE id = ?',
+      'SELECT id, subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, created_at FROM questions WHERE id = ?',
       [result.insertId]
     );
 
@@ -463,6 +695,17 @@ export const createQuestion = async (req, res) => {
       }
     }
 
+    // Parse question_metadata if present
+    let parsedMetadata = question.question_metadata;
+    if (parsedMetadata && typeof parsedMetadata === 'string') {
+      try {
+        parsedMetadata = JSON.parse(parsedMetadata);
+      } catch (e) {
+        console.error('Error parsing question_metadata:', e);
+        parsedMetadata = null;
+      }
+    }
+
     res.status(201).json({
       message: 'Question created successfully',
       question: {
@@ -470,8 +713,11 @@ export const createQuestion = async (req, res) => {
         subjectId: question.subject_id,
         gradeId: question.grade_id,
         questionText: question.question_text,
+        questionType: question.question_type,
         options: question.options,
         correctOptionIndex: question.correct_option_index,
+        correctAnswer: question.correct_answer,
+        questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
         createdAt: question.created_at
       }
@@ -498,8 +744,11 @@ export const getQuestionById = async (req, res) => {
         q.subject_id,
         q.grade_id,
         q.question_text,
+        q.question_type,
         q.options,
         q.correct_option_index,
+        q.correct_answer,
+        q.question_metadata,
         q.difficulty_level,
         q.created_at,
         u.username as created_by_username,
@@ -543,13 +792,40 @@ export const getQuestionById = async (req, res) => {
       ORDER BY qc.weight DESC
     `, [id]);
 
+    // For True/False questions, set correctAnswer from correct_answer field
+    let correctAnswer = question.correct_answer;
+    if (question.question_type === 'TrueFalse' && !correctAnswer) {
+      // Fallback: derive from correct_option_index (0 = True, 1 = False)
+      correctAnswer = question.correct_option_index === 0 ? 'true' : 'false';
+    } else if (question.question_type === 'MultipleSelect') {
+      // For MultipleSelect, correctAnswer should already be a JSON string
+      // If not, fallback to single index
+      if (!correctAnswer) {
+        correctAnswer = JSON.stringify([question.correct_option_index]);
+      }
+    }
+
+    // Parse question_metadata if present
+    let parsedMetadata = question.question_metadata;
+    if (parsedMetadata && typeof parsedMetadata === 'string') {
+      try {
+        parsedMetadata = JSON.parse(parsedMetadata);
+      } catch (e) {
+        console.error('Error parsing question_metadata:', e);
+        parsedMetadata = null;
+      }
+    }
+
     res.json({
       id: question.id,
       subjectId: question.subject_id,
       gradeId: question.grade_id,
       questionText: question.question_text,
+      questionType: question.question_type || 'MCQ',
       options: parsedOptions,
       correctOptionIndex: question.correct_option_index,
+      correctAnswer: correctAnswer,
+      questionMetadata: parsedMetadata,
       difficultyLevel: question.difficulty_level,
       competencies: competencyRelationships,
       createdAt: question.created_at,
@@ -627,8 +903,11 @@ export const getQuestionsBySubject = async (req, res) => {
         q.subject_id,
         q.grade_id,
         q.question_text,
+        q.question_type,
         q.options,
         q.correct_option_index,
+        q.correct_answer,
+        q.question_metadata,
         q.difficulty_level,
         q.created_at,
         u.username as created_by_username,
@@ -669,13 +948,48 @@ export const getQuestionsBySubject = async (req, res) => {
           parsedOptions = [];
         }
       }
+      
+      // For True/False questions, set correctAnswer from correct_answer field
+      let correctAnswer = q.correct_answer;
+      if (q.question_type === 'TrueFalse' && !correctAnswer) {
+        // Fallback: derive from correct_option_index (0 = True, 1 = False)
+        correctAnswer = q.correct_option_index === 0 ? 'true' : 'false';
+      } else if (q.question_type === 'MultipleSelect') {
+        // For MultipleSelect, correctAnswer should already be a JSON string
+        // If not, fallback to single index
+        if (!correctAnswer || correctAnswer === null) {
+          // If correct_answer is NULL, try to construct from correct_option_index
+          // But this shouldn't happen if the question was created correctly
+          console.warn(`MultipleSelect question ${q.id} has no correct_answer, using fallback`);
+          correctAnswer = JSON.stringify([q.correct_option_index]);
+        }
+        // Ensure it's a valid JSON string (it should already be from the database)
+        // If it's already a string, keep it; if it's somehow an object, stringify it
+        if (typeof correctAnswer !== 'string') {
+          correctAnswer = JSON.stringify(correctAnswer);
+        }
+      }
+      // Parse question_metadata if present
+      let parsedMetadata = q.question_metadata;
+      if (parsedMetadata && typeof parsedMetadata === 'string') {
+        try {
+          parsedMetadata = JSON.parse(parsedMetadata);
+        } catch (e) {
+          console.error('Error parsing question_metadata:', e);
+          parsedMetadata = null;
+        }
+      }
+
       return {
         id: q.id,
         subjectId: q.subject_id,
         gradeId: q.grade_id,
         questionText: q.question_text,
+        questionType: q.question_type || 'MCQ',
         options: parsedOptions,
         correctOptionIndex: q.correct_option_index,
+        correctAnswer: correctAnswer,
+        questionMetadata: parsedMetadata,
         difficultyLevel: q.difficulty_level,
         createdBy: q.created_by,
         createdAt: q.created_at,
@@ -709,20 +1023,23 @@ export const getQuestionsBySubject = async (req, res) => {
 export const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies } = req.body;
+    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
 
-    // Check if question exists
-    const questions = await executeQuery(
-      'SELECT id FROM questions WHERE id = ?',
+    // Check if question exists and get current question type
+    const existingQuestions = await executeQuery(
+      'SELECT id, question_type FROM questions WHERE id = ?',
       [id]
     );
 
-    if (questions.length === 0) {
+    if (existingQuestions.length === 0) {
       return res.status(404).json({
         error: 'Question not found',
         code: 'QUESTION_NOT_FOUND'
       });
     }
+
+    const currentQuestionType = existingQuestions[0].question_type;
+    const qType = questionType || currentQuestionType || 'MCQ';
 
     // Check if subject exists
     const subjects = await executeQuery(
@@ -750,24 +1067,176 @@ export const updateQuestion = async (req, res) => {
       });
     }
 
-    // Handle options format - convert string to array if needed
+    // Handle options format based on question type
     let optionsArray = options;
-    if (typeof options === 'string') {
-      optionsArray = options.split(',').map(option => option.trim());
-    } else if (!Array.isArray(options)) {
-      return res.status(400).json({
-        error: 'Options must be an array or comma-separated string',
-        code: 'INVALID_OPTIONS_FORMAT'
-      });
-    }
+    if (qType === 'MCQ' || qType === 'MultipleSelect') {
+      if (typeof options === 'string') {
+        optionsArray = options.split(',').map(option => option.trim());
+      } else if (!Array.isArray(options)) {
+        return res.status(400).json({
+          error: 'Options must be an array or comma-separated string',
+          code: 'INVALID_OPTIONS_FORMAT'
+        });
+      }
 
-    // Validate correct option index
-    if (correctOptionIndex < 0 || correctOptionIndex >= optionsArray.length) {
-      return res.status(400).json({
-        error: 'Invalid correct option index',
-        code: 'INVALID_OPTION_INDEX'
-      });
-    }
+      // Validate correct option index for MCQ
+      if (qType === 'MCQ') {
+        if (correctOptionIndex < 0 || correctOptionIndex >= optionsArray.length) {
+          return res.status(400).json({
+            error: 'Invalid correct option index',
+            code: 'INVALID_OPTION_INDEX'
+          });
+        }
+      } else if (qType === 'MultipleSelect') {
+        // For MultipleSelect, validate correctAnswer is a JSON array of indices
+        if (!correctAnswer) {
+          return res.status(400).json({
+            error: 'For MultipleSelect questions, correctAnswer must be a JSON array of correct option indices',
+            code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+          });
+        }
+        let correctIndices;
+        try {
+          correctIndices = JSON.parse(correctAnswer);
+          if (!Array.isArray(correctIndices) || correctIndices.length === 0) {
+            return res.status(400).json({
+              error: 'correctAnswer must be a non-empty array of indices',
+              code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+            });
+          }
+          // Validate all indices are within range
+          for (const idx of correctIndices) {
+            if (idx < 0 || idx >= optionsArray.length) {
+              return res.status(400).json({
+                error: `Invalid correct answer index: ${idx}`,
+                code: 'INVALID_OPTION_INDEX'
+              });
+            }
+          }
+        } catch (e) {
+          return res.status(400).json({
+            error: 'correctAnswer must be a valid JSON array',
+            code: 'INVALID_MULTIPLE_SELECT_ANSWER'
+          });
+        }
+      }
+    } else if (qType === 'TrueFalse') {
+        optionsArray = ['True', 'False'];
+        
+        // Validate correctAnswer for True/False
+        if (!correctAnswer || (correctAnswer !== 'true' && correctAnswer !== 'false')) {
+          return res.status(400).json({
+            error: 'For True/False questions, correctAnswer must be "true" or "false"',
+            code: 'INVALID_TRUE_FALSE_ANSWER'
+          });
+        }
+      } else if (qType === 'FillInBlank') {
+        // For FillInBlank, validate questionMetadata contains blanks structure
+        if (!questionMetadata) {
+          return res.status(400).json({
+            error: 'For FillInBlank questions, questionMetadata with blanks structure is required',
+            code: 'MISSING_FILLINBLANK_METADATA'
+          });
+        }
+        
+        let metadata;
+        try {
+          metadata = typeof questionMetadata === 'string' ? JSON.parse(questionMetadata) : questionMetadata;
+          if (!metadata.blanks || !Array.isArray(metadata.blanks) || metadata.blanks.length === 0) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a non-empty blanks array',
+              code: 'INVALID_FILLINBLANK_METADATA'
+            });
+          }
+          
+          // Validate each blank has options and correctIndex
+          for (let i = 0; i < metadata.blanks.length; i++) {
+            const blank = metadata.blanks[i];
+            if (!blank.options || !Array.isArray(blank.options) || blank.options.length < 2) {
+              return res.status(400).json({
+                error: `Blank ${i + 1} must have at least 2 options`,
+                code: 'INVALID_BLANK_OPTIONS'
+              });
+            }
+            if (blank.correctIndex === undefined || blank.correctIndex < 0 || blank.correctIndex >= blank.options.length) {
+              return res.status(400).json({
+                error: `Blank ${i + 1} must have a valid correctIndex`,
+                code: 'INVALID_BLANK_CORRECT_INDEX'
+              });
+            }
+          }
+        } catch (e) {
+          return res.status(400).json({
+            error: 'questionMetadata must be valid JSON',
+            code: 'INVALID_METADATA_JSON'
+          });
+        }
+        
+        // Options array is empty for FillInBlank
+        optionsArray = [];
+      } else if (qType === 'Matching') {
+        // For Matching, validate questionMetadata contains matching structure
+        if (!questionMetadata) {
+          return res.status(400).json({
+            error: 'For Matching questions, questionMetadata with leftItems, rightItems, and correctPairs is required',
+            code: 'MISSING_MATCHING_METADATA'
+          });
+        }
+        
+        let metadata;
+        try {
+          metadata = typeof questionMetadata === 'string' ? JSON.parse(questionMetadata) : questionMetadata;
+          if (!metadata.leftItems || !Array.isArray(metadata.leftItems) || metadata.leftItems.length < 2) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a leftItems array with at least 2 items',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          if (!metadata.rightItems || !Array.isArray(metadata.rightItems) || metadata.rightItems.length < 2) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a rightItems array with at least 2 items',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          if (!metadata.correctPairs || !Array.isArray(metadata.correctPairs) || metadata.correctPairs.length === 0) {
+            return res.status(400).json({
+              error: 'questionMetadata must contain a non-empty correctPairs array',
+              code: 'INVALID_MATCHING_METADATA'
+            });
+          }
+          
+          // Validate correctPairs structure
+          for (let i = 0; i < metadata.correctPairs.length; i++) {
+            const pair = metadata.correctPairs[i];
+            if (typeof pair.left !== 'number' || typeof pair.right !== 'number') {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} must have numeric left and right indices`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+            if (pair.left < 0 || pair.left >= metadata.leftItems.length) {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} has invalid left index`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+            if (pair.right < 0 || pair.right >= metadata.rightItems.length) {
+              return res.status(400).json({
+                error: `Correct pair ${i + 1} has invalid right index`,
+                code: 'INVALID_MATCHING_PAIR'
+              });
+            }
+          }
+        } catch (e) {
+          return res.status(400).json({
+            error: 'questionMetadata must be valid JSON',
+            code: 'INVALID_METADATA_JSON'
+          });
+        }
+        
+        // Options array is empty for Matching
+        optionsArray = [];
+      }
 
     // Validate difficulty level
     if (difficultyLevel < 100 || difficultyLevel > 350) {
@@ -777,10 +1246,63 @@ export const updateQuestion = async (req, res) => {
       });
     }
 
+    // Prepare correct_option_index and correct_answer based on question type
+    let finalCorrectOptionIndex = correctOptionIndex;
+    let finalCorrectAnswer = null;
+
+    if (qType === 'TrueFalse') {
+      // For True/False: 0 = True, 1 = False
+      finalCorrectOptionIndex = correctAnswer === 'true' ? 0 : 1;
+      finalCorrectAnswer = correctAnswer;
+    } else if (qType === 'MCQ') {
+      finalCorrectOptionIndex = correctOptionIndex;
+      finalCorrectAnswer = null; // MCQ uses correct_option_index
+    } else if (qType === 'MultipleSelect') {
+      // For MultipleSelect: store first index in correct_option_index for backward compatibility
+      // Store all correct indices as JSON in correct_answer
+      const correctIndices = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctIndices[0] || 0;
+      finalCorrectAnswer = correctAnswer; // Already a JSON string
+    } else if (qType === 'FillInBlank') {
+      // For FillInBlank: store correct indices array in correct_answer
+      // Store blanks structure in question_metadata
+      if (!correctAnswer) {
+        return res.status(400).json({
+          error: 'For FillInBlank questions, correctAnswer (array of correct indices) is required',
+          code: 'MISSING_FILLINBLANK_ANSWER'
+        });
+      }
+      const correctIndices = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctIndices[0] || 0; // First blank's correct index for backward compatibility
+      finalCorrectAnswer = correctAnswer; // JSON array of correct indices for each blank
+    } else if (qType === 'Matching') {
+      // For Matching: store correct pairs in correct_answer
+      // Store matching structure in question_metadata
+      if (!correctAnswer) {
+        return res.status(400).json({
+          error: 'For Matching questions, correctAnswer (array of correct pairs) is required',
+          code: 'MISSING_MATCHING_ANSWER'
+        });
+      }
+      const correctPairs = JSON.parse(correctAnswer);
+      finalCorrectOptionIndex = correctPairs[0]?.right || 0; // First pair's right index for backward compatibility
+      finalCorrectAnswer = correctAnswer; // JSON array of correct pairs
+    } else if (qType === 'ShortAnswer' || qType === 'Essay') {
+      // For ShortAnswer and Essay, no automatic validation
+      finalCorrectOptionIndex = 0; // Default for backward compatibility
+      finalCorrectAnswer = null; // No correct answer (automatic grading by AI)
+    }
+
+    // Prepare questionMetadata for update
+    let finalQuestionMetadata = null;
+    if ((qType === 'FillInBlank' || qType === 'Matching' || qType === 'ShortAnswer' || qType === 'Essay') && questionMetadata) {
+      finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
+    }
+
     // Update question
     await executeQuery(
-      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, options = ?, correct_option_index = ?, difficulty_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [subjectId, gradeId, questionText, JSON.stringify(optionsArray), correctOptionIndex, difficultyLevel, id]
+      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, id]
     );
 
     // Update competency relationships
@@ -804,13 +1326,18 @@ export const updateQuestion = async (req, res) => {
         q.subject_id,
         q.grade_id,
         q.question_text,
+        q.question_type,
         q.options,
         q.correct_option_index,
+        q.correct_answer,
+        q.question_metadata,
         q.difficulty_level,
         q.created_at,
-        u.username as created_by_username
+        u.username as created_by_username,
+        g.display_name as grade_name
       FROM questions q
       LEFT JOIN users u ON q.created_by = u.id
+      LEFT JOIN grades g ON q.grade_id = g.id
       WHERE q.id = ?
     `, [id]);
 
@@ -824,6 +1351,17 @@ export const updateQuestion = async (req, res) => {
       }
     }
 
+    // Parse question_metadata if present
+    let parsedMetadata = question.question_metadata;
+    if (parsedMetadata && typeof parsedMetadata === 'string') {
+      try {
+        parsedMetadata = JSON.parse(parsedMetadata);
+      } catch (e) {
+        console.error('Error parsing question_metadata:', e);
+        parsedMetadata = null;
+      }
+    }
+
     res.json({
       message: 'Question updated successfully',
       question: {
@@ -831,8 +1369,11 @@ export const updateQuestion = async (req, res) => {
         subjectId: question.subject_id,
         gradeId: question.grade_id,
         questionText: question.question_text,
+        questionType: question.question_type,
         options: question.options,
         correctOptionIndex: question.correct_option_index,
+        correctAnswer: question.correct_answer,
+        questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
         createdAt: question.created_at,
         createdByUsername: question.created_by_username
