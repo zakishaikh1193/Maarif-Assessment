@@ -1,7 +1,10 @@
-subject,grade,questionText,questionType,difficultyLevel,dokLevel,description,competencyCodes
-Science,Grade 1,Discuss the impact of climate change on ecosystems.,Essay,280,4,Provide a comprehensive analysis with examples and evidence,LOG001,PRO001
-History,Grade 1,Analyze the causes and effects of World War II.,Essay,300,4,Include multiple perspectives and historical evidence,LOG001,PRO001
-English,Grade 1,Write an essay on the theme of friendship in literature.,Essay,250,3,Use examples from at least two literary works,LOG001,PRO001
-Science,Grade 1,Evaluate the pros and cons of renewable energy sources.,Essay,270,4,Consider economic, environmental, and social factors,LOG001,PRO001
+Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
+Science,Grade 6,Discuss the impact of climate change on ecosystems. {essay1.png},Provide a comprehensive analysis with examples and evidence,Essay,280,4,"COMP1, COMP2"
+History,Grade 6,Analyze the causes and effects of World War II. {essay2.jpg},Include multiple perspectives and historical evidence,Essay,300,4,"COMP1, COMP2"
+English,Grade 6,Write an essay on the theme of friendship in literature. {essay3.png},Use examples from at least two literary works,Essay,250,3,"COMP1, COMP2"
+Science,Grade 6,Evaluate the pros and cons of renewable energy sources. {essay4.png},Consider economic, environmental, and social factors,Essay,270,4,"COMP1, COMP2"
 
-Note: DOK Level is REQUIRED for Essay questions (1-4)
+Note: 
+- DOK Level is REQUIRED for Essay questions (must be 1, 2, 3, or 4)
+- DOK Level indicates the Depth of Knowledge required to answer the question
+- Image placeholders in QuestionText: Use {filename.png} format, which will be converted to image tags

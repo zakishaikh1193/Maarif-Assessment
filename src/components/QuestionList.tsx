@@ -29,6 +29,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
+  
+  // Filter states - using arrays for multi-select
+  const [filterQuestionType, setFilterQuestionType] = useState<string[]>([]);
+  const [filterDokLevel, setFilterDokLevel] = useState<number | 'all'>('all');
+  const [filterDifficulty, setFilterDifficulty] = useState<string[]>([]);
 
   const handleDelete = async (questionId: number) => {
     setDeleting(true);
@@ -43,18 +48,38 @@ const QuestionList: React.FC<QuestionListProps> = ({
     }
   };
 
+  // Updated difficulty color function to match CreateAssessmentPage.tsx ranges
   const getDifficultyColor = (level: number) => {
-    if (level <= 150) return 'bg-green-100 text-green-800';
-    if (level <= 200) return 'bg-yellow-100 text-yellow-800';
-    if (level <= 250) return 'bg-orange-100 text-orange-800';
-    return 'bg-red-100 text-red-800';
+    if (level >= 100 && level <= 150) return 'bg-red-100 text-red-800';
+    if (level >= 151 && level <= 200) return 'bg-orange-100 text-orange-800';
+    if (level >= 201 && level <= 250) return 'bg-yellow-100 text-yellow-800';
+    if (level >= 251 && level <= 300) return 'bg-green-100 text-green-800';
+    if (level >= 301 && level <= 350) return 'bg-blue-100 text-blue-800';
+    // Fallback for values outside range
+    if (level < 100) return 'bg-gray-100 text-gray-800';
+    return 'bg-purple-100 text-purple-800';
   };
 
-  const getDifficultyLabel = (level: number) => {
-    if (level <= 150) return 'Easy';
-    if (level <= 200) return 'Medium-Low';
-    if (level <= 250) return 'Medium-High';
-    return 'Hard';
+  const getQuestionTypeColor = (type?: string) => {
+    if (!type || type === 'MCQ') return 'bg-blue-100 text-blue-800';
+    if (type === 'MultipleSelect') return 'bg-indigo-100 text-indigo-800';
+    if (type === 'ShortAnswer') return 'bg-purple-100 text-purple-800';
+    if (type === 'Essay') return 'bg-orange-100 text-orange-800';
+    if (type === 'FillInBlank') return 'bg-pink-100 text-pink-800';
+    if (type === 'TrueFalse') return 'bg-cyan-100 text-cyan-800';
+    if (type === 'Matching') return 'bg-teal-100 text-teal-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  const getQuestionTypeName = (type?: string) => {
+    if (!type || type === 'MCQ') return 'MCQ';
+    if (type === 'MultipleSelect') return 'Multiple Select';
+    if (type === 'ShortAnswer') return 'Short Answer';
+    if (type === 'Essay') return 'Essay';
+    if (type === 'FillInBlank') return 'Fill in Blanks';
+    if (type === 'TrueFalse') return 'True/False';
+    if (type === 'Matching') return 'Matching';
+    return type;
   };
 
   // Fetch grades on component mount
@@ -70,6 +95,61 @@ const QuestionList: React.FC<QuestionListProps> = ({
     fetchGrades();
   }, []);
 
+  // Filter questions based on selected filters
+  const filteredQuestions = questions.filter((question) => {
+    // Question Type Filter - Multi-select
+    if (filterQuestionType.length > 0) {
+      if (!question.questionType || !filterQuestionType.includes(question.questionType)) {
+        return false;
+      }
+    }
+
+    // DOK Level Filter
+    if (filterDokLevel !== 'all') {
+      // Only apply DOK filter to ShortAnswer and Essay questions
+      if (question.questionType === 'ShortAnswer' || question.questionType === 'Essay') {
+        if (question.dokLevel !== filterDokLevel) {
+          return false;
+        }
+      } else {
+        // For other question types, if DOK filter is set, exclude them
+        // (since they don't have DOK levels)
+        return false;
+      }
+    }
+
+    // Growth Metric Difficulty Filter - Multi-select
+    if (filterDifficulty.length > 0) {
+      const difficulty = question.difficultyLevel;
+      let matchesRange = false;
+      
+      for (const range of filterDifficulty) {
+        if (range === '100-150' && difficulty >= 100 && difficulty <= 150) {
+          matchesRange = true;
+          break;
+        } else if (range === '151-200' && difficulty >= 151 && difficulty <= 200) {
+          matchesRange = true;
+          break;
+        } else if (range === '201-250' && difficulty >= 201 && difficulty <= 250) {
+          matchesRange = true;
+          break;
+        } else if (range === '251-300' && difficulty >= 251 && difficulty <= 300) {
+          matchesRange = true;
+          break;
+        } else if (range === '301-350' && difficulty >= 301 && difficulty <= 350) {
+          matchesRange = true;
+          break;
+        }
+      }
+      
+      if (!matchesRange) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
 
 
   if (questions.length === 0) {
@@ -82,12 +162,19 @@ const QuestionList: React.FC<QuestionListProps> = ({
     );
   }
 
+  const displayQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Questions ({questions.length} of {totalQuestions})
+            Questions ({displayQuestions.length} of {totalQuestions})
+            {filteredQuestions.length !== questions.length && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (Showing {filteredQuestions.length} of {questions.length} after filters)
+              </span>
+            )}
           </h3>
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
@@ -110,47 +197,177 @@ const QuestionList: React.FC<QuestionListProps> = ({
             </select>
           </div>
         </div>
+
+        {/* Filters Section */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 space-y-4">
+          <div className="flex items-center space-x-2 mb-3">
+            <Filter className="h-4 w-4 text-gray-600" />
+            <h3 className="text-sm font-semibold text-gray-700">Additional Filters</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Question Type Filter - Multi-select with checkboxes */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-3">
+                Question Type
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                {[
+                  { value: 'MCQ', label: 'MCQs' },
+                  { value: 'FillInBlank', label: 'Fill in the Blanks' },
+                  { value: 'Matching', label: 'Matching' },
+                  { value: 'MultipleSelect', label: 'Multiple Select' },
+                  { value: 'ShortAnswer', label: 'Short Answer' },
+                  { value: 'Essay', label: 'Essay' },
+                  { value: 'TrueFalse', label: 'True/False' }
+                ].map((type) => (
+                  <label key={type.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input
+                      type="checkbox"
+                      checked={filterQuestionType.includes(type.value)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilterQuestionType([...filterQuestionType, type.value]);
+                        } else {
+                          setFilterQuestionType(filterQuestionType.filter(t => t !== type.value));
+                        }
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700">{type.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* DOK Level Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">
+                DOK Level
+              </label>
+              <select
+                value={filterDokLevel}
+                onChange={(e) => setFilterDokLevel(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Levels</option>
+                <option value="1">DOK Level 1</option>
+                <option value="2">DOK Level 2</option>
+                <option value="3">DOK Level 3</option>
+                <option value="4">DOK Level 4</option>
+              </select>
+            </div>
+
+            {/* Growth Metric Difficulty Filter - Multi-select with checkboxes */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-3">
+                Growth Metric Difficulty
+              </label>
+              <div className="space-y-2 border border-gray-200 rounded-md p-3 bg-white">
+                {[
+                  { value: '100-150', label: '100-150', color: 'bg-red-100 text-red-800' },
+                  { value: '151-200', label: '151-200', color: 'bg-orange-100 text-orange-800' },
+                  { value: '201-250', label: '201-250', color: 'bg-yellow-100 text-yellow-800' },
+                  { value: '251-300', label: '251-300', color: 'bg-green-100 text-green-800' },
+                  { value: '301-350', label: '301-350', color: 'bg-blue-100 text-blue-800' }
+                ].map((range) => (
+                  <label key={range.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input
+                      type="checkbox"
+                      checked={filterDifficulty.includes(range.value)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilterDifficulty([...filterDifficulty, range.value]);
+                        } else {
+                          setFilterDifficulty(filterDifficulty.filter(d => d !== range.value));
+                        }
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className={`text-sm px-2 py-1 rounded ${range.color}`}>
+                      {range.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(filterQuestionType.length > 0 || filterDokLevel !== 'all' || filterDifficulty.length > 0) && (
+            <div className="pt-2 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterQuestionType([]);
+                  setFilterDokLevel('all');
+                  setFilterDifficulty([]);
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          )}
+        </div>
         <div className="space-y-4">
-          {questions.length === 0 ? (
+          {displayQuestions.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-400 text-4xl mb-3">🔍</div>
               <h4 className="text-lg font-medium text-gray-900 mb-2">No Questions Found</h4>
               <p className="text-gray-600">
-                {selectedGrade 
-                  ? `No questions found for the selected grade. Try selecting a different grade or "All Grades".`
-                  : 'No questions available for the current filter.'
+                {filteredQuestions.length === 0 && questions.length > 0
+                  ? 'No questions match the selected filters. Try adjusting your filter criteria or clear all filters.'
+                  : selectedGrade 
+                    ? `No questions found for the selected grade. Try selecting a different grade or "All Grades".`
+                    : 'No questions available for the current filter.'
                 }
               </p>
+              {filteredQuestions.length === 0 && questions.length > 0 && (
+                <button
+                  onClick={() => {
+                    setFilterQuestionType([]);
+                    setFilterDokLevel('all');
+                    setFilterDifficulty([]);
+                  }}
+                  className="mt-4 text-sm text-blue-600 hover:text-blue-700 underline"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           ) : (
-            questions.map((question: Question, index: number) => (
-            <div
-              key={question.id}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-            >
+            displayQuestions.map((question: Question) => {
+              // Find the original index in the unfiltered questions array
+              const originalIndex = questions.findIndex(q => q.id === question.id);
+              return (
+                <div
+                  key={question.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
+                  <div className="flex items-center space-x-3 mb-2 flex-wrap gap-2">
                     <span className="text-sm font-medium text-gray-500">
-                      Question #{index + 1}
+                      Question #{originalIndex + 1}
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficultyLevel)}`}>
-                      {getDifficultyLabel(question.difficultyLevel)} ({question.difficultyLevel})
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficultyLevel)}`}>
+                      {question.difficultyLevel}
                     </span>
                     {question.gradeName && (
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {question.gradeName}
                       </span>
                     )}
-                    {question.questionType && question.questionType !== 'MCQ' && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {question.questionType === 'TrueFalse' ? 'True/False' : 
-                         question.questionType === 'MultipleSelect' ? 'Multiple Select' : 
-                         question.questionType === 'FillInBlank' ? 'Fill in the Blanks' :
-                         question.questionType === 'Matching' ? 'Matching' :
-                         question.questionType === 'ShortAnswer' ? 'Short Answer' :
-                         question.questionType === 'Essay' ? 'Essay' :
-                         question.questionType}
+                    {question.questionType && (
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getQuestionTypeColor(question.questionType)}`}>
+                        {getQuestionTypeName(question.questionType)}
+                      </span>
+                    )}
+                    {/* Show DOK Level for Short Answer and Essay questions */}
+                    {(question.questionType === 'ShortAnswer' || question.questionType === 'Essay') && question.dokLevel && (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        DOK {question.dokLevel}
                       </span>
                     )}
                   </div>
@@ -353,10 +570,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                                  </div>
                 </div>
               </div>
-            ))
+                </div>
+              );
+            })
           )}
         </div>
 

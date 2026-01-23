@@ -1,7 +1,7 @@
-subject,grade,questionText,questionType,blankOptions,blankCorrects,difficultyLevel,competencyCodes
-Science,Grade 1,The capital of France is ___ and the capital of Germany is ___.,FillInBlank,"Paris,London,Berlin,Madrid;Berlin,Paris,London,Madrid","A;A",200,LOG001,PRO001
-Mathematics,Grade 1,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___.,FillInBlank,"8,9,10,11;8,9,10,11","A;A",180,LOG001,PRO001
-Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius.,FillInBlank,"0,10,20,30;100,90,80,70","A;A",190,LOG001,PRO001
-English,Grade 1,The past tense of "go" is ___ and the past tense of "see" is ___.,FillInBlank,"went,goed,goes,going;saw,seed,sees,seeing","A;A",170,LOG001,PRO001
+Subject,Grade,QuestionText,Description,questionType,blankOptions,blankCorrects,difficultyLevel,Competencies
+Science,Grade 6,The capital of France is ___ and the capital of Germany is ___. {fillinblank1.png},Fill in the correct capitals for each country,FillInBlank,"Paris,London;Berlin,Munich","A;A",200,"COMP1, COMP2"
+Maths,Grade 6,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___. {fillinblank2.jpg},Calculate and fill in the correct answers,FillInBlank,"8,9;8,9","A;A",180,"COMP1, COMP2"
+Science,Grade 6,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius. {fillinblank3.png},Fill in the correct temperature values,FillInBlank,"0,10;100,90","A;A",190,"COMP1, COMP2"
 
 Note: DOK Level is NOT applicable to Fill in the Blanks questions. Only Growth Metric Score (difficultyLevel) is required.
+Note: Each blank should have at least 2 options. You can add more options if needed by adding more comma-separated values before the semicolon.

@@ -1,5 +1,6 @@
 import { executeQuery } from '../config/database.js';
 import bcrypt from 'bcryptjs';
+import { convertImagePlaceholders } from '../utils/imagePlaceholder.js';
 
 // Get all students
 export const getStudents = async (req, res) => {
@@ -372,7 +373,10 @@ export const createBulkQuestions = async (req, res) => {
 // Create new question
 export const createQuestion = async (req, res) => {
   try {
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+
+    // Convert image placeholders to img tags in question text
+    questionText = convertImagePlaceholders(questionText, req);
 
     // Default to MCQ if not specified
     const qType = questionType || 'MCQ';
@@ -1041,7 +1045,10 @@ export const getQuestionsBySubject = async (req, res) => {
 export const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+
+    // Convert image placeholders to img tags in question text
+    questionText = convertImagePlaceholders(questionText, req);
 
     // Check if question exists and get current question type
     const existingQuestions = await executeQuery(
@@ -2425,6 +2432,17 @@ export const importQuestionsFromCSV = async (req, res) => {
         const isShortAnswer = questionType === 'shortanswer' || questionType === 'short answer';
         const isEssay = questionType === 'essay';
         const isFillInBlank = questionType === 'fillinblank' || questionType === 'fill in blank' || questionType === 'fill-in-blank' || !!row.blankOptions;
+        const isMatching = questionType === 'matching' || !!row.leftItems || !!row.rightItems || !!row.correctPairs;
+        // More flexible True/False detection - handle various formats
+        // Check for True/False in multiple ways to ensure detection
+        const normalizedQuestionType = questionType.replace(/[\s_\-]/g, ''); // Remove spaces, underscores, hyphens
+        const isTrueFalse = questionType === 'truefalse' || 
+                           questionType === 'true/false' || 
+                           questionType === 'true false' || 
+                           questionType === 'true-false' ||
+                           questionType === 'true_false' ||
+                           normalizedQuestionType === 'truefalse' ||
+                           (questionType.includes('true') && questionType.includes('false'));
         const isTextBased = isShortAnswer || isEssay;
         
         let qType = 'MCQ';
@@ -2436,6 +2454,26 @@ export const importQuestionsFromCSV = async (req, res) => {
           qType = 'Essay';
         } else if (isFillInBlank) {
           qType = 'FillInBlank';
+        } else if (isMatching) {
+          qType = 'Matching';
+        } else if (isTrueFalse) {
+          qType = 'TrueFalse';
+        }
+        
+        // Debug: Log question type detection for troubleshooting (can be removed in production)
+        if (row.questionType) {
+          const detectedTypes = {
+            isMultipleSelect,
+            isShortAnswer,
+            isEssay,
+            isFillInBlank,
+            isMatching,
+            isTrueFalse,
+            finalType: qType
+          };
+          if (!isMultipleSelect && !isShortAnswer && !isEssay && !isFillInBlank && !isMatching && !isTrueFalse) {
+            console.log(`Warning: Question type "${row.questionType}" (normalized: "${questionType}") not recognized, defaulting to MCQ. Detection:`, detectedTypes);
+          }
         }
 
         // Validate required fields
@@ -2449,11 +2487,11 @@ export const importQuestionsFromCSV = async (req, res) => {
           continue;
         }
 
-        // For text-based and FillInBlank questions, questionType is required
-        if ((isTextBased || isFillInBlank) && !row.questionType) {
+        // For text-based, FillInBlank, Matching, and TrueFalse questions, questionType is required
+        if ((isTextBased || isFillInBlank || isMatching || isTrueFalse) && !row.questionType) {
           results.errors.push({
             row: rowNumber,
-            error: 'Missing required field: questionType is required for Short Answer, Essay, and Fill in the Blanks questions',
+            error: 'Missing required field: questionType is required for Short Answer, Essay, Fill in the Blanks, Matching, and True/False questions',
             data: row
           });
           results.summary.failed++;
@@ -2477,7 +2515,23 @@ export const importQuestionsFromCSV = async (req, res) => {
           });
           results.summary.failed++;
           continue;
-        } else if (!isMultipleSelect && !isTextBased && !isFillInBlank && !row.correctAnswer) {
+        } else if (isMatching && (!row.leftItems || !row.rightItems || !row.correctPairs)) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required fields: leftItems, rightItems, and correctPairs are required for Matching questions',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        } else if (isTrueFalse && !row.correctAnswer) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required field: correctAnswer is required for True/False questions (must be "true" or "false")',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        } else if (!isMultipleSelect && !isTextBased && !isFillInBlank && !isMatching && !isTrueFalse && !row.correctAnswer) {
           results.errors.push({
             row: rowNumber,
             error: 'Missing required field: correctAnswer is required for MCQ questions',
@@ -2487,8 +2541,9 @@ export const importQuestionsFromCSV = async (req, res) => {
           continue;
         }
 
-        // Validate options (not required for ShortAnswer/Essay/FillInBlank)
-        if (!isTextBased && !isFillInBlank) {
+        // Validate options (not required for ShortAnswer/Essay/FillInBlank/Matching/TrueFalse)
+        // Only require options for MCQ and MultipleSelect
+        if (!isTextBased && !isFillInBlank && !isMatching && !isTrueFalse && !isMultipleSelect) {
           if (!row.optionA || !row.optionB || !row.optionC || !row.optionD) {
             results.errors.push({
               row: rowNumber,
@@ -2499,11 +2554,24 @@ export const importQuestionsFromCSV = async (req, res) => {
             continue;
           }
         }
+        
+        // For MultipleSelect, still need options
+        if (isMultipleSelect && (!row.optionA || !row.optionB || !row.optionC || !row.optionD)) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Missing required options: optionA, optionB, optionC, and optionD are required for Multiple Select questions',
+            data: row
+          });
+          results.summary.failed++;
+          continue;
+        }
 
         // Clean and validate data
         const subjectName = row.subject.trim();
         const gradeName = row.grade.trim();
-        const questionText = row.questionText.trim();
+        // Convert image placeholders to img tags in question text
+        let questionText = row.questionText.trim();
+        questionText = convertImagePlaceholders(questionText, req);
         const optionA = row.optionA ? row.optionA.trim() : '';
         const optionB = row.optionB ? row.optionB.trim() : '';
         const optionC = row.optionC ? row.optionC.trim() : '';
@@ -2630,9 +2698,37 @@ export const importQuestionsFromCSV = async (req, res) => {
           correctOptionIndices = [0]; // Default for backward compatibility
           correctAnswerJSON = null;
         } else if (isMultipleSelect) {
-          // For Multiple Select: parse comma-separated answers (e.g., "A,B" or "A,B,C")
-          const correctAnswersStr = row.correctAnswers.trim().toUpperCase();
-          const answerLetters = correctAnswersStr.split(',').map(a => a.trim()).filter(a => a);
+          // For Multiple Select: parse JSON array format (e.g., "[A,C]" or "[A,B,C]") or comma-separated as fallback
+          let correctAnswersStr = row.correctAnswers.trim();
+          
+          // Remove outer quotes if present (from CSV parsing)
+          if ((correctAnswersStr.startsWith('"') && correctAnswersStr.endsWith('"')) ||
+              (correctAnswersStr.startsWith("'") && correctAnswersStr.endsWith("'"))) {
+            correctAnswersStr = correctAnswersStr.slice(1, -1).trim();
+          }
+          
+          let answerLetters = [];
+          
+          // Try to parse as JSON array first
+          try {
+            const parsed = JSON.parse(correctAnswersStr);
+            if (Array.isArray(parsed)) {
+              answerLetters = parsed.map(a => String(a).trim().toUpperCase()).filter(a => a);
+            } else {
+              // If parsed but not array, treat as single value
+              answerLetters = [String(parsed).trim().toUpperCase()];
+            }
+          } catch (e) {
+            // If not JSON, check if it's in bracket format like "[A,B]" and extract
+            if (correctAnswersStr.startsWith('[') && correctAnswersStr.endsWith(']')) {
+              // Remove brackets and split by comma
+              const inner = correctAnswersStr.slice(1, -1).trim();
+              answerLetters = inner.split(',').map(a => a.trim().toUpperCase()).filter(a => a);
+            } else {
+              // Treat as comma-separated string (backward compatibility)
+              answerLetters = correctAnswersStr.toUpperCase().split(',').map(a => a.trim()).filter(a => a);
+            }
+          }
           
           if (answerLetters.length === 0) {
             results.errors.push({
@@ -2645,20 +2741,28 @@ export const importQuestionsFromCSV = async (req, res) => {
           }
 
           // Convert letters to indices
+          let hasInvalidLetter = false;
           for (const letter of answerLetters) {
-            if (!['A', 'B', 'C', 'D'].includes(letter)) {
+            // Clean the letter - remove any brackets, quotes, or extra characters
+            const cleanLetter = letter.replace(/[\[\]\"\']/g, '').trim().toUpperCase();
+            if (!['A', 'B', 'C', 'D'].includes(cleanLetter)) {
               results.errors.push({
                 row: rowNumber,
                 error: `Invalid correct answer letter: '${letter}'. Must be A, B, C, or D`,
                 data: row
               });
-              results.summary.failed++;
-              continue;
+              hasInvalidLetter = true;
+              break;
             }
-            const index = letter === 'A' ? 0 : letter === 'B' ? 1 : letter === 'C' ? 2 : 3;
+            const index = cleanLetter === 'A' ? 0 : cleanLetter === 'B' ? 1 : cleanLetter === 'C' ? 2 : 3;
             if (!correctOptionIndices.includes(index)) {
               correctOptionIndices.push(index);
             }
+          }
+
+          if (hasInvalidLetter) {
+            results.summary.failed++;
+            continue;
           }
 
           if (correctOptionIndices.length === 0) {
@@ -2668,6 +2772,111 @@ export const importQuestionsFromCSV = async (req, res) => {
 
           // Store as JSON array for Multiple Select
           correctAnswerJSON = JSON.stringify(correctOptionIndices);
+        } else if (isMatching) {
+          // For Matching: parse leftItems, rightItems, and correctPairs
+          const leftItemsStr = row.leftItems.trim();
+          const rightItemsStr = row.rightItems.trim();
+          const correctPairsStr = row.correctPairs.trim();
+          
+          // Parse comma-separated items
+          const leftItems = leftItemsStr.split(',').map(item => item.trim()).filter(item => item);
+          const rightItems = rightItemsStr.split(',').map(item => item.trim()).filter(item => item);
+          
+          if (leftItems.length === 0 || rightItems.length === 0) {
+            results.errors.push({
+              row: rowNumber,
+              error: 'Matching questions must have at least one item in both leftItems and rightItems',
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          
+          if (leftItems.length !== rightItems.length) {
+            results.errors.push({
+              row: rowNumber,
+              error: `Number of left items (${leftItems.length}) must match number of right items (${rightItems.length})`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          
+          // Parse correctPairs format: "0-0,1-1,2-2" (leftIndex-rightIndex pairs)
+          const pairs = correctPairsStr.split(',').map(p => p.trim()).filter(p => p);
+          const correctPairs = [];
+          
+          for (const pairStr of pairs) {
+            const parts = pairStr.split('-');
+            if (parts.length !== 2) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Invalid correctPairs format: '${pairStr}'. Expected format: "leftIndex-rightIndex" (e.g., "0-0,1-1")`,
+                data: row
+              });
+              results.summary.failed++;
+              continue;
+            }
+            
+            const leftIdx = parseInt(parts[0].trim());
+            const rightIdx = parseInt(parts[1].trim());
+            
+            if (isNaN(leftIdx) || isNaN(rightIdx)) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Invalid pair indices in '${pairStr}'. Must be numbers`,
+                data: row
+              });
+              results.summary.failed++;
+              continue;
+            }
+            
+            if (leftIdx < 0 || leftIdx >= leftItems.length || rightIdx < 0 || rightIdx >= rightItems.length) {
+              results.errors.push({
+                row: rowNumber,
+                error: `Pair '${pairStr}' has out-of-range indices. Left index must be 0-${leftItems.length - 1}, right index must be 0-${rightItems.length - 1}`,
+                data: row
+              });
+              results.summary.failed++;
+              continue;
+            }
+            
+            correctPairs.push({ left: leftIdx, right: rightIdx });
+          }
+          
+          if (correctPairs.length !== leftItems.length) {
+            results.errors.push({
+              row: rowNumber,
+              error: `Number of correct pairs (${correctPairs.length}) must match number of items (${leftItems.length})`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          
+          // Store in questionMetadata
+          questionMetadata = {
+            leftItems: leftItems,
+            rightItems: rightItems,
+            correctPairs: correctPairs
+          };
+          correctAnswerJSON = JSON.stringify(correctPairs);
+          correctOptionIndices = [correctPairs[0]?.right || 0]; // First pair's right index for backward compatibility
+          
+        } else if (isTrueFalse) {
+          // For True/False: validate and process correctAnswer
+          const correctAnswer = row.correctAnswer.trim().toLowerCase();
+          if (correctAnswer !== 'true' && correctAnswer !== 'false') {
+            results.errors.push({
+              row: rowNumber,
+              error: `Invalid correct answer: '${row.correctAnswer}'. Must be "true" or "false"`,
+              data: row
+            });
+            results.summary.failed++;
+            continue;
+          }
+          correctOptionIndices = [correctAnswer === 'true' ? 0 : 1]; // 0 = True, 1 = False
+          correctAnswerJSON = correctAnswer;
         } else {
           // For MCQ: single answer
           const correctAnswer = row.correctAnswer.trim().toUpperCase();
@@ -2771,13 +2980,23 @@ export const importQuestionsFromCSV = async (req, res) => {
           continue;
         }
 
-        // Create options array (empty for text-based and FillInBlank questions)
-        const options = (isTextBased || isFillInBlank) ? [] : [optionA, optionB, optionC, optionD];
+        // Create options array (empty for text-based, FillInBlank, and Matching questions)
+        // For TrueFalse, options are always ['True', 'False']
+        let options = [];
+        if (isTrueFalse) {
+          options = ['True', 'False'];
+        } else if (isTextBased || isFillInBlank || isMatching) {
+          options = [];
+        } else {
+          options = [optionA, optionB, optionC, optionD];
+        }
 
-        // For Multiple Select, store first index in correct_option_index for backward compatibility
-        // and all indices as JSON in correct_answer
+        // Store correct answer and metadata based on question type
         const correctOptionIndex = correctOptionIndices[0];
-        const finalCorrectAnswer = isMultipleSelect ? correctAnswerJSON : null;
+        let finalCorrectAnswer = null;
+        if (isMultipleSelect || isMatching || isTrueFalse) {
+          finalCorrectAnswer = correctAnswerJSON;
+        }
         const finalQuestionMetadata = questionMetadata ? JSON.stringify(questionMetadata) : null;
 
         // Insert question - only set dok_level for ShortAnswer and Essay
@@ -2824,6 +3043,10 @@ export const importQuestionsFromCSV = async (req, res) => {
           correctAnswerDisplay = description || 'AI Graded';
         } else if (isMultipleSelect) {
           correctAnswerDisplay = correctOptionIndices.map(idx => ['A', 'B', 'C', 'D'][idx]).join(',');
+        } else if (isMatching) {
+          correctAnswerDisplay = row.correctPairs || '-';
+        } else if (isTrueFalse) {
+          correctAnswerDisplay = row.correctAnswer || '-';
         } else {
           correctAnswerDisplay = ['A', 'B', 'C', 'D'][correctOptionIndex];
         }

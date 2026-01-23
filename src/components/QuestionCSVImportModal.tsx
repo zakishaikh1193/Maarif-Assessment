@@ -15,6 +15,9 @@ interface CSVRow {
   correctAnswers?: string; // For MultipleSelect: comma-separated (A,B or A,B,C)
   blankOptions?: string; // For FillInBlank: semicolon-separated options for each blank (e.g., "opt1,opt2,opt3;opt1,opt2,opt3")
   blankCorrects?: string; // For FillInBlank: semicolon-separated correct answers (e.g., "A;B" or "0;1")
+  leftItems?: string; // For Matching: comma-separated left column items
+  rightItems?: string; // For Matching: comma-separated right column items
+  correctPairs?: string; // For Matching: comma-separated pairs in format "leftIndex-rightIndex" (e.g., "0-0,1-1,2-2")
   difficultyLevel: string;
   dokLevel?: string; // Optional: 1-4 (more relevant for ShortAnswer/Essay/FillInBlank)
   description?: string; // Optional: additional instructions/description for ShortAnswer/Essay
@@ -206,9 +209,16 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
             const correctAnswersIndex = header.indexOf('correctanswers');
             const blankOptionsIndex = header.indexOf('blankoptions');
             const blankCorrectsIndex = header.indexOf('blankcorrects');
+            const leftItemsIndex = header.indexOf('leftitems');
+            const rightItemsIndex = header.indexOf('rightitems');
+            const correctPairsIndex = header.indexOf('correctpairs');
             const difficultyLevelIndex = header.indexOf('difficultylevel');
             const dokLevelIndex = header.indexOf('doklevel');
-            const competencyCodesIndex = header.indexOf('competencycodes');
+            // Try both 'competencies' and 'competencycodes' for backward compatibility
+            let competencyCodesIndex = header.indexOf('competencies');
+            if (competencyCodesIndex < 0) {
+              competencyCodesIndex = header.indexOf('competencycodes');
+            }
 
             const rowData: CSVRow = {
               subject: values[subjectIndex] || '',
@@ -244,6 +254,15 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
             }
             if (blankCorrectsIndex >= 0) {
               rowData.blankCorrects = values[blankCorrectsIndex] || '';
+            }
+            if (leftItemsIndex >= 0) {
+              rowData.leftItems = values[leftItemsIndex] || '';
+            }
+            if (rightItemsIndex >= 0) {
+              rowData.rightItems = values[rightItemsIndex] || '';
+            }
+            if (correctPairsIndex >= 0) {
+              rowData.correctPairs = values[correctPairsIndex] || '';
             }
             const descriptionIndex = header.indexOf('description');
             if (descriptionIndex >= 0) {
@@ -290,40 +309,52 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
     }
   };
 
-  const downloadTemplate = (type: 'MCQ' | 'MultipleSelect' | 'ShortAnswer' | 'Essay' | 'FillInBlank' = 'MCQ') => {
+  const downloadTemplate = (type: 'MCQ' | 'MultipleSelect' | 'ShortAnswer' | 'Essay' | 'FillInBlank' | 'Matching' | 'TrueFalse' = 'MCQ') => {
     let template = '';
     let filename = '';
     
     if (type === 'MCQ') {
-      template = `subject,grade,questionText,questionType,optionA,optionB,optionC,optionD,correctAnswer,difficultyLevel,competencyCodes
-Computer Science,Grade 1,What does CPU stand for?,MCQ,Central Processing Unit,Computer Personal Unit,Central Process Unit,Central Processor Unit,A,150,LOG001,TEC001
-Computer Science,Grade 1,Which of the following is a volatile memory?,MCQ,ROM,HDD,RAM,SSD,C,220,TEC001,PRO001
-Science,Grade 1,Mitochondria is ______ of the cell.,MCQ,Brain,Powerhouse,Nucleus,Factory,B,167,LOG001,PRO001`;
+      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswer,difficultyLevel,Competencies
+Computer Science,Grade 6,What does CPU stand for? {mcq1.png},Select the correct full form of CPU,MCQ,Central Processing Unit,Computer Personal Unit,Central Process Unit,Central Processor Unit,A,150,"LOG001, TEC001"
+Computer Science,Grade 6,Which of the following is a volatile memory? {mcq2.jpg},Identify the type of memory that loses data when power is off,MCQ,ROM,HDD,RAM,SSD,C,220,"TEC001, PRO001"
+Science,Grade 6,Mitochondria is ______ of the cell. {mcq3.png},Choose the correct function of mitochondria,MCQ,Brain,Powerhouse,Nucleus,Factory,B,167,"LOG001, PRO001"`;
       filename = 'question_import_template_mcq.csv';
     } else if (type === 'MultipleSelect') {
-      template = `subject,grade,questionText,questionType,optionA,optionB,optionC,optionD,correctAnswers,difficultyLevel,competencyCodes
-Computer Science,Grade 1,Which of the following are storage devices? (Select all that apply),MultipleSelect,Hard Disk Drive,Solid State Drive,Random Access Memory,Read Only Memory,A,B,180,LOG001,TEC001
-Science,Grade 1,Which of the following are renewable energy sources? (Select all that apply),MultipleSelect,Solar Energy,Wind Energy,Coal,Natural Gas,A,B,200,LOG001,PRO001
-Mathematics,Grade 1,Which of the following are prime numbers? (Select all that apply),MultipleSelect,2,3,4,5,A,B,D,190,LOG001,PRO001`;
+      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswers,difficultyLevel,Competencies
+Maths,Grade 6,Which of the following are prime numbers? {multiselect1.png} (Select all that apply),Select all prime numbers from the given options,MultipleSelect,2,3,4,5,"[A,B]",295,"COMP1, COMP2"
+Science,Grade 6,Which of the following are renewable energy sources? {multiselect2.jpg} (Select all that apply),Identify all renewable energy sources from the list,MultipleSelect,Solar Energy,Wind Energy,Coal,Natural Gas,"[A,B]",280,"COMP1, COMP2"`;
       filename = 'question_import_template_multiple_select.csv';
     } else if (type === 'ShortAnswer') {
-      template = `subject,grade,questionText,questionType,difficultyLevel,dokLevel,description,competencyCodes
-Science,Grade 1,Explain the process of photosynthesis in your own words.,ShortAnswer,200,3,Provide a brief explanation (100 words or less),LOG001,PRO001
-Mathematics,Grade 1,Describe how you would solve the equation 2x + 5 = 15.,ShortAnswer,180,2,Show your step-by-step reasoning,LOG001,PRO001
-Computer Science,Grade 1,What is the difference between RAM and ROM?,ShortAnswer,220,2,Explain in 2-3 sentences,LOG001,TEC001`;
+      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
+Science,Grade 6,Explain the process of photosynthesis in your own words. {shortanswer1.png},Provide a brief explanation (100 words or less),ShortAnswer,200,3,"COMP1, COMP2"
+Maths,Grade 6,Describe how you would solve the equation 2x + 5 = 15. {shortanswer2.jpg},Show your step-by-step reasoning,ShortAnswer,180,2,"COMP1, COMP2"
+Science,Grade 6,What is the difference between RAM and ROM? {shortanswer3.png},Explain in 2-3 sentences,ShortAnswer,220,2,"COMP1, COMP2"
+Science,Grade 6,What are the three states of matter? Give an example of each. {shortanswer4.png},Provide examples for each state,ShortAnswer,190,1,"COMP1, COMP2"`;
       filename = 'question_import_template_short_answer.csv';
     } else if (type === 'Essay') {
-      template = `subject,grade,questionText,questionType,difficultyLevel,dokLevel,description,competencyCodes
-Science,Grade 1,Discuss the impact of climate change on ecosystems.,Essay,280,4,Provide a comprehensive analysis with examples and evidence,LOG001,PRO001
-History,Grade 1,Analyze the causes and effects of World War II.,Essay,300,4,Include multiple perspectives and historical evidence,LOG001,PRO001
-English,Grade 1,Write an essay on the theme of friendship in literature.,Essay,250,3,Use examples from at least two literary works,LOG001,PRO001`;
+      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
+Science,Grade 6,Discuss the impact of climate change on ecosystems. {essay1.png},Provide a comprehensive analysis with examples and evidence,Essay,280,4,"COMP1, COMP2"
+History,Grade 6,Analyze the causes and effects of World War II. {essay2.jpg},Include multiple perspectives and historical evidence,Essay,300,4,"COMP1, COMP2"
+English,Grade 6,Write an essay on the theme of friendship in literature. {essay3.png},Use examples from at least two literary works,Essay,250,3,"COMP1, COMP2"
+Science,Grade 6,Evaluate the pros and cons of renewable energy sources. {essay4.png},Consider economic, environmental, and social factors,Essay,270,4,"COMP1, COMP2"`;
       filename = 'question_import_template_essay.csv';
     } else if (type === 'FillInBlank') {
-      template = `subject,grade,questionText,questionType,blankOptions,blankCorrects,difficultyLevel,competencyCodes
-Science,Grade 1,The capital of France is ___ and the capital of Germany is ___.,FillInBlank,"Paris,London,Berlin,Madrid;Berlin,Paris,London,Madrid","A;A",200,LOG001,PRO001
-Mathematics,Grade 1,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___.,FillInBlank,"8,9,10,11;8,9,10,11","A;A",180,LOG001,PRO001
-Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius.,FillInBlank,"0,10,20,30;100,90,80,70","A;A",190,LOG001,PRO001`;
+      template = `Subject,Grade,QuestionText,Description,questionType,blankOptions,blankCorrects,difficultyLevel,Competencies
+Science,Grade 6,The capital of France is ___ and the capital of Germany is ___. {fillinblank1.png},Fill in the correct capitals for each country,FillInBlank,"Paris,London;Berlin,Munich","A;A",200,"COMP1, COMP2"
+Maths,Grade 6,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___. {fillinblank2.jpg},Calculate and fill in the correct answers,FillInBlank,"8,9;8,9","A;A",180,"COMP1, COMP2"
+Science,Grade 6,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius. {fillinblank3.png},Fill in the correct temperature values,FillInBlank,"0,10;100,90","A;A",190,"COMP1, COMP2"`;
       filename = 'question_import_template_fill_in_blank.csv';
+    } else if (type === 'Matching') {
+      template = `Subject,Grade,QuestionText,Description,questionType,leftItems,rightItems,correctPairs,difficultyLevel,Competencies
+Maths,Grade 6,Match the mathematical operations with their symbols. {matching2.jpg},Match each operation with its correct symbol,Matching,"Addition,Subtraction,Multiplication,Division","×,+,÷,-","0-1,1-3,2-0,3-2",180,"COMP1, COMP2"
+English,Grade 6,Match the words with their synonyms. {matching3.png},Match each word with its correct synonym,Matching,"Happy,Big,Smart,Small","Tiny,Large,Intelligent,Joyful","0-3,1-1,2-2,3-0",190,"COMP1, COMP2"`;
+      filename = 'question_import_template_matching.csv';
+    } else if (type === 'TrueFalse') {
+      template = `Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,Competencies
+Science,Grade 6,The Earth revolves around the Sun. {truefalse1.png},Determine if the statement is true or false,TrueFalse,true,200,"COMP1, COMP2"
+Maths,Grade 6,2 + 2 equals 5. {truefalse2.jpg},Determine if the statement is true or false,TrueFalse,false,180,"COMP1, COMP2"
+Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png},Determine if the statement is true or false,TrueFalse,true,190,"COMP1, COMP2"`;
+      filename = 'question_import_template_true_false.csv';
     }
     
     const blob = new Blob([template], { type: 'text/csv' });
@@ -433,6 +464,20 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                       <Download className="h-4 w-4" />
                       <span>Fill in Blanks</span>
                     </button>
+                    <button
+                      onClick={() => downloadTemplate('Matching')}
+                      className="inline-flex items-center space-x-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Matching</span>
+                    </button>
+                    <button
+                      onClick={() => downloadTemplate('TrueFalse')}
+                      className="inline-flex items-center space-x-2 bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>True/False</span>
+                    </button>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-6">
@@ -446,13 +491,14 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                   Upload CSV File
                 </p>
                 <div className="text-sm text-gray-600 mb-4 space-y-2">
-                  <p><strong>Required columns:</strong> subject, grade, questionText, difficultyLevel</p>
+                  <p><strong>Required columns:</strong> Subject, Grade, QuestionText, questionType, difficultyLevel</p>
                   <p><strong>For MCQ:</strong> optionA, optionB, optionC, optionD, correctAnswer (single letter: A, B, C, or D)</p>
-                  <p><strong>For Multiple Select:</strong> optionA, optionB, optionC, optionD, correctAnswers (comma-separated: A,B or A,B,C)</p>
-                  <p><strong>For Short Answer/Essay:</strong> questionType (required), dokLevel (required, 1-4), description (optional)</p>
-                  <p><strong>For Fill in the Blanks:</strong> questionType (required), blankOptions (semicolon-separated, comma-separated options per blank), blankCorrects (semicolon-separated: A;B or 0;1)</p>
+                  <p><strong>For Multiple Select:</strong> optionA, optionB, optionC, optionD, correctAnswers (JSON array format: "[A,C]" or "[A,B,C]")</p>
+                  <p><strong>For Short Answer/Essay:</strong> dokLevel (required, 1-4), description (optional)</p>
+                  <p><strong>For Fill in the Blanks:</strong> blankOptions (semicolon-separated, comma-separated options per blank), blankCorrects (semicolon-separated: A;B or 0;1)</p>
                   <p><strong>Note:</strong> Growth Metric Score (difficultyLevel) is required for ALL question types. DOK Level is ONLY for Short Answer and Essay questions.</p>
-                  <p><strong>Optional columns:</strong> questionType, description, competencyCodes (comma-separated)</p>
+                  <p><strong>Optional columns:</strong> Description (for all question types), Competencies (comma-separated: "COMP1, COMP2")</p>
+                  <p><strong>Image placeholders:</strong> Use <code>{'{filename.png}'}</code> in QuestionText to include images. Example: <code>{'Question text {image1.png} more text'}</code>. Images will be converted to <code>&lt;img&gt;</code> tags pointing to <code>/api/uploads/images/filename.png</code></p>
                   {detectedQuestionType && (
                     <p className="mt-2 text-blue-600 font-medium">
                       Detected question type: {detectedQuestionType === 'mixed' ? 'Mixed types detected' : detectedQuestionType}
@@ -493,7 +539,8 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct/Description</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DOK (Short/Essay Only)</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Competencies</th>
@@ -503,11 +550,41 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                     {csvData.map((row, index) => {
                       const questionType = row.questionType || 
                         (row.blankOptions ? 'FillInBlank' : 
-                         row.correctAnswers ? 'MultipleSelect' : 'MCQ');
-                      const correctAnswer = row.correctAnswer || row.correctAnswers || 
-                        (row.blankCorrects ? row.blankCorrects : '-');
+                         row.leftItems || row.rightItems ? 'Matching' :
+                         row.correctAnswers ? 'MultipleSelect' : 
+                         (row.correctAnswer && (row.correctAnswer.toLowerCase() === 'true' || row.correctAnswer.toLowerCase() === 'false')) ? 'TrueFalse' :
+                         'MCQ');
                       const isTextBased = questionType === 'ShortAnswer' || questionType === 'Essay';
                       const isFillInBlank = questionType === 'FillInBlank';
+                      const isMatching = questionType === 'Matching';
+                      const isTrueFalse = questionType === 'TrueFalse';
+                      
+                      // Parse correctAnswers if it's in JSON array format
+                      let correctAnswerDisplay = '-';
+                      if (isTextBased) {
+                        correctAnswerDisplay = 'AI Graded';
+                      } else if (isFillInBlank) {
+                        correctAnswerDisplay = row.blankCorrects || '-';
+                      } else if (isMatching) {
+                        correctAnswerDisplay = row.correctPairs || '-';
+                      } else if (isTrueFalse) {
+                        correctAnswerDisplay = row.correctAnswer || '-';
+                      } else if (row.correctAnswers) {
+                        // Try to parse as JSON array first
+                        try {
+                          const parsed = JSON.parse(row.correctAnswers);
+                          if (Array.isArray(parsed)) {
+                            correctAnswerDisplay = parsed.join(', ');
+                          } else {
+                            correctAnswerDisplay = row.correctAnswers;
+                          }
+                        } catch {
+                          // If not JSON, treat as comma-separated string
+                          correctAnswerDisplay = row.correctAnswers;
+                        }
+                      } else if (row.correctAnswer) {
+                        correctAnswerDisplay = row.correctAnswer;
+                      }
                       
                       const getTypeColor = (type: string) => {
                         if (type === 'MultipleSelect') return 'bg-blue-100 text-blue-800';
@@ -530,17 +607,18 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                           <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={row.questionText}>
                             {row.questionText}
                           </td>
+                          <td className="px-3 py-3 text-sm text-gray-900">
+                            {row.description || '-'}
+                          </td>
                           <td className="px-3 py-3 text-sm text-gray-900 font-medium">
-                            {isTextBased ? (row.description || '-') : 
-                             isFillInBlank ? (row.blankCorrects || '-') : 
-                             correctAnswer}
+                            {correctAnswerDisplay}
                           </td>
                           <td className="px-3 py-3 text-sm text-gray-900">{row.difficultyLevel}</td>
                           <td className="px-3 py-3 text-sm text-gray-900">
                             {(questionType === 'ShortAnswer' || questionType === 'Essay') ? (row.dokLevel || '-') : '-'}
                           </td>
                           <td className="px-3 py-3 text-sm text-gray-900">
-                            {row.competencyCodes || '-'}
+                            {row.competencyCodes && row.competencyCodes.trim() ? row.competencyCodes.trim() : '-'}
                           </td>
                         </tr>
                       );
