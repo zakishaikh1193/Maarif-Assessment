@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Grade, Subject, School, Question } from '../types';
 import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown } from 'lucide-react';
+import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown, Filter } from 'lucide-react';
 import { exportAssessmentToPDF } from '../utils/pdfExport';
 
 type AssessmentMode = 'Standard' | 'Adaptive';
@@ -20,6 +20,8 @@ interface GeneralFormData {
   difficultyLevel: number;
   questionSequence: 'fixed' | 'random';
   optionSequence: 'fixed' | 'random';
+  assessmentPeriod?: 'BOY' | 'EOY'; // Only for Standard mode
+  year?: number; // Only for Standard mode
 }
 
 interface AssignFormData {
@@ -50,12 +52,19 @@ const CreateAssessmentPage: React.FC = () => {
     questionCount: 10,
     difficultyLevel: 225,
     questionSequence: 'fixed',
-    optionSequence: 'fixed'
+    optionSequence: 'fixed',
+    assessmentPeriod: undefined,
+    year: new Date().getFullYear()
   });
   
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [availableQuestions, setAvailableQuestions] = useState<Question[]>([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
+  
+  // Filter states - using arrays for multi-select
+  const [filterQuestionType, setFilterQuestionType] = useState<string[]>([]); // Array of selected question types
+  const [filterDokLevel, setFilterDokLevel] = useState<number | 'all'>('all'); // 'all', 1, 2, 3, 4
+  const [filterDifficulty, setFilterDifficulty] = useState<string[]>([]); // Array of selected difficulty ranges
   
   const [assignData, setAssignData] = useState<AssignFormData>({
     selectedSchools: [],
@@ -150,8 +159,21 @@ const CreateAssessmentPage: React.FC = () => {
     if (!generalData.questionCount || generalData.questionCount < 1) {
       newErrors.questionCount = 'Question count must be at least 1';
     }
-    if (generalData.difficultyLevel < 100 || generalData.difficultyLevel > 350) {
-      newErrors.difficultyLevel = 'Difficulty level must be between 100 and 350';
+    // Validate Difficulty Level (Growth Metric Score) - only required for Adaptive mode
+    if (mode === 'Adaptive') {
+      if (generalData.difficultyLevel < 100 || generalData.difficultyLevel > 350) {
+        newErrors.difficultyLevel = 'Difficulty level must be between 100 and 350';
+      }
+    }
+    
+    // Validate Standard mode specific fields
+    if (mode === 'Standard') {
+      if (!generalData.assessmentPeriod) {
+        newErrors.assessmentPeriod = 'Assessment period is required for Standard assignments';
+      }
+      if (!generalData.year || generalData.year < 2000 || generalData.year > 2100) {
+        newErrors.year = 'Valid year is required (2000-2100)';
+      }
     }
     
     setErrors(newErrors);
@@ -234,8 +256,11 @@ const CreateAssessmentPage: React.FC = () => {
     const steps = getSteps();
     const currentIndex = steps.indexOf(currentStep);
     
-    if (currentStep === 'general' && !validateGeneral()) {
-      return;
+    if (currentStep === 'general') {
+      // Pass mode to validation
+      if (!validateGeneral()) {
+        return;
+      }
     }
     if (currentStep === 'questions' && !validateQuestions()) {
       return;
@@ -617,28 +642,93 @@ const CreateAssessmentPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Difficulty Level */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Difficulty Level (RIT Score) *
-                    </label>
-                    <input
-                      type="number"
-                      min="100"
-                      max="350"
-                      value={generalData.difficultyLevel}
-                      onChange={(e) => handleGeneralChange('difficultyLevel', Number(e.target.value))}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.difficultyLevel ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    />
-                    {errors.difficultyLevel && (
-                      <p className="mt-1 text-sm text-red-600">{errors.difficultyLevel}</p>
-                    )}
-                    <p className="mt-1 text-xs text-gray-500">
-                      Recommended range: 100-350
-                    </p>
-                  </div>
+                  {/* Difficulty Level (Growth Metric Score) - Only for Adaptive Mode */}
+                  {mode === 'Adaptive' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Difficulty Level (Growth Metric Score) *
+                      </label>
+                      <input
+                        type="number"
+                        min="100"
+                        max="350"
+                        value={generalData.difficultyLevel}
+                        onChange={(e) => handleGeneralChange('difficultyLevel', Number(e.target.value))}
+                        className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.difficultyLevel ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.difficultyLevel && (
+                        <p className="mt-1 text-sm text-red-600">{errors.difficultyLevel}</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Recommended range: 100-350. This is the starting difficulty for adaptive assessments.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Assessment Period and Year (Standard Mode Only) */}
+                  {mode === 'Standard' && (
+                    <div className="space-y-4 border-t pt-6">
+                      <h3 className="text-lg font-semibold text-gray-900">Assessment Period</h3>
+                      
+                      {/* Assessment Period */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Assessment Period *
+                        </label>
+                        <div className="flex space-x-4">
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              value="BOY"
+                              checked={generalData.assessmentPeriod === 'BOY'}
+                              onChange={(e) => handleGeneralChange('assessmentPeriod', e.target.value)}
+                              className="mr-2"
+                            />
+                            <span>Beginning of Year (BOY)</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              value="EOY"
+                              checked={generalData.assessmentPeriod === 'EOY'}
+                              onChange={(e) => handleGeneralChange('assessmentPeriod', e.target.value)}
+                              className="mr-2"
+                            />
+                            <span>End of Year (EOY)</span>
+                          </label>
+                        </div>
+                        {errors.assessmentPeriod && (
+                          <p className="mt-1 text-sm text-red-600">{errors.assessmentPeriod}</p>
+                        )}
+                      </div>
+
+                      {/* Year */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Year *
+                        </label>
+                        <input
+                          type="number"
+                          min="2000"
+                          max="2100"
+                          value={generalData.year || ''}
+                          onChange={(e) => handleGeneralChange('year', Number(e.target.value))}
+                          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            errors.year ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder={new Date().getFullYear().toString()}
+                        />
+                        {errors.year && (
+                          <p className="mt-1 text-sm text-red-600">{errors.year}</p>
+                        )}
+                        <p className="mt-1 text-xs text-gray-500">
+                          Academic year for this assessment
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Behavior Settings (Standard Mode Only) */}
                   {mode === 'Standard' && (
@@ -761,6 +851,119 @@ const CreateAssessmentPage: React.FC = () => {
                         </button>
                       </div>
 
+                      {/* Filters Section */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <Filter className="h-4 w-4 text-gray-600" />
+                          <h3 className="text-sm font-semibold text-gray-700">Filters</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {/* Question Type Filter - Multi-select with checkboxes */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-3">
+                              Question Type
+                            </label>
+                            <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                              {[
+                                { value: 'MCQ', label: 'MCQs' },
+                                { value: 'FillInBlank', label: 'Fill in the Blanks' },
+                                { value: 'Matching', label: 'Matching' },
+                                { value: 'MultipleSelect', label: 'Multiple Select' },
+                                { value: 'ShortAnswer', label: 'Short Answer' },
+                                { value: 'Essay', label: 'Essay' },
+                                { value: 'TrueFalse', label: 'True/False' }
+                              ].map((type) => (
+                                <label key={type.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                  <input
+                                    type="checkbox"
+                                    checked={filterQuestionType.includes(type.value)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setFilterQuestionType([...filterQuestionType, type.value]);
+                                      } else {
+                                        setFilterQuestionType(filterQuestionType.filter(t => t !== type.value));
+                                      }
+                                    }}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="text-sm text-gray-700">{type.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* DOK Level Filter */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-2">
+                              DOK Level
+                            </label>
+                            <select
+                              value={filterDokLevel}
+                              onChange={(e) => setFilterDokLevel(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="all">All Levels</option>
+                              <option value="1">DOK Level 1</option>
+                              <option value="2">DOK Level 2</option>
+                              <option value="3">DOK Level 3</option>
+                              <option value="4">DOK Level 4</option>
+                            </select>
+                          </div>
+
+                          {/* Growth Metric Difficulty Filter - Multi-select with checkboxes */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-3">
+                              Growth Metric Difficulty
+                            </label>
+                            <div className="space-y-2 border border-gray-200 rounded-md p-3 bg-white">
+                              {[
+                                { value: '100-150', label: '100-150', color: 'bg-red-100 text-red-800' },
+                                { value: '151-200', label: '151-200', color: 'bg-orange-100 text-orange-800' },
+                                { value: '201-250', label: '201-250', color: 'bg-yellow-100 text-yellow-800' },
+                                { value: '251-300', label: '251-300', color: 'bg-green-100 text-green-800' },
+                                { value: '301-350', label: '301-350', color: 'bg-blue-100 text-blue-800' }
+                              ].map((range) => (
+                                <label key={range.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                  <input
+                                    type="checkbox"
+                                    checked={filterDifficulty.includes(range.value)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setFilterDifficulty([...filterDifficulty, range.value]);
+                                      } else {
+                                        setFilterDifficulty(filterDifficulty.filter(d => d !== range.value));
+                                      }
+                                    }}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className={`text-sm px-2 py-1 rounded ${range.color}`}>
+                                    {range.label}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Clear Filters Button */}
+                        {(filterQuestionType.length > 0 || filterDokLevel !== 'all' || filterDifficulty.length > 0) && (
+                          <div className="pt-2 border-t border-gray-200">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFilterQuestionType([]);
+                                setFilterDokLevel('all');
+                                setFilterDifficulty([]);
+                              }}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Clear All Filters
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
                       {availableQuestions.length === 0 ? (
                         <div className="text-center py-12 bg-gray-50 rounded-lg">
                           <p className="text-gray-600">No questions available for this subject and grade.</p>
@@ -768,38 +971,185 @@ const CreateAssessmentPage: React.FC = () => {
                             Please select a subject and grade in the General step.
                           </p>
                         </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
-                          {availableQuestions.map((question) => {
-                            const isSelected = selectedQuestions.includes(question.id);
-                            return (
-                              <div
-                                key={question.id}
-                                onClick={() => toggleQuestionSelection(question.id)}
-                                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                  isSelected
-                                    ? 'border-green-500 bg-green-50'
-                                    : 'border-gray-200 hover:border-gray-300'
-                                }`}
+                      ) : (() => {
+                        // Apply filters to available questions
+                        const filteredQuestions = availableQuestions.filter((question) => {
+                          // Question Type Filter - Multi-select
+                          if (filterQuestionType.length > 0) {
+                            if (!question.questionType || !filterQuestionType.includes(question.questionType)) {
+                              return false;
+                            }
+                          }
+
+                          // DOK Level Filter
+                          if (filterDokLevel !== 'all') {
+                            // Only apply DOK filter to ShortAnswer and Essay questions
+                            if (question.questionType === 'ShortAnswer' || question.questionType === 'Essay') {
+                              if (question.dokLevel !== filterDokLevel) {
+                                return false;
+                              }
+                            } else {
+                              // For other question types, if DOK filter is set, exclude them
+                              // (since they don't have DOK levels)
+                              return false;
+                            }
+                          }
+
+                          // Growth Metric Difficulty Filter - Multi-select with new ranges
+                          if (filterDifficulty.length > 0) {
+                            const difficulty = question.difficultyLevel;
+                            let matchesRange = false;
+                            
+                            for (const range of filterDifficulty) {
+                              if (range === '100-150' && difficulty >= 100 && difficulty <= 150) {
+                                matchesRange = true;
+                                break;
+                              } else if (range === '151-200' && difficulty >= 151 && difficulty <= 200) {
+                                matchesRange = true;
+                                break;
+                              } else if (range === '201-250' && difficulty >= 201 && difficulty <= 250) {
+                                matchesRange = true;
+                                break;
+                              } else if (range === '251-300' && difficulty >= 251 && difficulty <= 300) {
+                                matchesRange = true;
+                                break;
+                              } else if (range === '301-350' && difficulty >= 301 && difficulty <= 350) {
+                                matchesRange = true;
+                                break;
+                              }
+                            }
+                            
+                            if (!matchesRange) {
+                              return false;
+                            }
+                          }
+
+                          return true;
+                        });
+
+                        // Helper functions for question display - Updated to match filter ranges
+                        const getDifficultyColor = (level: number) => {
+                          if (level >= 100 && level <= 150) return 'bg-red-100 text-red-800';
+                          if (level >= 151 && level <= 200) return 'bg-orange-100 text-orange-800';
+                          if (level >= 201 && level <= 250) return 'bg-yellow-100 text-yellow-800';
+                          if (level >= 251 && level <= 300) return 'bg-green-100 text-green-800';
+                          if (level >= 301 && level <= 350) return 'bg-blue-100 text-blue-800';
+                          // Fallback for values outside range
+                          if (level < 100) return 'bg-gray-100 text-gray-800';
+                          return 'bg-purple-100 text-purple-800';
+                        };
+                        
+                        const getQuestionTypeColor = (type?: string) => {
+                          if (!type || type === 'MCQ') return 'bg-blue-100 text-blue-800';
+                          if (type === 'MultipleSelect') return 'bg-indigo-100 text-indigo-800';
+                          if (type === 'ShortAnswer') return 'bg-purple-100 text-purple-800';
+                          if (type === 'Essay') return 'bg-orange-100 text-orange-800';
+                          if (type === 'FillInBlank') return 'bg-pink-100 text-pink-800';
+                          if (type === 'TrueFalse') return 'bg-cyan-100 text-cyan-800';
+                          if (type === 'Matching') return 'bg-teal-100 text-teal-800';
+                          return 'bg-gray-100 text-gray-800';
+                        };
+                        
+                        const getQuestionTypeName = (type?: string) => {
+                          if (!type || type === 'MCQ') return 'MCQ';
+                          if (type === 'MultipleSelect') return 'Multiple Select';
+                          if (type === 'ShortAnswer') return 'Short Answer';
+                          if (type === 'Essay') return 'Essay';
+                          if (type === 'FillInBlank') return 'Fill in Blanks';
+                          if (type === 'TrueFalse') return 'True/False';
+                          if (type === 'Matching') return 'Matching';
+                          return type;
+                        };
+
+                        return filteredQuestions.length === 0 ? (
+                          <div className="text-center py-12 bg-gray-50 rounded-lg">
+                            <p className="text-gray-600">No questions match the selected filters.</p>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Try adjusting your filter criteria or{' '}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFilterQuestionType([]);
+                                  setFilterDokLevel('all');
+                                  setFilterDifficulty([]);
+                                }}
+                                className="text-blue-600 hover:text-blue-700 underline"
                               >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      {isSelected && (
-                                        <CheckCircle className="h-5 w-5 text-green-600" />
+                                clear all filters
+                              </button>
+                              .
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2">
+                            <div className="text-xs text-gray-500 mb-2">
+                              Showing {filteredQuestions.length} of {availableQuestions.length} question(s)
+                            </div>
+                            {filteredQuestions.map((question) => {
+                              const isSelected = selectedQuestions.includes(question.id);
+                              
+                              return (
+                                <div
+                                  key={question.id}
+                                  onClick={() => toggleQuestionSelection(question.id)}
+                                  className={`p-5 border-2 rounded-lg cursor-pointer transition-all ${
+                                    isSelected
+                                      ? 'border-green-500 bg-green-50 shadow-md'
+                                      : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                      {/* Badges Row */}
+                                      <div className="flex items-center flex-wrap gap-2 mb-3">
+                                        {isSelected && (
+                                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                                        )}
+                                        
+                                        {/* Difficulty Level Pill */}
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficultyLevel)}`}>
+                                          Growth Metric: {question.difficultyLevel}
+                                        </span>
+                                        
+                                        {/* Question Type Pill */}
+                                        {question.questionType && (
+                                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getQuestionTypeColor(question.questionType)}`}>
+                                            {getQuestionTypeName(question.questionType)}
+                                          </span>
+                                        )}
+                                        
+                                        {/* DOK Level Pill - Only for ShortAnswer and Essay */}
+                                        {(question.questionType === 'ShortAnswer' || question.questionType === 'Essay') && question.dokLevel && (
+                                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            DOK: {question.dokLevel}
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Question Text with Rich Text Rendering */}
+                                      <div 
+                                        className="text-gray-900 font-medium mb-2 prose prose-sm max-w-none question-rich-text"
+                                        dangerouslySetInnerHTML={{ __html: question.questionText }}
+                                        style={{
+                                          wordBreak: 'break-word'
+                                        }}
+                                      />
+                                      
+                                      {/* Show description for ShortAnswer/Essay */}
+                                      {(question.questionType === 'ShortAnswer' || question.questionType === 'Essay') && question.questionMetadata?.description && (
+                                        <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                                          <span className="font-medium">Instructions: </span>
+                                          {question.questionMetadata.description}
+                                        </div>
                                       )}
-                                      <span className="text-sm font-medium text-gray-700">
-                                        Difficulty: {question.difficultyLevel}
-                                      </span>
                                     </div>
-                                    <p className="text-gray-900">{question.questionText}</p>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
 

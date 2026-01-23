@@ -451,7 +451,7 @@ Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Ce
                   <p><strong>For Multiple Select:</strong> optionA, optionB, optionC, optionD, correctAnswers (comma-separated: A,B or A,B,C)</p>
                   <p><strong>For Short Answer/Essay:</strong> questionType (required), dokLevel (required, 1-4), description (optional)</p>
                   <p><strong>For Fill in the Blanks:</strong> questionType (required), blankOptions (semicolon-separated, comma-separated options per blank), blankCorrects (semicolon-separated: A;B or 0;1)</p>
-                  <p><strong>Note:</strong> RIT Score (difficultyLevel) is required for ALL question types. DOK Level is ONLY for Short Answer and Essay questions.</p>
+                  <p><strong>Note:</strong> Growth Metric Score (difficultyLevel) is required for ALL question types. DOK Level is ONLY for Short Answer and Essay questions.</p>
                   <p><strong>Optional columns:</strong> questionType, description, competencyCodes (comma-separated)</p>
                   {detectedQuestionType && (
                     <p className="mt-2 text-blue-600 font-medium">

@@ -549,10 +549,10 @@ export const createQuestion = async (req, res) => {
         optionsArray = [];
       }
 
-    // Validate difficulty level (RIT Score) - required for all question types
+    // Validate difficulty level (Growth Metric Score) - required for all question types
     if (difficultyLevel < 100 || difficultyLevel > 350) {
       return res.status(400).json({
-        error: 'RIT Score (Difficulty level) must be between 100 and 350',
+        error: 'Growth Metric Score (Difficulty level) must be between 100 and 350',
         code: 'INVALID_DIFFICULTY_LEVEL'
       });
     }
@@ -1256,10 +1256,10 @@ export const updateQuestion = async (req, res) => {
         optionsArray = [];
       }
 
-    // Validate difficulty level (RIT Score) - required for all question types
+    // Validate difficulty level (Growth Metric Score) - required for all question types
     if (difficultyLevel < 100 || difficultyLevel > 350) {
       return res.status(400).json({
-        error: 'RIT Score (Difficulty level) must be between 100 and 350',
+        error: 'Growth Metric Score (Difficulty level) must be between 100 and 350',
         code: 'INVALID_DIFFICULTY_LEVEL'
       });
     }

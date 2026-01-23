@@ -32,7 +32,7 @@
   - `question_text`: The question content
   - `options`: JSON array of answer options (currently only MCQ)
   - `correct_option_index`: Index of correct answer (0-based)
-  - `difficulty_level`: RIT difficulty level (100-350 range)
+  - `difficulty_level`: Growth Metric difficulty level (100-350 range)
   - `primary_competency_id`: Main competency this question tests
 
 - **Current Behavior**:
@@ -72,7 +72,7 @@
 1. **Start Assessment**:
    - Student selects subject and period
    - System checks `assessment_configurations` for grade-subject settings
-   - Looks up previous RIT score to determine starting difficulty
+   - Looks up previous Growth Metric score to determine starting difficulty
    - Creates assessment record in `assessments` table
    - Selects first question based on starting difficulty
 
@@ -87,7 +87,7 @@
    - Excludes already-used questions
 
 3. **Completion**:
-   - Final RIT score calculated based on highest correct difficulty
+   - Final Growth Metric score calculated based on highest correct difficulty
    - Assessment marked as complete
    - Results stored in `assessments` table
 
@@ -211,7 +211,7 @@ System calculates next difficulty → Selects next question
   ↓
 Repeat until question_count reached
   ↓
-Calculate final RIT score
+Calculate final Growth Metric score
 ```
 
 ### Standard Mode (New)
@@ -242,7 +242,7 @@ Calculate score based on points
 | **Question Selection** | Dynamic, based on responses | Pre-selected, fixed order |
 | **Question Order** | Determined by algorithm | Defined in assignment |
 | **Difficulty** | Adjusts based on performance | Fixed (question's difficulty_level) |
-| **Scoring** | RIT score (Growth Metric) | Points-based or percentage |
+| **Scoring** | Growth Metric score (Growth Metric) | Points-based or percentage |
 | **Creation** | System-generated | Admin-created templates |
 | **Flexibility** | Adapts to student level | Same for all students |
 

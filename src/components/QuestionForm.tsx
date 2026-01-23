@@ -299,7 +299,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       }
 
       if (formData.difficultyLevel < 100 || formData.difficultyLevel > 350) {
-        throw new Error('RIT Score (Difficulty level) must be between 100 and 350');
+        throw new Error('Growth Metric Score (Difficulty level) must be between 100 and 350');
       }
 
       // DOK level is only required for ShortAnswer and Essay
@@ -1058,7 +1058,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            RIT Score (Difficulty Level): {formData.difficultyLevel} ({getDifficultyLabel(formData.difficultyLevel)})
+            Growth Metric Score (Difficulty Level): {formData.difficultyLevel} ({getDifficultyLabel(formData.difficultyLevel)})
           </label>
           <input
             type="range"
@@ -1075,7 +1075,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             <span>350 (Hard)</span>
           </div>
           <p className="mt-2 text-sm text-gray-500">
-            RIT Score is required for all question types and indicates the difficulty level.
+            Growth Metric Score is required for all question types and indicates the difficulty level.
           </p>
         </div>
 

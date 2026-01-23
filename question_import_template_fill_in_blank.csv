@@ -4,4 +4,4 @@ Mathematics,Grade 1,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___.
 Science,Grade 1,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius.,FillInBlank,"0,10,20,30;100,90,80,70","A;A",190,LOG001,PRO001
 English,Grade 1,The past tense of "go" is ___ and the past tense of "see" is ___.,FillInBlank,"went,goed,goes,going;saw,seed,sees,seeing","A;A",170,LOG001,PRO001
 
-Note: DOK Level is NOT applicable to Fill in the Blanks questions. Only RIT Score (difficultyLevel) is required.
+Note: DOK Level is NOT applicable to Fill in the Blanks questions. Only Growth Metric Score (difficultyLevel) is required.
