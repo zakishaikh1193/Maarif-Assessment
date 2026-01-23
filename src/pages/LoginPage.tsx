@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BarChart3, ArrowRight, Eye, EyeOff, AlertCircle, BookOpen, Target, Zap } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Clock } from 'lucide-react';
 import { ssoAPI } from '../services/api';
+import maarifLogo from '../images/Marrif_V 1.1.png';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -71,102 +72,35 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-amber-50">
-      <div className="w-full max-w-6xl mx-auto flex  bg-amber-50 rounded-2xl shadow-2xl overflow-hidden border border-purple-300">
-        
-        {/* Left Panel - Content with Hot Pink Background */}
-        <div className="hidden lg:flex lg:w-1/2 bg-yellow-200 relative overflow-hidden">
-          {/* Content */}
-          <div className="flex items-center justify-center w-full">
-            <div className="text-center text-gray-800 p-16">
-              <div className="mb-12">
-                <div className="flex items-center justify-center space-x-3 mb-8">
-                  <div className="w-16 h-16 bg-gray-500 bg-opacity-25 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                    <BarChart3 className="h-8 w-8 text-gray-800" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold">Maarif Assessment Portal</h1>
-                    <p className=" text-gray-600 text-opacity-90 text-sm">Adaptive Learning Platform</p>
-                  </div>
-                </div>
-                
-                <h2 className="text-5xl font-bold mb-6 leading-tight">
-                  Unlock Student Potential
-                </h2>
-                <p className="text-gray-600 text-opacity-90 text-xl leading-relaxed mb-10 max-w-md mx-auto">
-                  Advanced adaptive assessments that grow with your students, providing insights that drive meaningful educational outcomes.
-                </p>
-              </div>
-
-              <div className="space-y-6 max-w-sm mx-auto">
-                <div className="flex items-center space-x-4 bg-white bg-opacity-20 p-4 rounded-xl backdrop-blur-sm border border-pink-200">
-                  <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
-                    <Target className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-bold text-gray-600">Precision Testing</h3>
-                    <p className="text-gray-600 text-opacity-80 text-sm">Questions adapt to performance</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4 bg-white bg-opacity-20 p-4 rounded-xl backdrop-blur-sm  border border-pink-200">
-                  <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
-                    <BookOpen className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-bold text-gray-600">Deep Analytics</h3>
-                    <p className="text-gray-600 text-opacity-80 text-sm">Comprehensive learning insights</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4 bg-white bg-opacity-20 p-4 rounded-xl backdrop-blur-sm  border border-pink-200">
-                  <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-bold text-gray-600">Real-time Results</h3>
-                    <p className="text-gray-600 text-opacity-80 text-sm">Instant feedback & tracking</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel - Login Form */}
-        <div className="w-full lg:w-1/2 bg-amber-50 p-8 lg:p-16 flex items-center justify-center">
+    <div className="min-h-screen flex bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-6 left-6 lg:top-8 lg:left-8 z-10">
+        <img 
+          src={maarifLogo} 
+          alt="Maarif Logo" 
+          className="h-14 w-auto object-contain"
+        />
+      </div>
+      
+      <div className="w-full flex">
+        {/* Left Panel - Login Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12">
           <div className="w-full max-w-md">
-            <div className="text-center mb-10">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-              <p className="text-gray-600">Sign in to your assessment platform</p>
-            </div>
 
-            {/* Demo Credentials */}
-            <div className="mb-8 p-5 bg-white rounded-xl border border-amber-200 shadow-sm">
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                <h3 className="font-semibold text-gray-800 text-sm">Demo Access</h3>
-              </div>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Admin:</span>
-                  <code className="bg-amber-100 px-2 py-1 rounded text-gray-800 border border-amber-200">admin / admin123</code>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Student:</span>
-                  <code className="bg-amber-100 px-2 py-1 rounded text-gray-800 border border-amber-200">student1 / student123</code>
-                </div>
-              </div>
+            {/* Title Section */}
+            <div className="mb-10">
+              <h1 className="text-5xl font-bold text-gray-900 mb-3">Welcome Back</h1>
+              <p className="text-gray-600 text-base">Sign in to your assessment platform</p>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-pink-50 border border-pink-200 rounded-xl">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <AlertCircle className="h-5 w-5 text-pink-500 flex-shrink-0" />
+                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-medium text-pink-800">Login Failed</h3>
-                    <p className="text-pink-700 text-sm mt-1">{error}</p>
+                    <h3 className="text-sm font-medium text-red-800">Login Failed</h3>
+                    <p className="text-red-700 text-sm mt-1">{error}</p>
                   </div>
                 </div>
               </div>
@@ -175,7 +109,7 @@ const LoginPage: React.FC = () => {
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-base font-medium text-gray-700 mb-3">
                   Username
                 </label>
                 <input
@@ -184,13 +118,13 @@ const LoginPage: React.FC = () => {
                   autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-amber-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 transition-colors"
-                  placeholder="Enter username"
+                  className="w-full px-5 py-4 text-base bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-20 transition-all placeholder:text-gray-400"
+                  placeholder="Enter your username"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-base font-medium text-gray-700 mb-3">
                   Password
                 </label>
                 <div className="relative">
@@ -200,52 +134,103 @@ const LoginPage: React.FC = () => {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-amber-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-20 transition-colors pr-12"
-                    placeholder="Enter password"
+                    className="w-full px-5 py-4 text-base bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-20 transition-all placeholder:text-gray-400 pr-14"
+                    placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute inset-y-0 right-0 px-5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
                   </button>
                 </div>
-              </div>
-              
-              <div className="flex items-center">
-                <input 
-                  id="remember-me" 
-                  name="remember-me" 
-                  type="checkbox" 
-                  className="h-4 w-4 text-teal-500 focus:ring-teal-500 border-amber-300 rounded" 
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-yellow-300 to-yellow-500 text-gray-800 py-3 px-6 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-4 px-6 rounded-xl font-semibold text-base focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-900 border-t-transparent"></div>
+                  </div>
                 ) : (
-                  <>
-                    <span>Sign In</span>
-                    <ArrowRight className="h-5 w-5" />
-                  </>
+                  'Sign In'
                 )}
               </button>
             </form>
+          </div>
+        </div>
 
-            <div className="mt-8 pt-6 border-t border-pink-500">
-              <p className="text-xs text-gray-500 text-center">
-                Secure educational assessment platform
-              </p>
+        {/* Right Panel - Background with Glassmorphism UI Elements */}
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+          {/* Background Image - Assessment/Education themed */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80')`,
+              filter: 'blur(4px) brightness(0.7)'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20" />
+
+          {/* Glassmorphism UI Elements */}
+          <div className="relative w-full h-full p-8">
+            {/* Assessment Cards */}
+            <div className="absolute top-20 left-8 space-y-2">
+              <div className="bg-yellow-400/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">Math Assessment Review</h3>
+                <p className="text-gray-700 text-xs">09:30am - 10:00am</p>
+              </div>
+              <div className="bg-gray-900/40 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-white/10">
+                <p className="text-white text-xs">09:30am - 10:00am</p>
+              </div>
+            </div>
+
+            {/* Profile Avatars */}
+            <div className="absolute top-1/3 right-12 flex -space-x-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 border-2 border-white/50 backdrop-blur-sm shadow-lg"
+                />
+              ))}
+            </div>
+
+            {/* Calendar View */}
+            <div className="absolute bottom-32 left-8 right-8 bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 shadow-lg">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-white text-xs font-medium">Sun Mon Tue Wed Thu Fri Sat</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80 text-xs">22</span>
+                <span className="text-white/80 text-xs">23</span>
+                <span className="text-white/80 text-xs">24</span>
+                <span className="text-white/80 text-xs">25</span>
+                <span className="text-white/80 text-xs">26</span>
+                <span className="text-white/60 text-xs line-through">27</span>
+                <span className="text-white/60 text-xs line-through">28</span>
+              </div>
+            </div>
+
+            {/* Assessment Session Card */}
+            <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg max-w-xs">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-900 text-sm">Science Assessment</h3>
+                <Clock className="w-4 h-4 text-gray-600" />
+              </div>
+              <p className="text-gray-600 text-xs mb-3">12:00pm - 01:00pm</p>
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white shadow-sm"
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
