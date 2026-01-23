@@ -1,4 +1,24 @@
 import { executeQuery } from '../config/database.js';
+
+// Seeded random number generator for deterministic shuffling
+function seededRandom(seed) {
+  let value = seed;
+  return function() {
+    value = (value * 9301 + 49297) % 233280;
+    return value / 233280;
+  };
+}
+
+// Deterministic shuffle function using a seed
+function shuffleWithSeed(array, seed) {
+  const rng = seededRandom(seed);
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 import { activeSessions } from './studentController.js';
 
 // Get assignments assigned to the current student
@@ -359,14 +379,17 @@ export const startStandardAssignment = async (req, res) => {
       let correctIndex = q.correctOptionIndex;
 
       if (assignment.optionSequence === 'random') {
-        // Shuffle options but track correct answer
-        const optionsWithIndex = options.map((opt, idx) => ({ opt, idx }));
-        for (let i = optionsWithIndex.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
-        }
-        options = optionsWithIndex.map((item) => item.opt);
-        correctIndex = optionsWithIndex.findIndex((item) => item.idx === correctIndex);
+        // Shuffle options deterministically using assignmentId + questionId + studentId as seed
+        // This ensures the same shuffle is used when validating answers
+        // We'll use assignmentId, questionId, and studentId to create a unique seed
+        const seed = assignment.id * 1000000 + q.id * 1000 + studentId;
+        
+        const optionsWithIndex = options.map((opt, idx) => ({ opt, originalIdx: idx }));
+        const shuffled = shuffleWithSeed([...optionsWithIndex], seed);
+        
+        options = shuffled.map((item) => item.opt);
+        // Find the new position of the original correct index
+        correctIndex = shuffled.findIndex((item) => item.originalIdx === correctIndex);
       }
 
       // Parse question_metadata if present

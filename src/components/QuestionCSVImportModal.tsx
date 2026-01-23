@@ -20,6 +20,8 @@ interface CSVRow {
   correctPairs?: string; // For Matching: comma-separated pairs in format "leftIndex-rightIndex" (e.g., "0-0,1-1,2-2")
   difficultyLevel: string;
   dokLevel?: string; // Optional: 1-4 (more relevant for ShortAnswer/Essay/FillInBlank)
+  standard?: string; // Optional: Standard identifier (e.g., NGSS, CGSA)
+  contentFocus?: string; // Optional: Content Focus description - parameters for DOK level used in AI grading
   description?: string; // Optional: additional instructions/description for ShortAnswer/Essay
   competencyCodes?: string;
 }
@@ -214,6 +216,8 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
             const correctPairsIndex = header.indexOf('correctpairs');
             const difficultyLevelIndex = header.indexOf('difficultylevel');
             const dokLevelIndex = header.indexOf('doklevel');
+            const standardIndex = header.indexOf('standard');
+            const contentFocusIndex = header.indexOf('contentfocus');
             // Try both 'competencies' and 'competencycodes' for backward compatibility
             let competencyCodesIndex = header.indexOf('competencies');
             if (competencyCodesIndex < 0) {
@@ -271,6 +275,12 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
             if (dokLevelIndex >= 0) {
               rowData.dokLevel = values[dokLevelIndex] || '';
             }
+            if (standardIndex >= 0) {
+              rowData.standard = values[standardIndex] || '';
+            }
+            if (contentFocusIndex >= 0) {
+              rowData.contentFocus = values[contentFocusIndex] || '';
+            }
             if (competencyCodesIndex >= 0) {
               rowData.competencyCodes = values[competencyCodesIndex] || '';
             }
@@ -314,46 +324,46 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
     let filename = '';
     
     if (type === 'MCQ') {
-      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswer,difficultyLevel,Competencies
-Computer Science,Grade 6,What does CPU stand for? {mcq1.png},Select the correct full form of CPU,MCQ,Central Processing Unit,Computer Personal Unit,Central Process Unit,Central Processor Unit,A,150,"LOG001, TEC001"
-Computer Science,Grade 6,Which of the following is a volatile memory? {mcq2.jpg},Identify the type of memory that loses data when power is off,MCQ,ROM,HDD,RAM,SSD,C,220,"TEC001, PRO001"
-Science,Grade 6,Mitochondria is ______ of the cell. {mcq3.png},Choose the correct function of mitochondria,MCQ,Brain,Powerhouse,Nucleus,Factory,B,167,"LOG001, PRO001"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Computer Science,Grade 6,What does CPU stand for? {mcq1.png},Select the correct full form of CPU,MCQ,Central Processing Unit,Computer Personal Unit,Central Process Unit,Central Processor Unit,A,150,1,CGSA,"Understanding computer hardware components",LOG001, TEC001
+Computer Science,Grade 6,Which of the following is a volatile memory? {mcq2.jpg},Identify the type of memory that loses data when power is off,MCQ,ROM,HDD,RAM,SSD,C,220,1,CGSA,"Memory types and their characteristics",TEC001, PRO001
+Science,Grade 6,Mitochondria is ______ of the cell. {mcq3.png},Choose the correct function of mitochondria,MCQ,Brain,Powerhouse,Nucleus,Factory,B,167,2,NGSS,"Cell structure and function",LOG001, PRO001`;
       filename = 'question_import_template_mcq.csv';
     } else if (type === 'MultipleSelect') {
-      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswers,difficultyLevel,Competencies
-Maths,Grade 6,Which of the following are prime numbers? {multiselect1.png} (Select all that apply),Select all prime numbers from the given options,MultipleSelect,2,3,4,5,"[A,B]",295,"COMP1, COMP2"
-Science,Grade 6,Which of the following are renewable energy sources? {multiselect2.jpg} (Select all that apply),Identify all renewable energy sources from the list,MultipleSelect,Solar Energy,Wind Energy,Coal,Natural Gas,"[A,B]",280,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,optionA,optionB,optionC,optionD,correctAnswers,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Maths,Grade 6,Which of the following are prime numbers? {multiselect1.png} (Select all that apply),Select all prime numbers from the given options,MultipleSelect,2,3,4,5,"[A,B]",295,2,CGSA,"Number properties and prime numbers",COMP1, COMP2
+Science,Grade 6,Which of the following are renewable energy sources? {multiselect2.jpg} (Select all that apply),Identify all renewable energy sources from the list,MultipleSelect,Solar Energy,Wind Energy,Coal,Natural Gas,"[A,B]",280,2,NGSS,"Energy sources and sustainability",COMP1, COMP2`;
       filename = 'question_import_template_multiple_select.csv';
     } else if (type === 'ShortAnswer') {
-      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
-Science,Grade 6,Explain the process of photosynthesis in your own words. {shortanswer1.png},Provide a brief explanation (100 words or less),ShortAnswer,200,3,"COMP1, COMP2"
-Maths,Grade 6,Describe how you would solve the equation 2x + 5 = 15. {shortanswer2.jpg},Show your step-by-step reasoning,ShortAnswer,180,2,"COMP1, COMP2"
-Science,Grade 6,What is the difference between RAM and ROM? {shortanswer3.png},Explain in 2-3 sentences,ShortAnswer,220,2,"COMP1, COMP2"
-Science,Grade 6,What are the three states of matter? Give an example of each. {shortanswer4.png},Provide examples for each state,ShortAnswer,190,1,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Science,Grade 6,Explain the process of photosynthesis in your own words. {shortanswer1.png},Provide a brief explanation (100 words or less),ShortAnswer,200,3,NGSS,"Biological processes and energy conversion",COMP1, COMP2
+Maths,Grade 6,Describe how you would solve the equation 2x + 5 = 15. {shortanswer2.jpg},Show your step-by-step reasoning,ShortAnswer,180,2,CGSA,"Algebraic problem solving",COMP1, COMP2
+Science,Grade 6,What is the difference between RAM and ROM? {shortanswer3.png},Explain in 2-3 sentences,ShortAnswer,220,2,NGSS,"Computer memory types",COMP1, COMP2
+Science,Grade 6,What are the three states of matter? Give an example of each. {shortanswer4.png},Provide examples for each state,ShortAnswer,190,1,NGSS,"States of matter and examples",COMP1, COMP2`;
       filename = 'question_import_template_short_answer.csv';
     } else if (type === 'Essay') {
-      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
-Science,Grade 6,Discuss the impact of climate change on ecosystems. {essay1.png},Provide a comprehensive analysis with examples and evidence,Essay,280,4,"COMP1, COMP2"
-History,Grade 6,Analyze the causes and effects of World War II. {essay2.jpg},Include multiple perspectives and historical evidence,Essay,300,4,"COMP1, COMP2"
-English,Grade 6,Write an essay on the theme of friendship in literature. {essay3.png},Use examples from at least two literary works,Essay,250,3,"COMP1, COMP2"
-Science,Grade 6,Evaluate the pros and cons of renewable energy sources. {essay4.png},Consider economic, environmental, and social factors,Essay,270,4,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Science,Grade 6,Discuss the impact of climate change on ecosystems. {essay1.png},Provide a comprehensive analysis with examples and evidence,Essay,280,4,NGSS,"Environmental science and ecosystem analysis",COMP1, COMP2
+History,Grade 6,Analyze the causes and effects of World War II. {essay2.jpg},Include multiple perspectives and historical evidence,Essay,300,4,CGSA,"Historical analysis and critical thinking",COMP1, COMP2
+English,Grade 6,Write an essay on the theme of friendship in literature. {essay3.png},Use examples from at least two literary works,Essay,250,3,CGSA,"Literary analysis and theme exploration",COMP1, COMP2
+Science,Grade 6,Evaluate the pros and cons of renewable energy sources. {essay4.png},Consider economic, environmental, and social factors,Essay,270,4,NGSS,"Energy systems and evaluation",COMP1, COMP2`;
       filename = 'question_import_template_essay.csv';
     } else if (type === 'FillInBlank') {
-      template = `Subject,Grade,QuestionText,Description,questionType,blankOptions,blankCorrects,difficultyLevel,Competencies
-Science,Grade 6,The capital of France is ___ and the capital of Germany is ___. {fillinblank1.png},Fill in the correct capitals for each country,FillInBlank,"Paris,London;Berlin,Munich","A;A",200,"COMP1, COMP2"
-Maths,Grade 6,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___. {fillinblank2.jpg},Calculate and fill in the correct answers,FillInBlank,"8,9;8,9","A;A",180,"COMP1, COMP2"
-Science,Grade 6,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius. {fillinblank3.png},Fill in the correct temperature values,FillInBlank,"0,10;100,90","A;A",190,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,blankOptions,blankCorrects,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Science,Grade 6,The capital of France is ___ and the capital of Germany is ___. {fillinblank1.png},Fill in the correct capitals for each country,FillInBlank,"Paris,London;Berlin,Munich","A;A",200,1,NGSS,"Geographic knowledge and capitals",COMP1, COMP2
+Maths,Grade 6,The sum of 5 and 3 is ___ and the product of 2 and 4 is ___. {fillinblank2.jpg},Calculate and fill in the correct answers,FillInBlank,"8,9;8,9","A;A",180,1,CGSA,"Basic arithmetic operations",COMP1, COMP2
+Science,Grade 6,Water freezes at ___ degrees Celsius and boils at ___ degrees Celsius. {fillinblank3.png},Fill in the correct temperature values,FillInBlank,"0,10;100,90","A;A",190,1,NGSS,"Physical properties of water",COMP1, COMP2`;
       filename = 'question_import_template_fill_in_blank.csv';
     } else if (type === 'Matching') {
-      template = `Subject,Grade,QuestionText,Description,questionType,leftItems,rightItems,correctPairs,difficultyLevel,Competencies
-Maths,Grade 6,Match the mathematical operations with their symbols. {matching2.jpg},Match each operation with its correct symbol,Matching,"Addition,Subtraction,Multiplication,Division","×,+,÷,-","0-1,1-3,2-0,3-2",180,"COMP1, COMP2"
-English,Grade 6,Match the words with their synonyms. {matching3.png},Match each word with its correct synonym,Matching,"Happy,Big,Smart,Small","Tiny,Large,Intelligent,Joyful","0-3,1-1,2-2,3-0",190,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,leftItems,rightItems,correctPairs,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Maths,Grade 6,Match the mathematical operations with their symbols. {matching2.jpg},Match each operation with its correct symbol,Matching,"Addition,Subtraction,Multiplication,Division","×,+,÷,-","0-1,1-3,2-0,3-2",180,2,CGSA,"Mathematical operations and symbols",COMP1, COMP2
+English,Grade 6,Match the words with their synonyms. {matching3.png},Match each word with its correct synonym,Matching,"Happy,Big,Smart,Small","Tiny,Large,Intelligent,Joyful","0-3,1-1,2-2,3-0",190,2,CGSA,"Vocabulary and word relationships",COMP1, COMP2`;
       filename = 'question_import_template_matching.csv';
     } else if (type === 'TrueFalse') {
-      template = `Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,Competencies
-Science,Grade 6,The Earth revolves around the Sun. {truefalse1.png},Determine if the statement is true or false,TrueFalse,true,200,"COMP1, COMP2"
-Maths,Grade 6,2 + 2 equals 5. {truefalse2.jpg},Determine if the statement is true or false,TrueFalse,false,180,"COMP1, COMP2"
-Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png},Determine if the statement is true or false,TrueFalse,true,190,"COMP1, COMP2"`;
+      template = `Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Science,Grade 6,The Earth revolves around the Sun. {truefalse1.png},Determine if the statement is true or false,TrueFalse,true,200,1,NGSS,"Solar system and planetary motion",COMP1, COMP2
+Maths,Grade 6,2 + 2 equals 5. {truefalse2.jpg},Determine if the statement is true or false,TrueFalse,false,180,1,CGSA,"Basic arithmetic facts",COMP1, COMP2
+Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png},Determine if the statement is true or false,TrueFalse,true,190,1,NGSS,"Physical properties and temperature",COMP1, COMP2`;
       filename = 'question_import_template_true_false.csv';
     }
     
@@ -496,7 +506,9 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                   <p><strong>For Multiple Select:</strong> optionA, optionB, optionC, optionD, correctAnswers (JSON array format: "[A,C]" or "[A,B,C]")</p>
                   <p><strong>For Short Answer/Essay:</strong> dokLevel (required, 1-4), description (optional)</p>
                   <p><strong>For Fill in the Blanks:</strong> blankOptions (semicolon-separated, comma-separated options per blank), blankCorrects (semicolon-separated: A;B or 0;1)</p>
-                  <p><strong>Note:</strong> Growth Metric Score (difficultyLevel) is required for ALL question types. DOK Level is ONLY for Short Answer and Essay questions.</p>
+                  <p><strong>Standard:</strong> Optional field. Use NGSS for Science, CGSA for English and Maths.</p>
+                  <p><strong>Content Focus:</strong> Optional field. Description of content focus - parameters for DOK level used in AI grading.</p>
+                  <p><strong>Note:</strong> Growth Metric Score (difficultyLevel) is required for ALL question types. DOK Level is required for Short Answer and Essay questions, and optional (but recommended) for other question types.</p>
                   <p><strong>Optional columns:</strong> Description (for all question types), Competencies (comma-separated: "COMP1, COMP2")</p>
                   <p><strong>Image placeholders:</strong> Use <code>{'{filename.png}'}</code> in QuestionText to include images. Example: <code>{'Question text {image1.png} more text'}</code>. Images will be converted to <code>&lt;img&gt;</code> tags pointing to <code>/api/uploads/images/filename.png</code></p>
                   {detectedQuestionType && (
@@ -542,7 +554,9 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DOK (Short/Essay Only)</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DOK Level</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Standard</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Focus</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Competencies</th>
                     </tr>
                   </thead>
@@ -615,7 +629,13 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                           </td>
                           <td className="px-3 py-3 text-sm text-gray-900">{row.difficultyLevel}</td>
                           <td className="px-3 py-3 text-sm text-gray-900">
-                            {(questionType === 'ShortAnswer' || questionType === 'Essay') ? (row.dokLevel || '-') : '-'}
+                            {row.dokLevel || '-'}
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-900">
+                            {row.standard || '-'}
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-900 max-w-xs truncate" title={row.contentFocus || ''}>
+                            {row.contentFocus || '-'}
                           </td>
                           <td className="px-3 py-3 text-sm text-gray-900">
                             {row.competencyCodes && row.competencyCodes.trim() ? row.competencyCodes.trim() : '-'}

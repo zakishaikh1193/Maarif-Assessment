@@ -44,21 +44,27 @@ export const createAssignment = async (req, res) => {
       });
     }
 
-    if (!assign.startDate || !assign.startTime || !assign.endDate || !assign.endTime) {
+    if (!assign.startDate) {
       return res.status(400).json({
-        error: 'Start and end date/time are required',
-        code: 'MISSING_DATES'
+        error: 'Start date is required',
+        code: 'MISSING_START_DATE'
       });
     }
 
-    // Validate date/time logic
-    const startDateTime = new Date(`${assign.startDate}T${assign.startTime}`);
-    const endDateTime = new Date(`${assign.endDate}T${assign.endTime}`);
-    if (endDateTime <= startDateTime) {
-      return res.status(400).json({
-        error: 'End date/time must be after start date/time',
-        code: 'INVALID_DATE_RANGE'
-      });
+    // Automatically set times: start at 00:00, end at 23:59
+    const startTime = assign.startTime || '00:00';
+    const endTime = assign.endTime || '23:59';
+
+    // Validate date logic (endDate is optional - if not provided, assessment is unlimited)
+    if (assign.endDate) {
+      const startDateTime = new Date(`${assign.startDate}T00:00:00`);
+      const endDateTime = new Date(`${assign.endDate}T23:59:59`);
+      if (endDateTime <= startDateTime) {
+        return res.status(400).json({
+          error: 'End date must be after start date',
+          code: 'INVALID_DATE_RANGE'
+        });
+      }
     }
 
     // Get connection for transaction
@@ -69,8 +75,10 @@ export const createAssignment = async (req, res) => {
       await connection.query('START TRANSACTION');
 
       // Create assignment record
-      const startDateTime = `${assign.startDate} ${assign.startTime}:00`;
-      const endDateTime = `${assign.endDate} ${assign.endTime}:00`;
+      // Start date: automatically set to 00:00:00
+      const startDateTime = `${assign.startDate} ${startTime}:00`;
+      // End date: if provided, set to 23:59:59; if not provided, set to NULL (unlimited)
+      const endDateTime = assign.endDate ? `${assign.endDate} ${endTime}:00` : null;
       
       const [assignmentResult] = await connection.execute(`
         INSERT INTO assignments 
@@ -118,6 +126,8 @@ export const createAssignment = async (req, res) => {
       `, [...assign.selectedSchools, ...assign.selectedGrades]);
 
       // Create assignment_students records
+      // due_date: if endDate is provided, use it with 23:59:59; if not, set to NULL (unlimited)
+      const dueDate = assign.endDate ? `${assign.endDate} ${endTime}:00` : null;
       for (const student of students) {
         await connection.execute(`
           INSERT INTO assignment_students 
@@ -127,7 +137,7 @@ export const createAssignment = async (req, res) => {
           assignmentId,
           student.id,
           createdBy,
-          `${assign.endDate} ${assign.endTime}:00`
+          dueDate
         ]);
       }
 

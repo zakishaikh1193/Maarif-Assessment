@@ -28,9 +28,7 @@ interface AssignFormData {
   selectedSchools: number[];
   selectedGrades: number[];
   startDate: string;
-  startTime: string;
   endDate: string;
-  endTime: string;
 }
 
 const CreateAssessmentPage: React.FC = () => {
@@ -70,9 +68,7 @@ const CreateAssessmentPage: React.FC = () => {
     selectedSchools: [],
     selectedGrades: [],
     startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: ''
+    endDate: ''
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -222,21 +218,11 @@ const CreateAssessmentPage: React.FC = () => {
       }
     }
 
-    if (assignData.startDate && !assignData.startTime) {
-      newErrors.startTime = 'Start time is required when start date is provided';
-      isValid = false;
-    }
-
-    if (assignData.endDate && !assignData.endTime) {
-      newErrors.endTime = 'End time is required when end date is provided';
-      isValid = false;
-    }
-
     if (assignData.startDate && assignData.endDate) {
-      const startDateTime = new Date(`${assignData.startDate}T${assignData.startTime || '00:00'}`);
-      const endDateTime = new Date(`${assignData.endDate}T${assignData.endTime || '00:00'}`);
+      const startDateTime = new Date(`${assignData.startDate}T00:00:00`);
+      const endDateTime = new Date(`${assignData.endDate}T23:59:59`);
       if (endDateTime <= startDateTime) {
-        newErrors.endDate = 'End date/time must be after start date/time';
+        newErrors.endDate = 'End date must be after start date';
         isValid = false;
       }
     }
@@ -328,12 +314,16 @@ const CreateAssessmentPage: React.FC = () => {
         mode,
         general: generalData,
         questions: mode === 'Standard' ? selectedQuestions : [],
-        assign: hasAssignmentData ? assignData : {
+        assign: hasAssignmentData ? {
+          ...assignData,
+          startTime: assignData.startDate ? '00:00' : '',
+          endTime: assignData.endDate ? '23:59' : ''
+        } : {
           selectedSchools: [],
           selectedGrades: [],
           startDate: '',
-          startTime: '',
           endDate: '',
+          startTime: '',
           endTime: ''
         }
       };
@@ -1255,67 +1245,43 @@ const CreateAssessmentPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Date and Time Selection */}
+                  {/* Date Selection */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Start Date/Time */}
+                    {/* Start Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date & Time *
+                        Start Date *
                       </label>
-                      <div className="space-y-2">
-                        <input
-                          type="date"
-                          value={assignData.startDate}
-                          onChange={(e) => handleAssignChange('startDate', e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.startDate ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        />
-                        <input
-                          type="time"
-                          value={assignData.startTime}
-                          onChange={(e) => handleAssignChange('startTime', e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.startTime ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        />
-                      </div>
+                      <p className="text-xs text-gray-500 mb-2">Assessment will be available from 00:00 (midnight) on this date</p>
+                      <input
+                        type="date"
+                        value={assignData.startDate}
+                        onChange={(e) => handleAssignChange('startDate', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.startDate ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
                       {errors.startDate && (
                         <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
                       )}
-                      {errors.startTime && (
-                        <p className="mt-1 text-sm text-red-600">{errors.startTime}</p>
-                      )}
                     </div>
 
-                    {/* End Date/Time */}
+                    {/* End Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date & Time (Optional)
+                        End Date (Optional - Leave blank for unlimited)
                       </label>
-                      <div className="space-y-2">
-                        <input
-                          type="date"
-                          value={assignData.endDate}
-                          onChange={(e) => handleAssignChange('endDate', e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.endDate ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        />
-                        <input
-                          type="time"
-                          value={assignData.endTime}
-                          onChange={(e) => handleAssignChange('endTime', e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.endTime ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                        />
-                      </div>
+                      <p className="text-xs text-gray-500 mb-2">If set, assessment will be available until 23:59 on this date</p>
+                      <input
+                        type="date"
+                        value={assignData.endDate}
+                        onChange={(e) => handleAssignChange('endDate', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.endDate ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
                       {errors.endDate && (
                         <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
-                      )}
-                      {errors.endTime && (
-                        <p className="mt-1 text-sm text-red-600">{errors.endTime}</p>
                       )}
                     </div>
                   </div>

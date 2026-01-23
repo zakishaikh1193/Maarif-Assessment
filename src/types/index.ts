@@ -61,6 +61,8 @@ export interface Question {
   correctOptionIndex: number;
   difficultyLevel: number;
   dokLevel?: number; // Depth of Knowledge level (1-4)
+  standard?: string; // Standard identifier (e.g., NGSS, CGSA)
+  contentFocus?: string; // Content Focus description - parameters for DOK level used in AI grading
   questionType?: QuestionType;
   correctAnswer?: string; // For non-MCQ types
   questionMetadata?: any; // For complex question types (e.g., FillInBlank blanks structure)
@@ -128,9 +130,17 @@ export interface AssessmentResult {
   isCorrect: boolean;
   difficulty: number;
   questionText: string;
+  questionType?: string;
   options: string[];
-  selectedAnswer: number;
-  correctAnswer: number;
+  questionMetadata?: any; // For FillInBlank, Matching, etc.
+  selectedAnswer: number | string | number[]; // Can be number for MCQ, string for Short Answer/Essay, or array for MultipleSelect/FillInBlank/Matching
+  formattedSelectedAnswer?: string; // Formatted display string for the selected answer
+  correctAnswer: number | string | number[];
+  formattedCorrectAnswer?: string; // Formatted display string for the correct answer
+  aiGradingResult?: {
+    correct: number; // 1 or 0
+    reason: string; // Explanation
+  };
 }
 
 export interface DifficultyProgression {
