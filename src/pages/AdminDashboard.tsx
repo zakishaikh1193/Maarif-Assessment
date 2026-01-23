@@ -332,8 +332,10 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <Navigation />
+        </div>
+        <div className="flex items-center justify-center h-screen">
           <div className="flex flex-col items-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
             <p className="text-gray-600">Loading dashboard...</p>
@@ -345,226 +347,228 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      {/* Fixed Navigation */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navigation />
+      </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-blue-600 rounded-2xl shadow-lg">
-              <Brain className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Admin Dashboard
-              </h1>
-              <p className="text-gray-600 text-lg">
-                Manage assessments and analyze student performance
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-xl">
-                  <FileQuestion className="h-8 w-8 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-gray-900">{stats.totalQuestions}</p>
-                  <p className="text-gray-600">Total Questions</p>
-                  <div className="flex items-center space-x-1 mt-1">
-                    <Database className="h-4 w-4 text-blue-500" />
-                    <span className="text-xs text-gray-500">Active Database</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-xl">
-                  <Users className="h-8 w-8 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
-                  <p className="text-gray-600">Active Students</p>
-                  <div className="flex items-center space-x-1 mt-1">
-                    <Activity className="h-4 w-4 text-green-500" />
-                    <span className="text-xs text-gray-500">Enrolled Users</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-xl">
-                  <Target className="h-8 w-8 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-gray-900">{stats.totalAssessments}</p>
-                  <p className="text-gray-600">Assessments Taken</p>
-                  <div className="flex items-center space-x-1 mt-1">
-                    <Zap className="h-4 w-4 text-purple-500" />
-                    <span className="text-xs text-gray-500">Completed Tests</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 mb-8">
-          <div className="flex flex-wrap">
+      <div className="flex pt-16">
+        {/* Fixed Sidebar */}
+        <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 shadow-sm overflow-y-auto z-40">
+          <div className="p-4">
+            <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('configs')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'configs'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Clock className="h-4 w-4" />
-                <span className="hidden sm:inline">ASSESSMENTS</span>
-              </div>
+              <Clock className="h-5 w-5" />
+              <span className="text-sm font-medium">ASSESSMENTS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('students')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'students'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">STUDENTS</span>
-              </div>
+              <Users className="h-5 w-5" />
+              <span className="text-sm font-medium">STUDENTS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('questions')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'questions'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <FileQuestion className="h-4 w-4" />
-                <span className="hidden sm:inline">QUESTIONS</span>
-              </div>
+              <FileQuestion className="h-5 w-5" />
+              <span className="text-sm font-medium">QUESTIONS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('growth')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'growth'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">GROWTH</span>
-              </div>
+              <TrendingUp className="h-5 w-5" />
+              <span className="text-sm font-medium">GROWTH</span>
             </button>
+
             <button
               onClick={() => setActiveTab('subjects')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'subjects'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">SUBJECTS</span>
-              </div>
+              <BookOpen className="h-5 w-5" />
+              <span className="text-sm font-medium">SUBJECTS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('schools')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'schools'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Building className="h-4 w-4" />
-                <span className="hidden sm:inline">SCHOOLS</span>
-              </div>
+              <Building className="h-5 w-5" />
+              <span className="text-sm font-medium">SCHOOLS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('grades')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'grades'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <GraduationCap className="h-4 w-4" />
-                <span className="hidden sm:inline">GRADES</span>
-              </div>
+              <GraduationCap className="h-5 w-5" />
+              <span className="text-sm font-medium">GRADES</span>
             </button>
+
             <button
               onClick={() => setActiveTab('competencies')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'competencies'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Target className="h-4 w-4" />
-                <span className="hidden sm:inline">COMPETENCIES</span>
-              </div>
+              <Target className="h-5 w-5" />
+              <span className="text-sm font-medium">COMPETENCIES</span>
             </button>
+
             <button
               onClick={() => setActiveTab('performance')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'performance'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">PERFORMANCE</span>
-              </div>
+              <BarChart3 className="h-5 w-5" />
+              <span className="text-sm font-medium">PERFORMANCE</span>
             </button>
+
             <button
               onClick={() => setActiveTab('competency-analytics')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'competency-analytics'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Brain className="h-4 w-4" />
-                <span className="hidden sm:inline">COMPETENCY ANALYTICS</span>
-              </div>
+              <Brain className="h-5 w-5" />
+              <span className="text-sm font-medium">COMPETENCY ANALYTICS</span>
             </button>
+
             <button
               onClick={() => setActiveTab('sso')}
-              className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 activeTab === 'sso'
-                  ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Key className="h-4 w-4" />
-                <span className="hidden sm:inline">SSO SETTINGS</span>
-              </div>
+              <Key className="h-5 w-5" />
+              <span className="text-sm font-medium">SSO SETTINGS</span>
             </button>
-          </div>
+          </nav>
         </div>
+      </aside>
+
+      {/* Main Content Area */}
+        <main className="flex-1 ml-64 min-h-[calc(100vh-4rem)] bg-gray-50">
+          <div className="w-full px-6 py-8">
+            {/* Dashboard Header - Only show when on dashboard view */}
+            {activeTab === 'configs' && (
+              <>
+                {/* Header Container */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 bg-blue-600 rounded-2xl shadow-lg flex-shrink-0">
+                      <Brain className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                        Admin Dashboard
+                      </h1>
+                      <p className="text-gray-600 text-lg">
+                        Manage assessments and analyze student performance
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Stats Cards */}
+                {stats && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-blue-100 rounded-xl flex-shrink-0">
+                          <FileQuestion className="h-8 w-8 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-3xl font-bold text-gray-900">{stats.totalQuestions}</p>
+                          <p className="text-gray-600 text-sm font-medium">Total Questions</p>
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Database className="h-4 w-4 text-blue-500" />
+                            <span className="text-xs text-gray-500">Active Database</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-green-100 rounded-xl flex-shrink-0">
+                          <Users className="h-8 w-8 text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
+                          <p className="text-gray-600 text-sm font-medium">Active Students</p>
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Activity className="h-4 w-4 text-green-500" />
+                            <span className="text-xs text-gray-500">Enrolled Users</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-purple-100 rounded-xl flex-shrink-0">
+                          <Target className="h-8 w-8 text-purple-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-3xl font-bold text-gray-900">{stats.totalAssessments}</p>
+                          <p className="text-gray-600 text-sm font-medium">Assessments Taken</p>
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Zap className="h-4 w-4 text-purple-500" />
+                            <span className="text-xs text-gray-500">Completed Tests</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
         {/* Questions Management Tab Content */}
         {activeTab === 'questions' && (
@@ -1042,6 +1046,8 @@ const AdminDashboard: React.FC = () => {
             }
           }}
         />
+          </div>
+        </main>
       </div>
     </div>
   );
