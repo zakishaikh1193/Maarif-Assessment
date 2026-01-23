@@ -145,6 +145,10 @@ export const adminAPI = {
     const response = await api.get('/admin/stats');
     return response.data;
   },
+  getTopPerformers: async (limit: number = 5) => {
+    const response = await api.get(`/admin/top-performers?limit=${limit}`);
+    return response.data;
+  },
 
   getStudents: async (): Promise<Array<{id: number, username: string, firstName?: string, lastName?: string}>> => {
     const response = await api.get('/admin/students');
@@ -319,6 +323,11 @@ export const assignmentsAPI = {
 
   getById: async (id: number) => {
     const response = await api.get(`/admin/assignments/${id}`);
+    return response.data;
+  },
+
+  getStudents: async (id: number) => {
+    const response = await api.get(`/admin/assignments/${id}/students`);
     return response.data;
   },
 
@@ -499,6 +508,19 @@ export const ssoAPI = {
   },
   updateSettings: async (settings: { sso_enabled: boolean; sso_secret_key: string; moodle_url: string }) => {
     const response = await api.put('/sso/settings', settings);
+    return response.data;
+  },
+  getPowerSchoolSettings: async () => {
+    const response = await api.get('/sso/powerschool-settings');
+    return response.data;
+  },
+  updatePowerSchoolSettings: async (settings: { 
+    power_school_enabled: boolean; 
+    power_school_url: string; 
+    power_school_client_id: string; 
+    power_school_client_secret: string 
+  }) => {
+    const response = await api.put('/sso/powerschool-settings', settings);
     return response.data;
   }
 };

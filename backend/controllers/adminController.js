@@ -267,12 +267,52 @@ export const getAdminStats = async (req, res) => {
       ORDER BY s.name
     `);
 
+    // Get performance by grade (average RIT score as percentage)
+    const gradePerformance = await executeQuery(`
+      SELECT 
+        g.id,
+        g.display_name,
+        g.grade_level,
+        COALESCE(AVG(a.rit_score), 0) as average_rit_score,
+        COUNT(DISTINCT a.id) as assessment_count,
+        COUNT(DISTINCT u.id) as student_count
+      FROM grades g
+      LEFT JOIN users u ON g.id = u.grade_id AND u.role = 'student'
+      LEFT JOIN assessments a ON u.id = a.student_id AND a.rit_score IS NOT NULL
+      WHERE g.is_active = 1
+      GROUP BY g.id, g.display_name, g.grade_level
+      ORDER BY COALESCE(g.grade_level, 999), g.display_name
+    `);
+
+    // Calculate performance percentage (normalize RIT scores to 0-100 scale)
+    // Assuming RIT scores range from 100-350, we'll normalize to percentage
+    const gradePerformanceWithPercentage = gradePerformance.map((grade) => {
+      const avgRit = grade.average_rit_score || 0;
+      // Normalize RIT score (100-350 range) to percentage (0-100)
+      // If no assessments, return 0
+      let percentage = 0;
+      if (avgRit > 0) {
+        // Normalize: (rit - 100) / (350 - 100) * 100
+        percentage = Math.max(0, Math.min(100, ((avgRit - 100) / 250) * 100));
+      }
+      return {
+        id: grade.id,
+        display_name: grade.display_name,
+        grade_level: grade.grade_level,
+        average_rit_score: avgRit,
+        performance_percentage: Math.round(percentage),
+        assessment_count: grade.assessment_count,
+        student_count: grade.student_count
+      };
+    });
+
     res.json({
       totalQuestions,
       totalStudents,
       totalAssessments,
       difficultyDistribution,
-      subjectDistribution
+      subjectDistribution,
+      gradePerformance: gradePerformanceWithPercentage
     });
 
   } catch (error) {
@@ -280,6 +320,67 @@ export const getAdminStats = async (req, res) => {
     res.status(500).json({
       error: 'Failed to fetch admin statistics',
       code: 'FETCH_STATS_ERROR'
+    });
+  }
+};
+
+// Get top performing students
+export const getTopPerformers = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+
+    // Get top performing students with their highest scores and school names
+    // First get the highest score per student
+    const topPerformers = await executeQuery(`
+      SELECT 
+        u.id as student_id,
+        u.username,
+        u.first_name,
+        u.last_name,
+        s.name as school_name,
+        MAX(a.rit_score) as highest_score,
+        (
+          SELECT sub.name 
+          FROM assessments a2
+          JOIN subjects sub ON a2.subject_id = sub.id
+          WHERE a2.student_id = u.id 
+          AND a2.rit_score = MAX(a.rit_score)
+          LIMIT 1
+        ) as subject_name,
+        (
+          SELECT a2.date_taken
+          FROM assessments a2
+          WHERE a2.student_id = u.id 
+          AND a2.rit_score = MAX(a.rit_score)
+          ORDER BY a2.date_taken DESC
+          LIMIT 1
+        ) as date_taken
+      FROM assessments a
+      JOIN users u ON a.student_id = u.id
+      LEFT JOIN schools s ON u.school_id = s.id
+      WHERE a.rit_score IS NOT NULL
+      AND u.role = 'student'
+      GROUP BY u.id, u.username, u.first_name, u.last_name, s.name
+      ORDER BY highest_score DESC, date_taken DESC
+      LIMIT ?
+    `, [limit]);
+
+    // Format the response
+    const formatted = topPerformers.map((performer) => ({
+      studentId: performer.student_id,
+      studentName: `${performer.first_name || ''} ${performer.last_name || ''}`.trim() || performer.username,
+      schoolName: performer.school_name || 'Unknown School',
+      highestScore: performer.highest_score,
+      subjectName: performer.subject_name || 'Unknown Subject',
+      dateTaken: performer.date_taken
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Error fetching top performers:', error);
+    res.status(500).json({
+      error: 'Failed to fetch top performers',
+      code: 'FETCH_TOP_PERFORMERS_ERROR'
     });
   }
 };

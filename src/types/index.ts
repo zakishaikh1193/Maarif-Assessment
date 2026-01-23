@@ -273,6 +273,15 @@ export interface AdminStats {
     name: string;
     question_count: number;
   }>;
+  gradePerformance?: Array<{
+    id: number;
+    display_name: string;
+    grade_level: number | null;
+    average_rit_score: number;
+    performance_percentage: number;
+    assessment_count: number;
+    student_count: number;
+  }>;
 }
 
 export interface Competency {
