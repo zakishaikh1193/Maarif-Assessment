@@ -1,0 +1,9 @@
+Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,Competencies
+Science,Grade 6,The Earth revolves around the Sun. {truefalse1.png},Determine if the statement is true or false,TrueFalse,true,200,"COMP1, COMP2"
+Maths,Grade 6,2 + 2 equals 5. {truefalse2.jpg},Determine if the statement is true or false,TrueFalse,false,180,"COMP1, COMP2"
+Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png},Determine if the statement is true or false,TrueFalse,true,190,"COMP1, COMP2"
+
+Note: 
+- correctAnswer must be either "true" or "false" (lowercase)
+- DOK Level is NOT applicable to True/False questions
+- Only Growth Metric Score (difficultyLevel) is required

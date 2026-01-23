@@ -1,7 +1,10 @@
-subject,grade,questionText,questionType,difficultyLevel,dokLevel,description,competencyCodes
-Science,Grade 1,Explain the process of photosynthesis in your own words.,ShortAnswer,200,3,Provide a brief explanation (100 words or less),LOG001,PRO001
-Mathematics,Grade 1,Describe how you would solve the equation 2x + 5 = 15.,ShortAnswer,180,2,Show your step-by-step reasoning,LOG001,PRO001
-Computer Science,Grade 1,What is the difference between RAM and ROM?,ShortAnswer,220,2,Explain in 2-3 sentences,LOG001,TEC001
-Science,Grade 1,What are the three states of matter? Give an example of each.,ShortAnswer,190,1,Provide examples for each state,LOG001,PRO001
+Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,Competencies
+Science,Grade 6,Explain the process of photosynthesis in your own words. {shortanswer1.png},Provide a brief explanation (100 words or less),ShortAnswer,200,3,"COMP1, COMP2"
+Maths,Grade 6,Describe how you would solve the equation 2x + 5 = 15. {shortanswer2.jpg},Show your step-by-step reasoning,ShortAnswer,180,2,"COMP1, COMP2"
+Science,Grade 6,What is the difference between RAM and ROM? {shortanswer3.png},Explain in 2-3 sentences,ShortAnswer,220,2,"COMP1, COMP2"
+Science,Grade 6,What are the three states of matter? Give an example of each. {shortanswer4.png},Provide examples for each state,ShortAnswer,190,1,"COMP1, COMP2"
 
-Note: DOK Level is REQUIRED for Short Answer questions (1-4)
+Note: 
+- DOK Level is REQUIRED for Short Answer questions (must be 1, 2, 3, or 4)
+- DOK Level indicates the Depth of Knowledge required to answer the question
+- Image placeholders in QuestionText: Use {filename.png} format, which will be converted to image tags

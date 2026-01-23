@@ -1,0 +1,18 @@
+Subject,Grade,QuestionText,Description,questionType,leftItems,rightItems,correctPairs,difficultyLevel,Competencies
+Science,Grade 6,Match the following terms with their definitions. {matching1.png},Match each term in the left column with its correct definition from the right column,Matching,"Cell,Photosynthesis,Mitochondria","Basic unit of life,Process of making food,Powerhouse of cell","0-0,1-1,2-2",200,"COMP1, COMP2"
+Maths,Grade 6,Match the mathematical operations with their symbols. {matching2.jpg},Match each operation with its correct symbol,Matching,"Addition,Subtraction,Multiplication,Division","+,−,×,÷","0-2,1-0,2-3,3-1",180,"COMP1, COMP2"
+English,Grade 6,Match the words with their synonyms. {matching3.png},Match each word with its correct synonym,Matching,"Happy,Big,Smart,Small","Joyful,Large,Intelligent,Tiny","0-3,1-1,2-2,3-0",190,"COMP1, COMP2"
+History,Grade 6,Match the historical events with their dates. {matching4.png},Match each event with its correct year,Matching,"World War I,World War II,American Revolution,French Revolution","1914-1918,1939-1945,1775-1783,1789-1799","0-1,1-0,2-2,3-3",210,"COMP1, COMP2"
+
+Note: 
+- leftItems: Comma-separated list of items for the left column
+- rightItems: Comma-separated list of items for the right column  
+- correctPairs: Format is "leftIndex-rightIndex" for each pair, separated by commas
+  Example: "0-2,1-0,2-3,3-1" means:
+    - Left item 0 (first item) matches Right item 2 (third item)
+    - Left item 1 (second item) matches Right item 0 (first item)
+    - Left item 2 (third item) matches Right item 3 (fourth item)
+    - Left item 3 (fourth item) matches Right item 1 (second item)
+- Both columns must have the same number of items
+- Each item in leftItems must have a unique match in rightItems
+- The correctPairs should show shuffled/random matches, not sequential (0-0,1-1,2-2)
