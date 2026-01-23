@@ -438,3 +438,77 @@ export const deleteAssignment = async (req, res) => {
     });
   }
 };
+
+// Get students who took an assignment and their assessment results
+export const getAssignmentStudents = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if assignment exists
+    const assignment = await executeQuery(`
+      SELECT 
+        a.id,
+        a.name,
+        a.description,
+        a.subject_id as subjectId,
+        a.grade_id as gradeId,
+        s.name as subjectName,
+        g.display_name as gradeName
+      FROM assignments a
+      JOIN subjects s ON a.subject_id = s.id
+      JOIN grades g ON a.grade_id = g.id
+      WHERE a.id = ?
+    `, [id]);
+
+    if (assignment.length === 0) {
+      return res.status(404).json({
+        error: 'Assignment not found',
+        code: 'ASSIGNMENT_NOT_FOUND'
+      });
+    }
+
+    // Get all students who took this assignment with their assessment results
+    const students = await executeQuery(`
+      SELECT 
+        u.id as studentId,
+        u.username,
+        u.first_name as firstName,
+        u.last_name as lastName,
+        s.name as schoolName,
+        g.display_name as gradeName,
+        ast.assigned_at as assignedAt,
+        ast.due_date as dueDate,
+        ast.is_completed as isCompleted,
+        ast.completed_at as completedAt,
+        ass.id as assessmentId,
+        ass.rit_score as ritScore,
+        ass.correct_answers as correctAnswers,
+        ass.total_questions as totalQuestions,
+        ass.date_taken as dateTaken,
+        ass.duration_minutes as durationMinutes
+      FROM assignment_students ast
+      JOIN users u ON ast.student_id = u.id
+      LEFT JOIN schools s ON u.school_id = s.id
+      LEFT JOIN grades g ON u.grade_id = g.id
+      LEFT JOIN assessments ass ON ass.assignment_id = ast.assignment_id 
+        AND ass.student_id = u.id 
+        AND ass.rit_score IS NOT NULL
+      WHERE ast.assignment_id = ?
+      ORDER BY 
+        CASE WHEN ass.date_taken IS NOT NULL THEN 0 ELSE 1 END,
+        ass.date_taken DESC,
+        u.first_name, u.last_name, u.username
+    `, [id]);
+
+    res.json({
+      assignment: assignment[0],
+      students: students
+    });
+  } catch (error) {
+    console.error('Error fetching assignment students:', error);
+    res.status(500).json({
+      error: 'Failed to fetch assignment students',
+      code: 'FETCH_ASSIGNMENT_STUDENTS_ERROR'
+    });
+  }
+};

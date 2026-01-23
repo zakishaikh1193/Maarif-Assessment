@@ -4,7 +4,8 @@ import {
   getAllAssignments,
   getAssignmentById,
   updateAssignment,
-  deleteAssignment
+  deleteAssignment,
+  getAssignmentStudents
 } from '../controllers/assignmentsController.js';
 import { authenticateToken, adminOnly } from '../middleware/auth.js';
 import { validateId } from '../middleware/validation.js';
@@ -20,6 +21,9 @@ router.post('/', createAssignment);
 
 // Get all assignments
 router.get('/', getAllAssignments);
+
+// Get students who took an assignment (must be before /:id route)
+router.get('/:id/students', validateId, getAssignmentStudents);
 
 // Get assignment by ID
 router.get('/:id', validateId, getAssignmentById);

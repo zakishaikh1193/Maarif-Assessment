@@ -4,6 +4,7 @@ import { AssessmentConfiguration, Grade, Subject } from '../types';
 import { assessmentConfigAPI, gradesAPI, subjectsAPI, assignmentsAPI } from '../services/api';
 import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye } from 'lucide-react';
 import AssessmentConfigForm from './AssessmentConfigForm';
+import AssignmentViewModal from './AssignmentViewModal';
 
 interface Assignment {
   id: number;
@@ -41,6 +42,8 @@ const AssessmentConfigList: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
   const [filteredConfigs, setFilteredConfigs] = useState<AssessmentConfiguration[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
+  const [viewingAssignmentId, setViewingAssignmentId] = useState<number | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -392,8 +395,8 @@ const AssessmentConfigList: React.FC = () => {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => {
-                              // TODO: Navigate to view assignment details
-                              alert('View assignment details - to be implemented');
+                              setViewingAssignmentId(assignment.id);
+                              setShowViewModal(true);
                             }}
                             className="text-blue-600 hover:text-blue-900 transition-colors"
                             title="View Details"
@@ -551,6 +554,18 @@ const AssessmentConfigList: React.FC = () => {
           subjects={subjects}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
+        />
+      )}
+
+      {/* Assignment View Modal */}
+      {showViewModal && viewingAssignmentId && (
+        <AssignmentViewModal
+          isOpen={showViewModal}
+          onClose={() => {
+            setShowViewModal(false);
+            setViewingAssignmentId(null);
+          }}
+          assignmentId={viewingAssignmentId}
         />
       )}
     </div>

@@ -21,7 +21,8 @@ import {
   getStudentCompetencyScores,
   getStudentCompetencyGrowth,
   importStudentsFromCSV,
-  importQuestionsFromCSV
+  importQuestionsFromCSV,
+  getTopPerformers
 } from '../controllers/adminController.js';
 import { authenticateToken, adminOnly } from '../middleware/auth.js';
 import { validateId, validateSubjectId, validateQuestion, validateBulkQuestions, validateStudent } from '../middleware/validation.js';
@@ -34,6 +35,7 @@ router.use(adminOnly);
 
 // Stats
 router.get('/stats', getAdminStats);
+router.get('/top-performers', getTopPerformers);
 
 // Students
 router.get('/students', getStudents);

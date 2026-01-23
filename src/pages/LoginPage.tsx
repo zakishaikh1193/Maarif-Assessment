@@ -165,7 +165,7 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel - Background with Glassmorphism UI Elements */}
+        {/* Right Panel - Background with Assessment Glassmorphism UI Elements */}
         <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
           {/* Background Image - Assessment/Education themed */}
           <div 
@@ -177,31 +177,10 @@ const LoginPage: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20" />
 
-          {/* Glassmorphism UI Elements */}
+          {/* Glassmorphism Assessment UI Elements */}
           <div className="relative w-full h-full p-8">
-            {/* Assessment Cards */}
-            <div className="absolute top-20 left-8 space-y-2">
-              <div className="bg-yellow-400/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
-                <h3 className="font-semibold text-gray-900 text-sm mb-1">Math Assessment Review</h3>
-                <p className="text-gray-700 text-xs">09:30am - 10:00am</p>
-              </div>
-              <div className="bg-gray-900/40 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-white/10">
-                <p className="text-white text-xs">09:30am - 10:00am</p>
-              </div>
-            </div>
-
-            {/* Profile Avatars */}
-            <div className="absolute top-1/3 right-12 flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 border-2 border-white/50 backdrop-blur-sm shadow-lg"
-                />
-              ))}
-            </div>
-
-            {/* Calendar View */}
-            <div className="absolute bottom-32 left-8 right-8 bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 shadow-lg">
+            {/* Assessment Calendar View - Moved to Top */}
+            <div className="absolute top-8 left-8 right-8 bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 shadow-lg">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-white text-xs font-medium">Sun Mon Tue Wed Thu Fri Sat</span>
               </div>
@@ -211,12 +190,35 @@ const LoginPage: React.FC = () => {
                 <span className="text-white/80 text-xs">24</span>
                 <span className="text-white/80 text-xs">25</span>
                 <span className="text-white/80 text-xs">26</span>
-                <span className="text-white/60 text-xs line-through">27</span>
-                <span className="text-white/60 text-xs line-through">28</span>
+                <span className="text-white/80 text-xs">27</span>
+                <span className="text-white/80 text-xs">28</span>
               </div>
             </div>
 
-            {/* Assessment Session Card */}
+            {/* Assessment Review Cards */}
+            <div className="absolute top-32 left-8 space-y-2">
+              <div className="bg-yellow-400/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">Math Assessment Review</h3>
+                <p className="text-gray-700 text-xs">09:30am - 10:00am</p>
+              </div>
+              <div className="bg-gray-900/40 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-white/10">
+                <p className="text-white text-xs">09:30am - 10:00am</p>
+              </div>
+            </div>
+
+            {/* Assessment Progress Indicators */}
+            <div className="absolute top-1/2 right-12 flex -space-x-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 border-2 border-white/50 backdrop-blur-sm shadow-lg flex items-center justify-center"
+                >
+                  <span className="text-white text-xs font-bold">{i}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Science Assessment Card */}
             <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg max-w-xs">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900 text-sm">Science Assessment</h3>
@@ -227,8 +229,10 @@ const LoginPage: React.FC = () => {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white shadow-sm"
-                  />
+                    className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white shadow-sm flex items-center justify-center"
+                  >
+                    <span className="text-white text-[10px] font-bold">{i}</span>
+                  </div>
                 ))}
               </div>
             </div>
