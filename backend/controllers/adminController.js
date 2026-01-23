@@ -373,7 +373,7 @@ export const createBulkQuestions = async (req, res) => {
 // Create new question
 export const createQuestion = async (req, res) => {
   try {
-    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, standard, contentFocus, competencies, questionType, correctAnswer, questionMetadata } = req.body;
 
     // Convert image placeholders to img tags in question text
     questionText = convertImagePlaceholders(questionText, req);
@@ -561,7 +561,8 @@ export const createQuestion = async (req, res) => {
       });
     }
 
-    // Validate DOK level - only required for ShortAnswer and Essay
+    // Validate DOK level
+    // Required for ShortAnswer and Essay, optional for other types
     if (qType === 'ShortAnswer' || qType === 'Essay') {
       if (dokLevel === undefined || dokLevel === null || !Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
         return res.status(400).json({
@@ -570,11 +571,13 @@ export const createQuestion = async (req, res) => {
         });
       }
     } else if (dokLevel !== undefined && dokLevel !== null) {
-      // If DOK is provided for other question types, don't allow it
-      return res.status(400).json({
-        error: 'DOK level is only applicable to Short Answer and Essay questions',
-        code: 'INVALID_DOK_LEVEL'
-      });
+      // If DOK is provided for other question types, validate it
+      if (!Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
+        return res.status(400).json({
+          error: 'DOK level must be an integer between 1 and 4 if provided',
+          code: 'INVALID_DOK_LEVEL'
+        });
+      }
     }
 
     // Check if subject exists
@@ -670,11 +673,11 @@ export const createQuestion = async (req, res) => {
       finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
     }
 
-    // Insert question - only set dok_level for ShortAnswer and Essay
-    const finalDokLevel = (qType === 'ShortAnswer' || qType === 'Essay') ? dokLevel : null;
+    // Insert question - set dok_level for all question types (required for ShortAnswer/Essay, optional for others)
+    const finalDokLevel = dokLevel !== undefined && dokLevel !== null ? dokLevel : null;
     const result = await executeQuery(
-      'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, req.user.id]
+      'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, standard, content_focus, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, standard || null, contentFocus || null, req.user.id]
     );
     
     // Verify the inserted data
@@ -698,7 +701,7 @@ export const createQuestion = async (req, res) => {
 
     // Get the created question
     const questions = await executeQuery(
-      'SELECT id, subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_at FROM questions WHERE id = ?',
+      'SELECT id, subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, standard, content_focus, created_at FROM questions WHERE id = ?',
       [result.insertId]
     );
 
@@ -737,6 +740,8 @@ export const createQuestion = async (req, res) => {
         questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
         dokLevel: question.dok_level,
+        standard: question.standard,
+        contentFocus: question.content_focus,
         createdAt: question.created_at
       }
     });
@@ -769,6 +774,8 @@ export const getQuestionById = async (req, res) => {
         q.question_metadata,
         q.difficulty_level,
         q.dok_level,
+        q.standard,
+        q.content_focus,
         q.created_at,
         u.username as created_by_username,
         g.display_name as grade_name
@@ -1045,7 +1052,7 @@ export const getQuestionsBySubject = async (req, res) => {
 export const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, competencies, questionType, correctAnswer, questionMetadata } = req.body;
+    let { subjectId, gradeId, questionText, options, correctOptionIndex, difficultyLevel, dokLevel, standard, contentFocus, competencies, questionType, correctAnswer, questionMetadata } = req.body;
 
     // Convert image placeholders to img tags in question text
     questionText = convertImagePlaceholders(questionText, req);
@@ -1271,7 +1278,8 @@ export const updateQuestion = async (req, res) => {
       });
     }
 
-    // Validate DOK level - only required for ShortAnswer and Essay
+    // Validate DOK level
+    // Required for ShortAnswer and Essay, optional for other types
     if (qType === 'ShortAnswer' || qType === 'Essay') {
       if (dokLevel === undefined || dokLevel === null || !Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
         return res.status(400).json({
@@ -1280,11 +1288,13 @@ export const updateQuestion = async (req, res) => {
         });
       }
     } else if (dokLevel !== undefined && dokLevel !== null) {
-      // If DOK is provided for other question types, don't allow it
-      return res.status(400).json({
-        error: 'DOK level is only applicable to Short Answer and Essay questions',
-        code: 'INVALID_DOK_LEVEL'
-      });
+      // If DOK is provided for other question types, validate it
+      if (!Number.isInteger(dokLevel) || dokLevel < 1 || dokLevel > 4) {
+        return res.status(400).json({
+          error: 'DOK level must be an integer between 1 and 4 if provided',
+          code: 'INVALID_DOK_LEVEL'
+        });
+      }
     }
 
     // Prepare correct_option_index and correct_answer based on question type
@@ -1340,11 +1350,11 @@ export const updateQuestion = async (req, res) => {
       finalQuestionMetadata = typeof questionMetadata === 'string' ? questionMetadata : JSON.stringify(questionMetadata);
     }
 
-    // Update question - only set dok_level for ShortAnswer and Essay
-    const finalDokLevel = (qType === 'ShortAnswer' || qType === 'Essay') ? dokLevel : null;
+    // Update question - set dok_level for all question types (required for ShortAnswer/Essay, optional for others)
+    const finalDokLevel = dokLevel !== undefined && dokLevel !== null ? dokLevel : null;
     await executeQuery(
-      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, dok_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, id]
+      'UPDATE questions SET subject_id = ?, grade_id = ?, question_text = ?, question_type = ?, options = ?, correct_option_index = ?, correct_answer = ?, question_metadata = ?, difficulty_level = ?, dok_level = ?, standard = ?, content_focus = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [subjectId, gradeId, questionText, qType, JSON.stringify(optionsArray), finalCorrectOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, standard || null, contentFocus || null, id]
     );
 
     // Update competency relationships
@@ -1375,6 +1385,8 @@ export const updateQuestion = async (req, res) => {
         q.question_metadata,
         q.difficulty_level,
         q.dok_level,
+        q.standard,
+        q.content_focus,
         q.created_at,
         u.username as created_by_username,
         g.display_name as grade_name
@@ -1419,6 +1431,8 @@ export const updateQuestion = async (req, res) => {
         questionMetadata: parsedMetadata,
         difficultyLevel: question.difficulty_level,
         dokLevel: question.dok_level,
+        standard: question.standard,
+        contentFocus: question.content_focus,
         createdAt: question.created_at,
         createdByUsername: question.created_by_username
       }
@@ -2579,6 +2593,17 @@ export const importQuestionsFromCSV = async (req, res) => {
         const description = row.description ? row.description.trim() : '';
         const difficultyLevel = parseInt(row.difficultyLevel);
         const dokLevel = row.dokLevel ? parseInt(row.dokLevel) : null;
+        // Initialize standard and contentFocus early to avoid ReferenceError
+        let standard = null;
+        let contentFocus = null;
+        if (row.standard !== undefined && row.standard !== null) {
+          standard = typeof row.standard === 'string' ? row.standard.trim() : String(row.standard).trim();
+          if (standard === '') standard = null;
+        }
+        if (row.contentFocus !== undefined && row.contentFocus !== null) {
+          contentFocus = typeof row.contentFocus === 'string' ? row.contentFocus.trim() : String(row.contentFocus).trim();
+          if (contentFocus === '') contentFocus = null;
+        }
 
         // Extract competency codes - handle both single and multiple codes
         const competencyCodes = [];
@@ -2906,7 +2931,8 @@ export const importQuestionsFromCSV = async (req, res) => {
           continue;
         }
 
-        // Validate DOK level - only required for ShortAnswer and Essay
+        // Validate DOK level
+        // Required for ShortAnswer and Essay, optional for other types
         if (isShortAnswer || isEssay) {
           if (dokLevel === null || isNaN(dokLevel) || dokLevel < 1 || dokLevel > 4) {
             results.errors.push({
@@ -2918,10 +2944,10 @@ export const importQuestionsFromCSV = async (req, res) => {
             continue;
           }
         } else if (dokLevel !== null && (isNaN(dokLevel) || dokLevel < 1 || dokLevel > 4)) {
-          // If DOK is provided for non-ShortAnswer/Essay questions, validate it but don't require it
+          // If DOK is provided for other question types, validate it
           results.errors.push({
             row: rowNumber,
-            error: `Invalid DOK level: ${row.dokLevel}. DOK level is only applicable to Short Answer and Essay questions`,
+            error: `Invalid DOK level: ${row.dokLevel}. DOK level must be between 1 and 4 if provided`,
             data: row
           });
           results.summary.failed++;
@@ -2999,11 +3025,11 @@ export const importQuestionsFromCSV = async (req, res) => {
         }
         const finalQuestionMetadata = questionMetadata ? JSON.stringify(questionMetadata) : null;
 
-        // Insert question - only set dok_level for ShortAnswer and Essay
-        const finalDokLevel = (isShortAnswer || isEssay) ? dokLevel : null;
+        // Insert question - set dok_level for all question types (required for ShortAnswer/Essay, optional for others)
+        const finalDokLevel = dokLevel !== null && !isNaN(dokLevel) ? dokLevel : null;
         const insertResult = await executeQuery(
-          'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [subjectId, gradeId, questionText, qType, JSON.stringify(options), correctOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, userId]
+          'INSERT INTO questions (subject_id, grade_id, question_text, question_type, options, correct_option_index, correct_answer, question_metadata, difficulty_level, dok_level, standard, content_focus, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [subjectId, gradeId, questionText, qType, JSON.stringify(options), correctOptionIndex, finalCorrectAnswer, finalQuestionMetadata, difficultyLevel, finalDokLevel, standard, contentFocus, userId]
         );
 
         const newQuestionId = insertResult.insertId;

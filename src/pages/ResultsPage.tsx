@@ -532,23 +532,167 @@ const ResultsPage: React.FC = () => {
                     Difficulty: {response.difficulty}
                   </div>
                 </div>
-                <div className="text-gray-900 mb-3">{response.questionText}</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">Your Answer: </span>
-                    <span className={response.isCorrect ? 'text-emerald-600' : 'text-red-600'}>
-                      {response.options[response.selectedAnswer]}
-                    </span>
+                {/* Special handling for FillInBlank - show question with answers integrated */}
+                {response.questionType === 'FillInBlank' && response.questionMetadata?.blanks && Array.isArray(response.selectedAnswer) ? (
+                  <div className="text-gray-900 mb-3">
+                    {(() => {
+                      // Parse question text and replace blanks with selected answers
+                      let questionText = response.questionText || '';
+                      const blanks = response.questionMetadata.blanks;
+                      const selectedAnswers = response.selectedAnswer as number[];
+                      
+                      // Replace each blank placeholder sequentially
+                      // Common patterns: ___, [blank], {0}, etc.
+                      const blankPattern = /(___+|\[blank\]|\[BLANK\]|\{[0-9]+\})/gi;
+                      let matchCount = 0;
+                      
+                      questionText = questionText.replace(blankPattern, (match) => {
+                        if (matchCount < blanks.length && matchCount < selectedAnswers.length) {
+                          const blank = blanks[matchCount];
+                          const selectedIndex = selectedAnswers[matchCount];
+                          const selectedText = blank.options && blank.options[selectedIndex] !== undefined
+                            ? blank.options[selectedIndex]
+                            : match;
+                          
+                          matchCount++;
+                          return `<span class="font-bold underline text-blue-600">${selectedText}</span>`;
+                        }
+                        return match;
+                      });
+                      
+                      return <div dangerouslySetInnerHTML={{ __html: questionText }} />;
+                    })()}
                   </div>
-                  {!response.isCorrect && (
-                    <div>
-                      <span className="font-medium text-gray-700">Correct Answer: </span>
-                      <span className="text-emerald-600">
-                        {response.options[response.correctAnswer]}
-                      </span>
+                ) : response.questionType === 'Matching' && response.questionMetadata ? (
+                  // Special handling for Matching - show in table format
+                  <div className="mb-3">
+                    <div className="text-gray-900 mb-3" dangerouslySetInnerHTML={{ __html: response.questionText }} />
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="min-w-full border border-gray-300 rounded-lg">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b border-gray-300">Column A</th>
+                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b border-gray-300">Your Match (Column B)</th>
+                            {!response.isCorrect && (
+                              <th className="px-4 py-2 text-left text-sm font-semibold text-emerald-700 border-b border-gray-300">Correct Match</th>
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const leftItems = response.questionMetadata.leftItems || [];
+                            const rightItems = response.questionMetadata.rightItems || [];
+                            const selectedAnswers = Array.isArray(response.selectedAnswer) 
+                              ? response.selectedAnswer as number[] 
+                              : [];
+                            
+                            // Get correct pairs
+                            let correctPairs: any[] = [];
+                            if (response.correctAnswer) {
+                              try {
+                                const correctData = typeof response.correctAnswer === 'string' 
+                                  ? JSON.parse(response.correctAnswer) 
+                                  : response.correctAnswer;
+                                
+                                if (Array.isArray(correctData)) {
+                                  correctPairs = correctData;
+                                } else if (typeof correctData === 'string' && correctData.includes('-')) {
+                                  correctPairs = correctData.split(',').map((pair: string) => {
+                                    const [leftIdx, rightIdx] = pair.split('-').map(Number);
+                                    return { left: leftIdx, right: rightIdx };
+                                  });
+                                }
+                              } catch (e) {
+                                console.error('Error parsing correct pairs:', e);
+                              }
+                            }
+                            
+                            return leftItems.map((leftItem: string, index: number) => {
+                              const selectedRightIdx = selectedAnswers[index];
+                              const selectedRightItem = rightItems[selectedRightIdx] || 'N/A';
+                              
+                              const correctPair = correctPairs.find((p: any) => p.left === index);
+                              const correctRightItem = correctPair 
+                                ? (rightItems[correctPair.right] || 'N/A')
+                                : null;
+                              
+                              const isMatchCorrect = correctPair && correctPair.right === selectedRightIdx;
+                              
+                              return (
+                                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  <td className="px-4 py-2 text-sm text-gray-900 border-b border-gray-200">{leftItem}</td>
+                                  <td className={`px-4 py-2 text-sm border-b border-gray-200 ${
+                                    isMatchCorrect ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'
+                                  }`}>
+                                    {selectedRightItem}
+                                  </td>
+                                  {!response.isCorrect && (
+                                    <td className="px-4 py-2 text-sm text-emerald-600 font-medium border-b border-gray-200">
+                                      {correctRightItem}
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            });
+                          })()}
+                        </tbody>
+                      </table>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  // Default display for other question types
+                  <>
+                    <div className="text-gray-900 mb-3" dangerouslySetInnerHTML={{ __html: response.questionText }} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                      <div>
+                        <span className="font-medium text-gray-700">Your Answer: </span>
+                        <span className={response.isCorrect ? 'text-emerald-600' : 'text-red-600'}>
+                          {response.formattedSelectedAnswer !== undefined 
+                            ? response.formattedSelectedAnswer 
+                            : ((response.questionType === 'ShortAnswer' || response.questionType === 'Essay') 
+                              ? (typeof response.selectedAnswer === 'string' ? response.selectedAnswer : 'N/A')
+                              : (response.options && response.options[response.selectedAnswer as number] || 'N/A'))}
+                        </span>
+                      </div>
+                      {!response.isCorrect && response.questionType !== 'ShortAnswer' && response.questionType !== 'Essay' && (
+                        <div>
+                          <span className="font-medium text-gray-700">Correct Answer: </span>
+                          <span className="text-emerald-600">
+                            {response.formattedCorrectAnswer !== undefined 
+                              ? response.formattedCorrectAnswer 
+                              : (response.options && response.options[response.correctAnswer as number] || 'N/A')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                {/* Show AI Grading Reason for Short Answer and Essay */}
+                {(response.questionType === 'ShortAnswer' || response.questionType === 'Essay') && response.aiGradingResult && (
+                  <div className={`mt-3 p-3 rounded-lg border ${
+                    response.isCorrect 
+                      ? 'bg-emerald-50 border-emerald-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex items-start space-x-2">
+                      <Brain className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                        response.isCorrect ? 'text-emerald-600' : 'text-red-600'
+                      }`} />
+                      <div className="flex-1">
+                        <p className={`text-sm font-medium ${
+                          response.isCorrect ? 'text-emerald-800' : 'text-red-800'
+                        }`}>
+                          AI Grading Feedback:
+                        </p>
+                        <p className={`text-sm mt-1 ${
+                          response.isCorrect ? 'text-emerald-700' : 'text-red-700'
+                        }`}>
+                          {response.aiGradingResult.reason}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -1,4 +1,25 @@
 import { executeQuery } from '../config/database.js';
+import { gradeAnswerWithAI } from '../utils/geminiService.js';
+
+// Seeded random number generator for deterministic shuffling
+function seededRandom(seed) {
+  let value = seed;
+  return function() {
+    value = (value * 9301 + 49297) % 233280;
+    return value / 233280;
+  };
+}
+
+// Deterministic shuffle function using a seed
+function shuffleWithSeed(array, seed) {
+  const rng = seededRandom(seed);
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 // In-memory storage for active assessment sessions
 export const activeSessions = new Map();
@@ -358,9 +379,9 @@ export const submitAnswer = async (req, res) => {
       };
     }
 
-    // Get question details including question type
+    // Get question details including question type, DOK level, and question text for AI grading
     const questions = await executeQuery(
-      'SELECT correct_option_index, correct_answer, question_type, question_metadata, difficulty_level FROM questions WHERE id = ?',
+      'SELECT correct_option_index, correct_answer, question_type, question_metadata, difficulty_level, question_text, dok_level FROM questions WHERE id = ?',
       [questionId]
     );
 
@@ -372,6 +393,69 @@ export const submitAnswer = async (req, res) => {
     }
 
     const question = questions[0];
+    
+    // For Standard mode with random options, we need to account for option shuffling
+    let shuffledCorrectIndex = question.correct_option_index;
+    let shuffledCorrectIndices = [];
+    let optionShuffleMap = null; // Maps original index -> shuffled index
+    
+    if (assessment.assessment_mode === 'Standard') {
+      // Get assignment details to check if options are randomized
+      const assignmentResult = await executeQuery(
+        'SELECT option_sequence FROM assignments WHERE id = (SELECT assignment_id FROM assessments WHERE id = ?)',
+        [assessmentId]
+      );
+      
+      if (assignmentResult.length > 0 && assignmentResult[0].option_sequence === 'random') {
+        // Get assignment ID for seed calculation
+        const assignmentIdResult = await executeQuery(
+          'SELECT assignment_id FROM assessments WHERE id = ?',
+          [assessmentId]
+        );
+        const assignmentId = assignmentIdResult.length > 0 ? assignmentIdResult[0].assignment_id : null;
+        
+        // Get original options from question
+        const questionWithOptions = await executeQuery(
+          'SELECT options, correct_option_index, correct_answer FROM questions WHERE id = ?',
+          [questionId]
+        );
+        
+        if (questionWithOptions.length > 0 && assignmentId) {
+          const originalOptions = typeof questionWithOptions[0].options === 'string' 
+            ? JSON.parse(questionWithOptions[0].options) 
+            : questionWithOptions[0].options;
+          
+          // Create deterministic seed based on assignmentId + questionId + studentId (same as in startStandardAssignment)
+          const seed = assignmentId * 1000000 + questionId * 1000 + studentId;
+          
+          // Create mapping: original index -> shuffled index
+          const optionsWithIndex = originalOptions.map((opt, idx) => ({ opt, originalIdx: idx }));
+          const shuffled = shuffleWithSeed([...optionsWithIndex], seed);
+          
+          // Create reverse mapping: shuffled index -> original index
+          optionShuffleMap = shuffled.map((item, shuffledIdx) => ({
+            shuffledIdx,
+            originalIdx: item.originalIdx
+          }));
+          
+          // Find the shuffled position of the original correct index
+          shuffledCorrectIndex = shuffled.findIndex(item => item.originalIdx === questionWithOptions[0].correct_option_index);
+          
+          // For MultipleSelect, map all correct indices
+          if (question.question_type === 'MultipleSelect' && questionWithOptions[0].correct_answer) {
+            try {
+              const originalCorrectIndices = JSON.parse(questionWithOptions[0].correct_answer);
+              shuffledCorrectIndices = originalCorrectIndices.map(origIdx => 
+                shuffled.findIndex(item => item.originalIdx === origIdx)
+              );
+            } catch (e) {
+              // Fallback
+              shuffledCorrectIndices = [shuffledCorrectIndex];
+            }
+          }
+        }
+      }
+    }
     
     // Determine if answer is correct based on question type
     let isCorrect = false;
@@ -393,17 +477,33 @@ export const submitAnswer = async (req, res) => {
         selectedIndices = [answerIndex];
       }
       
-      // Get correct answer indices
+      // Get correct answer indices (use shuffled indices if options were randomized)
       let correctIndices = [];
-      if (question.correct_answer) {
+      if (shuffledCorrectIndices.length > 0) {
+        // Use pre-calculated shuffled correct indices
+        correctIndices = shuffledCorrectIndices;
+      } else if (question.correct_answer) {
         try {
-          correctIndices = JSON.parse(question.correct_answer);
+          const originalCorrectIndices = JSON.parse(question.correct_answer);
+          // If options were shuffled, map original indices to shuffled indices
+          if (optionShuffleMap) {
+            correctIndices = originalCorrectIndices.map(origIdx => {
+              const mapped = optionShuffleMap.find(m => m.originalIdx === origIdx);
+              return mapped ? mapped.shuffledIdx : origIdx;
+            });
+          } else {
+            correctIndices = originalCorrectIndices;
+          }
         } catch (e) {
           // Fallback to single correct_option_index
-          correctIndices = [question.correct_option_index];
+          correctIndices = optionShuffleMap 
+            ? [shuffledCorrectIndex]
+            : [question.correct_option_index];
         }
       } else {
-        correctIndices = [question.correct_option_index];
+        correctIndices = optionShuffleMap 
+          ? [shuffledCorrectIndex]
+          : [question.correct_option_index];
       }
       
       // Sort both arrays for comparison
@@ -553,13 +653,66 @@ export const submitAnswer = async (req, res) => {
         });
       }
     } else if (question.question_type === 'ShortAnswer' || question.question_type === 'Essay') {
-      // For ShortAnswer and Essay, no automatic validation (automatic grading by AI later)
+      // For ShortAnswer and Essay, use AI grading
       // Store the text answer as-is
-      isCorrect = null; // No automatic validation - will be graded by AI
       finalAnswerIndex = typeof answerIndex === 'string' ? answerIndex : JSON.stringify(answerIndex);
+      
+      // Perform AI grading
+      try {
+        // Parse question metadata to get description
+        let description = '';
+        if (question.question_metadata) {
+          try {
+            const metadata = typeof question.question_metadata === 'string' 
+              ? JSON.parse(question.question_metadata) 
+              : question.question_metadata;
+            description = metadata.description || '';
+          } catch (e) {
+            console.error('Error parsing question metadata:', e);
+          }
+        }
+        
+        // Get DOK level (required for Short Answer and Essay)
+        const dokLevel = question.dok_level;
+        if (!dokLevel || dokLevel < 1 || dokLevel > 4) {
+          throw new Error(`Invalid DOK level: ${dokLevel}. DOK level must be between 1 and 4 for Short Answer and Essay questions.`);
+        }
+        
+        // Call AI grading service
+        const aiGradingResult = await gradeAnswerWithAI({
+          questionText: question.question_text,
+          dokLevel: dokLevel,
+          description: description,
+          studentResponse: finalAnswerIndex
+        });
+        
+        // Set isCorrect based on AI result (1 = correct, 0 = incorrect)
+        isCorrect = aiGradingResult.correct === 1;
+        
+        // Store AI grading result as JSON string in the response
+        // We'll update the INSERT query to include ai_grading_result
+        // For now, we'll store it in a variable to use later
+        const aiGradingResultJson = JSON.stringify({
+          correct: aiGradingResult.correct,
+          reason: aiGradingResult.reason
+        });
+        
+        // Store in a variable to use in the INSERT query
+        question.aiGradingResult = aiGradingResultJson;
+      } catch (error) {
+        console.error('AI grading failed:', error);
+        // If AI grading fails, mark as incorrect and store error reason
+        isCorrect = false;
+        question.aiGradingResult = JSON.stringify({
+          correct: 0,
+          reason: `AI grading error: ${error.message}. Please contact administrator.`
+        });
+      }
     } else {
       // For MCQ and TrueFalse, answerIndex is a single number
-      isCorrect = answerIndex === question.correct_option_index;
+      // Use shuffled correct index if options were randomized
+      const correctIndexToCompare = optionShuffleMap ? shuffledCorrectIndex : question.correct_option_index;
+      isCorrect = answerIndex === correctIndexToCompare;
       finalAnswerIndex = answerIndex;
     }
 
@@ -588,9 +741,12 @@ export const submitAnswer = async (req, res) => {
     // Save response with difficulty tracking
     // For ShortAnswer and Essay, store text in selected_option_index (it's a TEXT field)
     // For other types, store index/indices as JSON string
+    // Include AI grading result if available (for Short Answer/Essay)
+    const aiGradingResult = question.aiGradingResult || null;
+    
     await executeQuery(
-      'INSERT INTO assessment_responses (assessment_id, question_id, question_order, selected_option_index, is_correct, question_difficulty) VALUES (?, ?, ?, ?, ?, ?)',
-      [assessmentId, questionId, questionOrder, finalAnswerIndex, isCorrect, question.difficulty_level]
+      'INSERT INTO assessment_responses (assessment_id, question_id, question_order, selected_option_index, is_correct, question_difficulty, ai_grading_result) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [assessmentId, questionId, questionOrder, finalAnswerIndex, isCorrect, question.difficulty_level, aiGradingResult]
     );
 
     // Update session (only for Adaptive mode, Standard mode doesn't use session state)
@@ -912,7 +1068,29 @@ export const getAssessmentResults = async (req, res) => {
     
     console.log(`Previous assessment found:`, previousAssessment);
 
-    // Get detailed response data
+    // Get assessment mode and assignment info for option shuffling
+    const assessmentInfo = await executeQuery(`
+      SELECT assessment_mode, assignment_id 
+      FROM assessments 
+      WHERE id = ?
+    `, [assessmentId]);
+    
+    const isStandardMode = assessmentInfo.length > 0 && assessmentInfo[0].assessment_mode === 'Standard';
+    const assignmentId = assessmentInfo.length > 0 ? assessmentInfo[0].assignment_id : null;
+    
+    // Get option sequence if Standard mode
+    let optionSequence = 'fixed';
+    if (isStandardMode && assignmentId) {
+      const assignmentInfo = await executeQuery(
+        'SELECT option_sequence FROM assignments WHERE id = ?',
+        [assignmentId]
+      );
+      if (assignmentInfo.length > 0) {
+        optionSequence = assignmentInfo[0].option_sequence || 'fixed';
+      }
+    }
+
+    // Get detailed response data including AI grading results
     const responses = await executeQuery(`
       SELECT 
         ar.question_order,
@@ -921,7 +1099,11 @@ export const getAssessmentResults = async (req, res) => {
         q.question_text,
         q.options,
         ar.selected_option_index,
-        q.correct_option_index
+        q.correct_option_index,
+        q.question_type,
+        q.question_metadata,
+        ar.ai_grading_result,
+        q.id as question_id
       FROM assessment_responses ar
       JOIN questions q ON ar.question_id = q.id
       WHERE ar.assessment_id = ?
@@ -936,24 +1118,246 @@ export const getAssessmentResults = async (req, res) => {
     const currentRIT = assessment.rit_score;
 
     // Format responses for frontend
-    const formattedResponses = responses.map(response => ({
-      questionNumber: response.question_order,
-      isCorrect: response.is_correct,
-      difficulty: response.question_difficulty,
-      questionText: response.question_text,
-      options: (() => {
-        if (typeof response.options === 'string') {
-          try {
-            return JSON.parse(response.options);
-          } catch (parseError) {
-            return [];
+    const formattedResponses = responses.map(response => {
+      // Parse AI grading result if available
+      let aiGradingResult = null;
+      if (response.ai_grading_result) {
+        try {
+          aiGradingResult = typeof response.ai_grading_result === 'string' 
+            ? JSON.parse(response.ai_grading_result) 
+            : response.ai_grading_result;
+        } catch (e) {
+          console.error('Error parsing AI grading result:', e);
+        }
+      }
+      
+      // Parse options
+      let options = [];
+      if (typeof response.options === 'string') {
+        try {
+          options = JSON.parse(response.options);
+        } catch (parseError) {
+          options = [];
+        }
+      } else {
+        options = response.options || [];
+      }
+      
+      // Parse question metadata
+      let questionMetadata = null;
+      if (response.question_metadata) {
+        try {
+          questionMetadata = typeof response.question_metadata === 'string' 
+            ? JSON.parse(response.question_metadata) 
+            : response.question_metadata;
+        } catch (e) {
+          console.error('Error parsing question_metadata:', e);
+        }
+      }
+      
+      // Parse selected answer based on question type
+      let parsedSelectedAnswer = response.selected_option_index;
+      let formattedSelectedAnswer = 'N/A';
+      let formattedCorrectAnswer = 'N/A';
+      
+      try {
+        // Try to parse as JSON first (for array-based answers)
+        if (typeof response.selected_option_index === 'string' && 
+            (response.selected_option_index.startsWith('[') || response.selected_option_index.startsWith('{'))) {
+          parsedSelectedAnswer = JSON.parse(response.selected_option_index);
+        }
+      } catch (e) {
+        // Not JSON, use as-is
+        parsedSelectedAnswer = response.selected_option_index;
+      }
+      
+      // Format answer display based on question type
+      if (response.question_type === 'Matching') {
+        // For Matching: selectedAnswer is array of right indices [0, 1, 2]
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          const pairs = parsedSelectedAnswer.map((rightIdx, leftIdx) => {
+            const numRightIdx = Number(rightIdx);
+            if (isNaN(numRightIdx) || numRightIdx < 0 || numRightIdx >= questionMetadata.rightItems.length) {
+              return 'N/A';
+            }
+            const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+            const rightItem = questionMetadata.rightItems[numRightIdx] || 'N/A';
+            return `${leftItem} → ${rightItem}`;
+          });
+          formattedSelectedAnswer = pairs.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        // Format correct answer
+        if (questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          let correctPairs = [];
+          if (response.correct_option_index) {
+            try {
+              const correctAnswerData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              
+              if (Array.isArray(correctAnswerData)) {
+                // Format: [{left: 0, right: 1}, {left: 1, right: 0}]
+                correctPairs = correctAnswerData.map((pair) => {
+                  const leftItem = questionMetadata.leftItems[pair.left] || 'N/A';
+                  const rightItem = questionMetadata.rightItems[pair.right] || 'N/A';
+                  return `${leftItem} → ${rightItem}`;
+                });
+              } else if (typeof correctAnswerData === 'string' && correctAnswerData.includes('-')) {
+                // Format: "0-1,1-0" (left-right pairs)
+                const pairs = correctAnswerData.split(',').map((pair) => {
+                  const [leftIdx, rightIdx] = pair.split('-').map(Number);
+                  const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+                  const rightItem = questionMetadata.rightItems[rightIdx] || 'N/A';
+                  return `${leftItem} → ${rightItem}`;
+                });
+                correctPairs = pairs;
+              }
+            } catch (e) {
+              console.error('Error parsing correct answer for Matching:', e);
+            }
+          }
+          if (correctPairs.length > 0) {
+            formattedCorrectAnswer = correctPairs.join(', ');
           }
         }
-        return response.options;
-      })(),
-      selectedAnswer: response.selected_option_index,
-      correctAnswer: response.correct_option_index
-    }));
+      } else if (response.question_type === 'FillInBlank') {
+        // For FillInBlank: selectedAnswer is array of option indices for each blank [0, 1]
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.blanks) {
+          const answers = parsedSelectedAnswer.map((optionIdx, blankIdx) => {
+            const numOptionIdx = Number(optionIdx);
+            const blank = questionMetadata.blanks[blankIdx];
+            if (blank && blank.options && !isNaN(numOptionIdx) && numOptionIdx >= 0 && numOptionIdx < blank.options.length) {
+              return blank.options[numOptionIdx];
+            }
+            return 'N/A';
+          });
+          formattedSelectedAnswer = answers.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        // Format correct answer
+        if (questionMetadata?.blanks) {
+          try {
+            let correctIndices = [];
+            if (response.correct_option_index) {
+              const correctData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+            }
+            
+            const correctAnswers = correctIndices.map((optionIdx, blankIdx) => {
+              const blank = questionMetadata.blanks[blankIdx];
+              if (blank && blank.options && blank.options[optionIdx]) {
+                return blank.options[optionIdx];
+              }
+              return 'N/A';
+            });
+            if (correctAnswers.length > 0) {
+              formattedCorrectAnswer = correctAnswers.join(', ');
+            }
+          } catch (e) {
+            console.error('Error parsing correct answer for FillInBlank:', e);
+          }
+        }
+      } else if (response.question_type === 'MultipleSelect') {
+        // For MultipleSelect: selectedAnswer is array of selected option indices [0, 2]
+        if (Array.isArray(parsedSelectedAnswer) && options.length > 0) {
+          const selectedOptions = parsedSelectedAnswer
+            .map((idx) => options[idx])
+            .filter((opt) => opt !== undefined)
+            .join(', ');
+          formattedSelectedAnswer = selectedOptions || 'N/A';
+        }
+        
+        // Format correct answer
+        try {
+          let correctIndices = [];
+          if (response.correct_option_index) {
+            const correctData = typeof response.correct_option_index === 'string' 
+              ? JSON.parse(response.correct_option_index) 
+              : response.correct_option_index;
+            correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+          }
+          
+          if (correctIndices.length > 0 && options.length > 0) {
+            const correctOptions = correctIndices
+              .map((idx) => options[idx])
+              .filter((opt) => opt !== undefined)
+              .join(', ');
+            formattedCorrectAnswer = correctOptions || 'N/A';
+          }
+        } catch (e) {
+          console.error('Error parsing correct answer for MultipleSelect:', e);
+        }
+      } else if (response.question_type === 'TrueFalse') {
+        // For TrueFalse: selectedAnswer is 0 or 1 (or "true"/"false")
+        if (parsedSelectedAnswer === 0 || parsedSelectedAnswer === '0' || parsedSelectedAnswer === 'false') {
+          formattedSelectedAnswer = 'False';
+        } else if (parsedSelectedAnswer === 1 || parsedSelectedAnswer === '1' || parsedSelectedAnswer === 'true') {
+          formattedSelectedAnswer = 'True';
+        } else if (options.length >= 2) {
+          // Fallback to options array
+          formattedSelectedAnswer = options[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        // Format correct answer
+        if (response.correct_option_index !== null && response.correct_option_index !== undefined) {
+          if (response.correct_option_index === 0 || response.correct_option_index === '0' || response.correct_option_index === 'false') {
+            formattedCorrectAnswer = 'False';
+          } else if (response.correct_option_index === 1 || response.correct_option_index === '1' || response.correct_option_index === 'true') {
+            formattedCorrectAnswer = 'True';
+          } else if (options.length >= 2) {
+            formattedCorrectAnswer = options[Number(response.correct_option_index)] || 'N/A';
+          }
+        }
+      } else {
+        // For MCQ and other types: use options array
+        // If Standard mode with random options, re-shuffle to get the same order for display
+        let displayOptions = options;
+        let displayCorrectIndex = response.correct_option_index;
+        
+        if (isStandardMode && optionSequence === 'random' && options.length > 0) {
+          // Re-shuffle options using the same seed
+          const seed = assignmentId * 1000000 + response.question_id * 1000 + studentId;
+          const optionsWithIndex = options.map((opt, idx) => ({ opt, originalIdx: idx }));
+          const shuffled = shuffleWithSeed([...optionsWithIndex], seed);
+          
+          displayOptions = shuffled.map((item) => item.opt);
+          // Find the shuffled position of the original correct index
+          displayCorrectIndex = shuffled.findIndex(item => item.originalIdx === response.correct_option_index);
+        }
+        
+        // Format selected answer
+        if (displayOptions.length > 0 && parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = displayOptions[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        // Format correct answer
+        if (displayOptions.length > 0 && displayCorrectIndex !== null && displayCorrectIndex !== undefined) {
+          formattedCorrectAnswer = displayOptions[Number(displayCorrectIndex)] || 'N/A';
+        }
+      }
+      
+      return {
+        questionNumber: response.question_order,
+        isCorrect: response.is_correct,
+        difficulty: response.question_difficulty,
+        questionText: response.question_text,
+        questionType: response.question_type,
+        options: options,
+        questionMetadata: questionMetadata,
+        selectedAnswer: parsedSelectedAnswer, // Keep raw value for reference
+        formattedSelectedAnswer: formattedSelectedAnswer, // Formatted for display
+        correctAnswer: response.correct_option_index, // Keep raw value for reference
+        formattedCorrectAnswer: formattedCorrectAnswer, // Formatted for display
+        aiGradingResult: aiGradingResult
+      };
+    });
 
     // Create difficulty progression data for the graph
     const difficultyProgression = responses.map(response => ({
@@ -1073,7 +1477,29 @@ export const getLatestAssessmentDetails = async (req, res) => {
     
     console.log(`Previous assessment found:`, previousAssessment);
 
-    // Get detailed response data
+    // Get assessment mode and assignment info for option shuffling
+    const assessmentInfo2 = await executeQuery(`
+      SELECT assessment_mode, assignment_id 
+      FROM assessments 
+      WHERE id = ?
+    `, [assessmentId]);
+    
+    const isStandardMode2 = assessmentInfo2.length > 0 && assessmentInfo2[0].assessment_mode === 'Standard';
+    const assignmentId2 = assessmentInfo2.length > 0 ? assessmentInfo2[0].assignment_id : null;
+    
+    // Get option sequence if Standard mode
+    let optionSequence2 = 'fixed';
+    if (isStandardMode2 && assignmentId2) {
+      const assignmentInfo2 = await executeQuery(
+        'SELECT option_sequence FROM assignments WHERE id = ?',
+        [assignmentId2]
+      );
+      if (assignmentInfo2.length > 0) {
+        optionSequence2 = assignmentInfo2[0].option_sequence || 'fixed';
+      }
+    }
+
+    // Get detailed response data including AI grading results
     const responses = await executeQuery(`
       SELECT 
         ar.question_order,
@@ -1082,7 +1508,11 @@ export const getLatestAssessmentDetails = async (req, res) => {
         q.question_text,
         q.options,
         ar.selected_option_index,
-        q.correct_option_index
+        q.correct_option_index,
+        q.question_type,
+        q.question_metadata,
+        ar.ai_grading_result,
+        q.id as question_id
       FROM assessment_responses ar
       JOIN questions q ON ar.question_id = q.id
       WHERE ar.assessment_id = ?
@@ -1096,25 +1526,242 @@ export const getLatestAssessmentDetails = async (req, res) => {
     const previousRIT = previousAssessment.length > 0 ? previousAssessment[0].rit_score : null;
     const currentRIT = assessment.rit_score;
 
-    // Format responses for frontend
-    const formattedResponses = responses.map(response => ({
-      questionNumber: response.question_order,
-      isCorrect: response.is_correct,
-      difficulty: response.question_difficulty,
-      questionText: response.question_text,
-      options: (() => {
-        if (typeof response.options === 'string') {
-          try {
-            return JSON.parse(response.options);
-          } catch (parseError) {
-            return [];
+    // Format responses for frontend (reuse the same formatting logic from getAssessmentResults)
+    const formattedResponses = responses.map(response => {
+      // Parse AI grading result if available
+      let aiGradingResult = null;
+      if (response.ai_grading_result) {
+        try {
+          aiGradingResult = typeof response.ai_grading_result === 'string' 
+            ? JSON.parse(response.ai_grading_result) 
+            : response.ai_grading_result;
+        } catch (e) {
+          console.error('Error parsing AI grading result:', e);
+        }
+      }
+      
+      // Parse options
+      let options = [];
+      if (typeof response.options === 'string') {
+        try {
+          options = JSON.parse(response.options);
+        } catch (parseError) {
+          options = [];
+        }
+      } else {
+        options = response.options || [];
+      }
+      
+      // Parse question metadata
+      let questionMetadata = null;
+      if (response.question_metadata) {
+        try {
+          questionMetadata = typeof response.question_metadata === 'string' 
+            ? JSON.parse(response.question_metadata) 
+            : response.question_metadata;
+        } catch (e) {
+          console.error('Error parsing question_metadata:', e);
+        }
+      }
+      
+      // Parse selected answer based on question type
+      let parsedSelectedAnswer = response.selected_option_index;
+      let formattedSelectedAnswer = 'N/A';
+      let formattedCorrectAnswer = 'N/A';
+      
+      // Parse selected answer - handle JSON strings for array-based answers
+      if (response.selected_option_index !== null && response.selected_option_index !== undefined) {
+        try {
+          if (typeof response.selected_option_index === 'string') {
+            // Try to parse as JSON (for MultipleSelect, FillInBlank, Matching)
+            const trimmed = response.selected_option_index.trim();
+            if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || 
+                (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+              parsedSelectedAnswer = JSON.parse(response.selected_option_index);
+            } else {
+              // Not JSON, keep as string or try to convert to number
+              parsedSelectedAnswer = response.selected_option_index;
+            }
+          } else if (typeof response.selected_option_index === 'number') {
+            parsedSelectedAnswer = response.selected_option_index;
+          }
+        } catch (e) {
+          // If parsing fails, use as-is
+          parsedSelectedAnswer = response.selected_option_index;
+        }
+      }
+      
+      // Format answer display based on question type (same logic as getAssessmentResults)
+      if (response.question_type === 'Matching') {
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          const pairs = parsedSelectedAnswer.map((rightIdx, leftIdx) => {
+            const numRightIdx = Number(rightIdx);
+            if (isNaN(numRightIdx) || numRightIdx < 0 || numRightIdx >= questionMetadata.rightItems.length) {
+              return 'N/A';
+            }
+            const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+            const rightItem = questionMetadata.rightItems[numRightIdx] || 'N/A';
+            return `${leftItem} → ${rightItem}`;
+          });
+          formattedSelectedAnswer = pairs.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        if (questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          let correctPairs = [];
+          if (response.correct_option_index) {
+            try {
+              const correctAnswerData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              
+              if (Array.isArray(correctAnswerData)) {
+                correctPairs = correctAnswerData.map((pair) => {
+                  const leftItem = questionMetadata.leftItems[pair.left] || 'N/A';
+                  const rightItem = questionMetadata.rightItems[pair.right] || 'N/A';
+                  return `${leftItem} → ${rightItem}`;
+                });
+              } else if (typeof correctAnswerData === 'string' && correctAnswerData.includes('-')) {
+                const pairs = correctAnswerData.split(',').map((pair) => {
+                  const [leftIdx, rightIdx] = pair.split('-').map(Number);
+                  const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+                  const rightItem = questionMetadata.rightItems[rightIdx] || 'N/A';
+                  return `${leftItem} → ${rightItem}`;
+                });
+                correctPairs = pairs;
+              }
+            } catch (e) {
+              console.error('Error parsing correct answer for Matching:', e);
+            }
+          }
+          if (correctPairs.length > 0) {
+            formattedCorrectAnswer = correctPairs.join(', ');
           }
         }
-        return response.options;
-      })(),
-      selectedAnswer: response.selected_option_index,
-      correctAnswer: response.correct_option_index
-    }));
+      } else if (response.question_type === 'FillInBlank') {
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.blanks) {
+          const answers = parsedSelectedAnswer.map((optionIdx, blankIdx) => {
+            const numOptionIdx = Number(optionIdx);
+            const blank = questionMetadata.blanks[blankIdx];
+            if (blank && blank.options && !isNaN(numOptionIdx) && numOptionIdx >= 0 && numOptionIdx < blank.options.length) {
+              return blank.options[numOptionIdx];
+            }
+            return 'N/A';
+          });
+          formattedSelectedAnswer = answers.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        if (questionMetadata?.blanks) {
+          try {
+            let correctIndices = [];
+            if (response.correct_option_index) {
+              const correctData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+            }
+            
+            const correctAnswers = correctIndices.map((optionIdx, blankIdx) => {
+              const blank = questionMetadata.blanks[blankIdx];
+              if (blank && blank.options && blank.options[optionIdx]) {
+                return blank.options[optionIdx];
+              }
+              return 'N/A';
+            });
+            if (correctAnswers.length > 0) {
+              formattedCorrectAnswer = correctAnswers.join(', ');
+            }
+          } catch (e) {
+            console.error('Error parsing correct answer for FillInBlank:', e);
+          }
+        }
+      } else if (response.question_type === 'MultipleSelect') {
+        if (Array.isArray(parsedSelectedAnswer) && options.length > 0) {
+          const selectedOptions = parsedSelectedAnswer
+            .map((idx) => options[idx])
+            .filter((opt) => opt !== undefined)
+            .join(', ');
+          formattedSelectedAnswer = selectedOptions || 'N/A';
+        }
+        
+        try {
+          let correctIndices = [];
+          if (response.correct_option_index) {
+            const correctData = typeof response.correct_option_index === 'string' 
+              ? JSON.parse(response.correct_option_index) 
+              : response.correct_option_index;
+            correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+          }
+          
+          if (correctIndices.length > 0 && options.length > 0) {
+            const correctOptions = correctIndices
+              .map((idx) => options[idx])
+              .filter((opt) => opt !== undefined)
+              .join(', ');
+            formattedCorrectAnswer = correctOptions || 'N/A';
+          }
+        } catch (e) {
+          console.error('Error parsing correct answer for MultipleSelect:', e);
+        }
+      } else if (response.question_type === 'TrueFalse') {
+        if (parsedSelectedAnswer === 0 || parsedSelectedAnswer === '0' || parsedSelectedAnswer === 'false') {
+          formattedSelectedAnswer = 'False';
+        } else if (parsedSelectedAnswer === 1 || parsedSelectedAnswer === '1' || parsedSelectedAnswer === 'true') {
+          formattedSelectedAnswer = 'True';
+        } else if (options.length >= 2) {
+          formattedSelectedAnswer = options[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        if (response.correct_option_index !== null && response.correct_option_index !== undefined) {
+          if (response.correct_option_index === 0 || response.correct_option_index === '0' || response.correct_option_index === 'false') {
+            formattedCorrectAnswer = 'False';
+          } else if (response.correct_option_index === 1 || response.correct_option_index === '1' || response.correct_option_index === 'true') {
+            formattedCorrectAnswer = 'True';
+          } else if (options.length >= 2) {
+            formattedCorrectAnswer = options[Number(response.correct_option_index)] || 'N/A';
+          }
+        }
+      } else {
+        // For MCQ and other types: use options array
+        let displayOptions = options;
+        let displayCorrectIndex = response.correct_option_index;
+        
+        if (isStandardMode2 && optionSequence2 === 'random' && options.length > 0) {
+          const seed = assignmentId2 * 1000000 + response.question_id * 1000 + studentId;
+          const optionsWithIndex = options.map((opt, idx) => ({ opt, originalIdx: idx }));
+          const shuffled = shuffleWithSeed([...optionsWithIndex], seed);
+          
+          displayOptions = shuffled.map((item) => item.opt);
+          displayCorrectIndex = shuffled.findIndex(item => item.originalIdx === response.correct_option_index);
+        }
+        
+        if (displayOptions.length > 0 && parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = displayOptions[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        if (displayOptions.length > 0 && displayCorrectIndex !== null && displayCorrectIndex !== undefined) {
+          formattedCorrectAnswer = displayOptions[Number(displayCorrectIndex)] || 'N/A';
+        }
+      }
+      
+      return {
+        questionNumber: response.question_order,
+        isCorrect: response.is_correct,
+        difficulty: response.question_difficulty,
+        questionText: response.question_text,
+        questionType: response.question_type,
+        options: options,
+        questionMetadata: questionMetadata,
+        selectedAnswer: parsedSelectedAnswer,
+        formattedSelectedAnswer: formattedSelectedAnswer,
+        correctAnswer: response.correct_option_index,
+        formattedCorrectAnswer: formattedCorrectAnswer,
+        aiGradingResult: aiGradingResult
+      };
+    });
 
     // Create difficulty progression data for the graph
     const difficultyProgression = responses.map(response => ({

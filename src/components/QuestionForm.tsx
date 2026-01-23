@@ -35,6 +35,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     description: '', // For ShortAnswer and Essay - additional description/instructions
     difficultyLevel: 200,
     dokLevel: undefined as number | undefined, // Depth of Knowledge level (1-4)
+    standard: '', // Standard identifier (e.g., NGSS, CGSA)
+    contentFocus: '', // Content Focus description - parameters for DOK level used in AI grading
     competencies: [] as Array<{ id: number; code: string; name: string }>
   });
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -150,6 +152,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         description: editingQuestion.questionMetadata?.description || '',
         difficultyLevel: editingQuestion.difficultyLevel,
         dokLevel: editingQuestion.dokLevel,
+        standard: editingQuestion.standard || '',
+        contentFocus: editingQuestion.contentFocus || '',
         competencies: editingQuestion.competencies || []
       });
       
@@ -191,6 +195,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         description: '',
         difficultyLevel: 200,
         dokLevel: undefined,
+        standard: '',
+        contentFocus: '',
         competencies: []
       });
     }
@@ -302,11 +308,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         throw new Error('Growth Metric Score (Difficulty level) must be between 100 and 350');
       }
 
-      // DOK level is only required for ShortAnswer and Essay
+      // DOK level validation
+      // Required for ShortAnswer and Essay, optional for others
       if (questionType === 'ShortAnswer' || questionType === 'Essay') {
         if (formData.dokLevel === undefined || formData.dokLevel < 1 || formData.dokLevel > 4) {
           throw new Error('DOK level is required and must be between 1 and 4 for Short Answer and Essay questions');
         }
+      } else if (formData.dokLevel !== undefined && (formData.dokLevel < 1 || formData.dokLevel > 4)) {
+        // Optional for other types, but if provided must be valid
+        throw new Error('DOK level must be between 1 and 4 if provided');
       }
 
       const questionData: any = {
@@ -316,6 +326,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         questionType: questionType,
         difficultyLevel: formData.difficultyLevel,
         dokLevel: formData.dokLevel,
+        standard: formData.standard || null,
+        contentFocus: formData.contentFocus || null,
         competencies: formData.competencies.length > 0 ? formData.competencies.map(c => ({ id: c.id })) : undefined
       };
 
@@ -1079,16 +1091,16 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           </p>
         </div>
 
-        {/* DOK Level - Only for Short Answer and Essay */}
-        {(questionType === 'ShortAnswer' || questionType === 'Essay') && (
+        {/* DOK Level - Available for all question types */}
+        {questionType && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              DOK Level (Depth of Knowledge) *
+              DOK Level (Depth of Knowledge) {questionType === 'ShortAnswer' || questionType === 'Essay' ? '*' : ''}
             </label>
             <select
               value={formData.dokLevel === undefined ? '' : formData.dokLevel}
               onChange={(e) => setFormData({ ...formData, dokLevel: e.target.value === '' ? undefined : Number(e.target.value) })}
-              required
+              required={questionType === 'ShortAnswer' || questionType === 'Essay'}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!questionType}
             >
@@ -1099,7 +1111,47 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               <option value="4">Level 4 - Extended Thinking (Complex reasoning, investigation, research)</option>
             </select>
             <p className="mt-2 text-sm text-gray-500">
-              Select the Depth of Knowledge level for this question. DOK level is required for Short Answer and Essay questions.
+              Select the Depth of Knowledge level for this question. {questionType === 'ShortAnswer' || questionType === 'Essay' ? 'DOK level is required for Short Answer and Essay questions.' : 'DOK level is optional but recommended for better question categorization.'}
+            </p>
+          </div>
+        )}
+
+        {/* Standard - Available for all question types */}
+        {questionType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Standard (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.standard}
+              onChange={(e) => setFormData({ ...formData, standard: e.target.value })}
+              placeholder="Enter standard identifier (e.g., NGSS, CGSA, or any keyword)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!questionType}
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Enter the standard identifier or keyword. Examples: NGSS for Science, CGSA for English and Maths. Optional field.
+            </p>
+          </div>
+        )}
+
+        {/* Content Focus - Available for all question types */}
+        {questionType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Content Focus (Optional)
+            </label>
+            <textarea
+              value={formData.contentFocus}
+              onChange={(e) => setFormData({ ...formData, contentFocus: e.target.value })}
+              placeholder="Enter content focus description - parameters for DOK level used in AI grading"
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!questionType}
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Enter the content focus description. This field works with DOK level to provide parameters for AI grading. Optional field.
             </p>
           </div>
         )}

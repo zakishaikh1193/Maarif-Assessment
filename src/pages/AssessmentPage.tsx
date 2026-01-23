@@ -1003,20 +1003,37 @@ const AssessmentPage: React.FC = () => {
           </div>
 
           {/* Enhanced Instructions */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Target className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-blue-900 mb-2">Maarif Adaptive Testing</h3>
-                <p className="text-sm text-blue-800 leading-relaxed">
-                  This assessment adapts to your performance in real-time. Answer correctly to receive more challenging questions, 
-                  or answer incorrectly for easier ones. Your final Growth Metric score is calculated as the average difficulty of all questions you attempted.
-                </p>
+          {mode === 'Adaptive' ? (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-blue-900 mb-2">Maarif Adaptive Testing</h3>
+                  <p className="text-sm text-blue-800 leading-relaxed">
+                    This assessment adapts to your performance in real-time. Answer correctly to receive more challenging questions, 
+                    or answer incorrectly for easier ones. Your final Growth Metric score is calculated as the average difficulty of all questions you attempted.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <List className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-green-900 mb-2">Standard Assessment</h3>
+                  <p className="text-sm text-green-800 leading-relaxed">
+                    This is a standard assessment with a fixed set of questions. Answer all questions to the best of your ability. 
+                    Your performance will be evaluated based on the number of correct answers and the difficulty level of the questions you answered correctly.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
