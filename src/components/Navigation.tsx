@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User, BookOpen, BarChart3 } from 'lucide-react';
+import { LogOut, User, BarChart3 } from 'lucide-react';
+import maarifLogo from '../images/Marrif_V 1.1.png';
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
@@ -8,9 +9,9 @@ const Navigation: React.FC = () => {
   if (!user) return null;
 
   return (
-    <nav className="bg-white shadow-sm border-b-2 border-yellow-400">
+    <nav className="bg-white shadow-sm border-b-2 border-yellow-400 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-6">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center">
@@ -57,6 +58,15 @@ const Navigation: React.FC = () => {
               <LogOut className="h-4 w-4" />
               <span className="text-sm font-medium">Logout</span>
             </button>
+            
+            {/* Logo in top right corner */}
+            <div className="ml-4">
+              <img 
+                src={maarifLogo} 
+                alt="Maarif Logo" 
+                className="h-12 w-auto object-contain"
+              />
+            </div>
           </div>
         </div>
       </div>
