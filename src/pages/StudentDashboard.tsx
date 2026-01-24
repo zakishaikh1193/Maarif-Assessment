@@ -74,7 +74,14 @@ const StudentDashboard: React.FC = () => {
       setSubjects(subjectsData);
       setDashboardData(assessmentData);
       setAssignments(assignmentsData || []);
-      setCompletedAssignments(completedAssignmentsData || []);
+      
+      // Sort completed assignments by completion date (most recent first)
+      const sortedCompleted = (completedAssignmentsData || []).sort((a, b) => {
+        const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return dateB - dateA; // Descending order (most recent first)
+      });
+      setCompletedAssignments(sortedCompleted);
 
       // Debug: Check assignments and subjects
       console.log('📚 Loaded subjects:', subjectsData.map(s => ({ id: s.id, name: s.name })));

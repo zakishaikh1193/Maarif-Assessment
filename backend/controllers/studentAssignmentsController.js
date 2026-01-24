@@ -122,8 +122,14 @@ export const getStudentAssignments = async (req, res) => {
           SELECT 1 FROM assignment_students ast 
           WHERE ast.assignment_id = a.id AND ast.student_id = ?
         )
+        AND NOT EXISTS (
+          SELECT 1 FROM assessments ass 
+          WHERE ass.assignment_id = a.id 
+            AND ass.student_id = ? 
+            AND ass.rit_score IS NOT NULL
+        )
       ORDER BY a.created_at DESC
-    `, [studentGradeId, studentId]);
+    `, [studentGradeId, studentId, studentId]);
 
     // Combine and deduplicate
     const allAssignments = [...assignments, ...schoolGradeAssignments];
@@ -240,6 +246,13 @@ export const getCompletedAssignments = async (req, res) => {
     const uniqueCompleted = allCompleted.filter((assignment, index, self) =>
       index === self.findIndex(a => a.id === assignment.id)
     );
+
+    // Sort by completion date/time (most recent first)
+    uniqueCompleted.sort((a, b) => {
+      const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+      const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+      return dateB - dateA; // Descending order (most recent first)
+    });
 
     res.json(uniqueCompleted);
   } catch (error) {
