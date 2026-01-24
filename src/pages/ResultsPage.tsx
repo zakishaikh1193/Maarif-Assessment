@@ -35,6 +35,13 @@ const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState<DetailedAssessmentResults | null>(null);
   const [loading, setLoading] = useState(true);
+  const [performanceAnalysis, setPerformanceAnalysis] = useState<{
+    overallAnalysis: string[];
+    strengths: string[];
+    areasOfImprovement: string[];
+    studyTips: string[];
+  } | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'assessment' | 'overall' | 'competency'>('assessment');
   const [growthData, setGrowthData] = useState<any>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
@@ -52,12 +59,18 @@ const ResultsPage: React.FC = () => {
     // Check if we have detailed results or basic results
     if (location.state?.statistics) {
       // We have detailed results
-      setResults(location.state as DetailedAssessmentResults);
+      const detailedResults = location.state as DetailedAssessmentResults;
+      setResults(detailedResults);
       setLoading(false);
       // Reset competency data when assessment changes
       setCompetencyScores([]);
       setCompetencyGrowthData([]);
       competencyDataFetched.current = false;
+      
+      // Fetch performance analysis
+      if (detailedResults?.assessment?.id) {
+        fetchPerformanceAnalysis(detailedResults.assessment.id);
+      }
     } else if (location.state?.ritScore) {
       // We have basic results, show fallback
       setLoading(false);
@@ -120,11 +133,28 @@ const ResultsPage: React.FC = () => {
     });
   };
 
+  const fetchPerformanceAnalysis = async (assessmentId: number) => {
+    setAnalysisLoading(true);
+    try {
+      const analysis = await studentAPI.getPerformanceAnalysis(assessmentId);
+      setPerformanceAnalysis(analysis);
+    } catch (error) {
+      console.error('Failed to fetch performance analysis:', error);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   const viewAssessmentDetails = async (assessmentId: number) => {
     try {
       const detailedResults = await studentAPI.getDetailedResults(assessmentId);
       setResults(detailedResults);
       setActiveTab('assessment');
+      
+      // Fetch performance analysis
+      if (detailedResults?.assessment?.id) {
+        fetchPerformanceAnalysis(detailedResults.assessment.id);
+      }
     } catch (error) {
       console.error('Failed to fetch assessment details:', error);
     }
@@ -700,12 +730,13 @@ const ResultsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Difficulty Progression Chart */}
+        {/* Difficulty Progression Chart / Performance Progression Chart */}
         <div className="mb-8">
           <DifficultyProgressionChart
             data={results.difficultyProgression}
             currentRIT={results.statistics.currentRIT}
             previousRIT={results.statistics.previousRIT}
+            mode={results.assessment.mode}
           />
         </div>
 
@@ -956,6 +987,103 @@ const ResultsPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Performance Analysis Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+            <Brain className="h-5 w-5 text-purple-600" />
+            <span>Performance Analysis & Improvement</span>
+          </h3>
+          
+          {analysisLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <span className="ml-3 text-gray-600">Generating AI-powered analysis...</span>
+            </div>
+          ) : performanceAnalysis ? (
+            <div className="space-y-6">
+              {/* Overall Analysis */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <span>Overall Performance Analysis</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.overallAnalysis.map((point, index) => {
+                    // Highlight important metrics (numbers, percentages, RIT scores)
+                    const highlightedPoint = point
+                      .replace(/(\d+%)/g, '<span class="font-bold text-blue-700">$1</span>')
+                      .replace(/(RIT score[:\s]+)(\d+)/gi, '$1<span class="font-bold text-blue-700">$2</span>')
+                      .replace(/(accuracy[:\s]+)(\d+%)/gi, '$1<span class="font-bold text-blue-700">$2</span>')
+                      .replace(/(\d+\s+questions?)/gi, '<span class="font-semibold text-indigo-700">$1</span>')
+                      .replace(/(correct[:\s]+)(\d+)/gi, '$1<span class="font-semibold text-emerald-700">$2</span>')
+                      .replace(/(improvement|improving|strong|excellent|great)/gi, '<span class="font-semibold text-emerald-700">$1</span>')
+                      .replace(/(needs?|practice|focus|areas?)/gi, '<span class="font-semibold text-amber-700">$1</span>');
+                    
+                    return (
+                      <li key={index} className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                        <p 
+                          className="text-gray-700 flex-1 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: highlightedPoint }}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              {/* Areas of Improvement */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-6 border border-amber-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-amber-600" />
+                  <span>Areas of Improvement</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.areasOfImprovement.map((area, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center mt-0.5">
+                        <span className="text-amber-700 text-sm font-medium">{index + 1}</span>
+                      </div>
+                      <p className="text-gray-700 flex-1">{area}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Your Strengths */}
+              <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg p-6 border border-emerald-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <span>Your Strengths</span>
+                </h4>
+                <p className="text-gray-700">
+                  You're excelling in: {performanceAnalysis.strengths.join(', ')}. Continue building on these strong foundations!
+                </p>
+              </div>
+
+              {/* Study Tips */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  <span>Study Tips</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.studyTips.map((tip, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                      <p className="text-gray-700 flex-1">{tip}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Performance analysis will be generated here.</p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}

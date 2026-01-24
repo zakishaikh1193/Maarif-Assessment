@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Competency, CompetencyStats } from '../types';
+import { Competency, CompetencyStats, PaginationInfo } from '../types';
 import { competenciesAPI } from '../services/api';
-import { Plus, Edit, Trash2, Users, FileText, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronRight, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, FileText, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronRight, Upload, ChevronLeft, Search, X } from 'lucide-react';
 import CompetencyCSVImportModal from './CompetencyCSVImportModal';
 
 interface CompetencyListProps {
@@ -21,25 +21,41 @@ const CompetencyList: React.FC<CompetencyListProps> = ({
   const [error, setError] = useState('');
   const [expandedCompetencies, setExpandedCompetencies] = useState<Set<number>>(new Set());
   const [showImportModal, setShowImportModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadCompetencies();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, currentPage, searchTerm]);
 
   const loadCompetencies = async () => {
     try {
       setLoading(true);
-      const [competenciesData, statsData] = await Promise.all([
-        competenciesAPI.getAll(),
+      const [competenciesResponse, statsData] = await Promise.all([
+        competenciesAPI.getAll(currentPage, itemsPerPage, searchTerm),
         competenciesAPI.getStats()
       ]);
-      setCompetencies(competenciesData);
+      setCompetencies(competenciesResponse.competencies);
+      setPagination(competenciesResponse.pagination);
       setStats(statsData);
     } catch (error: any) {
       setError(error.response?.data?.error || 'Failed to load competencies');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of table
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteCompetency = async (competency: Competency) => {
@@ -333,6 +349,30 @@ const CompetencyList: React.FC<CompetencyListProps> = ({
         }}
       />
 
+      {/* Search Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center space-x-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search competencies by code, name, or description..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => handleSearch('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Competencies List View */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
@@ -365,21 +405,100 @@ const CompetencyList: React.FC<CompetencyListProps> = ({
                 <tr>
                   <td colSpan={5} className="px-4 py-12 text-center">
                     <div className="text-gray-400 text-6xl mb-4">📊</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Competencies Found</h3>
-                    <p className="text-gray-600 mb-6">Create your first competency to start tracking student performance across different skills.</p>
-                    <button
-                      onClick={onAddCompetency}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 mx-auto"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Create First Competency</span>
-                    </button>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {searchTerm ? 'No Competencies Found' : 'No Competencies Found'}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {searchTerm 
+                        ? `No competencies match "${searchTerm}". Try a different search term.`
+                        : 'Create your first competency to start tracking student performance across different skills.'}
+                    </p>
+                    {!searchTerm && (
+                      <button
+                        onClick={onAddCompetency}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 mx-auto"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>Create First Competency</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <span>
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, pagination.total || 0)} of {pagination.total || 0} competencies
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!pagination.hasPreviousPage}
+                className={`px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium transition-colors ${
+                  pagination.hasPreviousPage
+                    ? 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  if (
+                    page === 1 ||
+                    page === pagination.totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return (
+                      <span key={page} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!pagination.hasNextPage}
+                className={`px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium transition-colors ${
+                  pagination.hasNextPage
+                    ? 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
