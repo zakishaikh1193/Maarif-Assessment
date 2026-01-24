@@ -59,7 +59,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [growthData, setGrowthData] = useState<any>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
-  const [growthSubTab, setGrowthSubTab] = useState<'growth' | 'competency'>('growth');
+  const [growthSubTab, setGrowthSubTab] = useState<'growth' | 'competency' | 'performance'>('performance');
   const [competencyScores, setCompetencyScores] = useState<any[]>([]);
   const [competencyGrowthData, setCompetencyGrowthData] = useState<any[]>([]);
   const [competencyLoading, setCompetencyLoading] = useState(false);
@@ -619,7 +619,10 @@ const AdminDashboard: React.FC = () => {
                       {/* Overview Cards 2x2 Grid */}
                       <div className="grid grid-cols-2 gap-4">
                         {/* Schools Overview Card */}
-                        <div className="group relative bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg border-2 border-red-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-red-300 transition-all duration-300 cursor-pointer overflow-hidden">
+                        <div 
+                          onClick={() => setActiveTab('schools')}
+                          className="group relative bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg border-2 border-red-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-red-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                        >
                           <div className="absolute inset-0 bg-gradient-to-br from-red-400/0 to-red-400/0 group-hover:from-red-400/10 group-hover:to-red-400/5 transition-all duration-300"></div>
                           <div className="relative flex items-start justify-between">
                             <div className="flex items-center gap-4">
@@ -641,7 +644,10 @@ const AdminDashboard: React.FC = () => {
                         </div>
 
                         {/* Students Overview Card */}
-                        <div className="group relative bg-gradient-to-br from-white to-yellow-50 rounded-xl shadow-lg border-2 border-yellow-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-yellow-300 transition-all duration-300 cursor-pointer overflow-hidden">
+                        <div 
+                          onClick={() => setActiveTab('students')}
+                          className="group relative bg-gradient-to-br from-white to-yellow-50 rounded-xl shadow-lg border-2 border-yellow-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-yellow-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                        >
                           <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/0 to-yellow-400/0 group-hover:from-yellow-400/10 group-hover:to-yellow-400/5 transition-all duration-300"></div>
                           <div className="relative flex items-start justify-between">
                             <div className="flex items-center gap-4">
@@ -663,7 +669,10 @@ const AdminDashboard: React.FC = () => {
                         </div>
 
                         {/* Assessments Overview Card */}
-                        <div className="group relative bg-gradient-to-br from-white to-green-50 rounded-xl shadow-lg border-2 border-green-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-green-300 transition-all duration-300 cursor-pointer overflow-hidden">
+                        <div 
+                          onClick={() => setActiveTab('configs')}
+                          className="group relative bg-gradient-to-br from-white to-green-50 rounded-xl shadow-lg border-2 border-green-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-green-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                        >
                           <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-400/0 group-hover:from-green-400/10 group-hover:to-green-400/5 transition-all duration-300"></div>
                           <div className="relative flex items-start justify-between">
                             <div className="flex items-center gap-4">
@@ -685,7 +694,10 @@ const AdminDashboard: React.FC = () => {
                         </div>
 
                         {/* Questions Overview Card */}
-                        <div className="group relative bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg border-2 border-blue-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer overflow-hidden">
+                        <div 
+                          onClick={() => setActiveTab('questions')}
+                          className="group relative bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg border-2 border-blue-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                        >
                           <div className="absolute inset-0 bg-gradient-to-br from-blue-400/0 to-blue-400/0 group-hover:from-blue-400/10 group-hover:to-blue-400/5 transition-all duration-300"></div>
                           <div className="relative flex items-start justify-between">
                             <div className="flex items-center gap-4">
@@ -735,7 +747,10 @@ const AdminDashboard: React.FC = () => {
                             </div>
                           </div>
                           <div className="flex items-center justify-between mb-4">
-                            <button className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105">
+                            <button 
+                              onClick={() => setActiveTab('schools')}
+                              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105"
+                            >
                               <span className="flex items-center gap-2">
                                 <Activity className="h-4 w-4" />
                                 Check Details
@@ -759,14 +774,14 @@ const AdminDashboard: React.FC = () => {
                         <div className="group relative bg-gradient-to-br from-white to-purple-50/30 rounded-xl shadow-lg border-2 border-purple-100 p-6 overflow-hidden">
                           <div className="absolute top-0 right-0 w-40 h-40 bg-purple-200/20 rounded-full blur-2xl"></div>
                           <div className="relative">
-                            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                              <BookOpen className="h-5 w-5 text-purple-600" />
+                            <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                              <BookOpen className="h-6 w-6 text-purple-600" />
                               Subject Distribution
                             </h3>
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-8">
                               <div className="flex-1">
                                 {/* Donut chart */}
-                                <div className="relative w-36 h-36 mx-auto">
+                                <div className="relative w-56 h-56 mx-auto">
                                   <svg className="transform -rotate-90" viewBox="0 0 100 100">
                                     {stats.subjectDistribution && stats.subjectDistribution.length > 0 && (() => {
                                       const total = stats.subjectDistribution.reduce((sum: number, s: any) => sum + (s.question_count || 0), 0);
@@ -795,14 +810,14 @@ const AdminDashboard: React.FC = () => {
                                   </svg>
                                 </div>
                               </div>
-                              <div className="flex-1 space-y-3">
+                              <div className="flex-1 space-y-4">
                                 {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
                                   const colors = ['bg-red-100 text-red-700', 'bg-orange-100 text-orange-700', 'bg-yellow-100 text-yellow-700', 'bg-green-100 text-green-700'];
                                   return (
-                                    <div key={idx} className={`flex items-center gap-2 p-2 rounded-lg ${colors[idx % colors.length]}`}>
-                                      <div className={`h-3 w-3 rounded-full ${colors[idx % colors.length].split(' ')[0]}`}></div>
-                                      <span className="text-sm font-semibold">{subject.name}</span>
-                                      <span className="text-xs font-bold ml-auto">{subject.question_count || 0}</span>
+                                    <div key={idx} className={`flex items-center gap-3 p-4 rounded-lg ${colors[idx % colors.length]}`}>
+                                      <div className={`h-4 w-4 rounded-full ${colors[idx % colors.length].split(' ')[0]}`}></div>
+                                      <span className="text-base font-semibold">{subject.name}</span>
+                                      <span className="text-base font-bold ml-auto">{subject.question_count || 0}</span>
                                     </div>
                                   );
                                 })}
@@ -930,12 +945,12 @@ const AdminDashboard: React.FC = () => {
                       </div>
 
                       {/* Best Performance Section */}
-                      <div className="relative bg-gradient-to-br from-white via-amber-50/30 to-white rounded-xl shadow-lg border-2 border-amber-100 p-5 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-amber-200/20 rounded-full blur-3xl"></div>
+                      <div className="relative bg-gradient-to-br from-white via-pink-50/40 to-purple-50/40 rounded-xl shadow-lg border-2 border-pink-100 p-5 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-pink-200/20 rounded-full blur-3xl"></div>
                         <div className="relative">
                           <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                              <Trophy className="h-5 w-5 text-amber-600" />
+                              <Trophy className="h-5 w-5 text-pink-400" />
                               Best Performance
                               <span className="h-2 w-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></span>
                             </h3>
@@ -943,7 +958,7 @@ const AdminDashboard: React.FC = () => {
                           <p className="text-xs text-gray-600 mb-4 font-medium">Top performing students with highest scores</p>
                           {topPerformersLoading ? (
                             <div className="flex items-center justify-center py-12">
-                              <div className="rounded-full h-8 w-8 border-4 border-amber-200 border-t-amber-600"></div>
+                              <div className="rounded-full h-8 w-8 border-4 border-pink-200 border-t-pink-400"></div>
                             </div>
                           ) : topPerformers.length === 0 ? (
                             <div className="text-center py-12">
@@ -957,11 +972,11 @@ const AdminDashboard: React.FC = () => {
                             <div className="space-y-3">
                               {topPerformers.map((performer, index) => {
                                 const rankColors = [
-                                  { bg: 'bg-gradient-to-br from-yellow-400 to-yellow-600', border: 'border-yellow-300', text: 'text-yellow-900', badge: 'bg-yellow-500', glow: 'shadow-yellow-500/50' },
-                                  { bg: 'bg-gradient-to-br from-gray-300 to-gray-500', border: 'border-gray-200', text: 'text-gray-800', badge: 'bg-gray-500', glow: 'shadow-gray-500/50' },
-                                  { bg: 'bg-gradient-to-br from-orange-400 to-orange-600', border: 'border-orange-300', text: 'text-orange-900', badge: 'bg-orange-500', glow: 'shadow-orange-500/50' },
-                                  { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-400', glow: '' },
-                                  { bg: 'bg-gradient-to-br from-gray-100 to-gray-200', border: 'border-gray-200', text: 'text-gray-700', badge: 'bg-gray-400', glow: '' }
+                                  { bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200', border: 'border-yellow-200', text: 'text-yellow-800', badge: 'bg-yellow-300', trophy: 'text-yellow-600', glow: 'shadow-yellow-200/30' },
+                                  { bg: 'bg-gradient-to-br from-slate-100 to-slate-200', border: 'border-slate-200', text: 'text-slate-700', badge: 'bg-slate-300', trophy: 'text-slate-500', glow: 'shadow-slate-200/30' },
+                                  { bg: 'bg-gradient-to-br from-orange-100 to-orange-200', border: 'border-orange-200', text: 'text-orange-800', badge: 'bg-orange-300', trophy: 'text-orange-600', glow: 'shadow-orange-200/30' },
+                                  { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-300', trophy: 'text-blue-600', glow: 'shadow-blue-200/30' },
+                                  { bg: 'bg-gradient-to-br from-purple-100 to-purple-200', border: 'border-purple-200', text: 'text-purple-800', badge: 'bg-purple-300', trophy: 'text-purple-600', glow: 'shadow-purple-200/30' }
                                 ];
                                 const rank = rankColors[index] || rankColors[3];
                                 return (
@@ -969,36 +984,34 @@ const AdminDashboard: React.FC = () => {
                                     key={performer.studentId} 
                                     className={`relative flex items-center gap-3 p-3 rounded-xl border-2 ${rank.border} ${rank.bg} ${rank.glow} cursor-pointer overflow-hidden`}
                                   >
-                                    <div className="relative flex items-center gap-3 w-full">
-                                      <div className={`relative flex-shrink-0`}>
-                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${index < 3 ? 'bg-white/30 backdrop-blur-sm' : 'bg-white/20'} shadow-lg`}>
-                                          {index === 0 ? (
-                                            <Trophy className="h-6 w-6 text-yellow-700" />
-                                          ) : (
-                                            <User className="h-6 w-6 text-gray-700" />
-                                          )}
-                                        </div>
-                                        {index < 3 && (
-                                          <div className={`absolute -top-2 -right-2 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${rank.badge} shadow-lg`}>
+                                    <div className="relative flex items-center justify-between gap-3 w-full">
+                                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className={`relative flex-shrink-0`}>
+                                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${rank.badge} shadow-lg`}>
                                             {index + 1}
                                           </div>
-                                        )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className={`text-sm font-bold ${rank.text} truncate`}>
+                                            {performer.studentName}
+                                          </p>
+                                          <p className={`text-xs ${rank.text} opacity-80 truncate`}>
+                                            {performer.schoolName}
+                                          </p>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <span className={`text-xs font-bold ${rank.text} px-2 py-0.5 rounded-md bg-white/50 backdrop-blur-sm`}>
+                                              🎯 {performer.highestScore}
+                                            </span>
+                                            <span className={`text-xs ${rank.text} opacity-60`}>•</span>
+                                            <span className={`text-xs ${rank.text} opacity-80 truncate`}>
+                                              {performer.subjectName}
+                                            </span>
+                                          </div>
+                                        </div>
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className={`text-sm font-bold ${rank.text} truncate`}>
-                                          {performer.studentName}
-                                        </p>
-                                        <p className={`text-xs ${rank.text} opacity-80 truncate`}>
-                                          {performer.schoolName}
-                                        </p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          <span className={`text-xs font-bold ${rank.text} px-2 py-0.5 rounded-md bg-white/40 backdrop-blur-sm`}>
-                                            🎯 {performer.highestScore}
-                                          </span>
-                                          <span className={`text-xs ${rank.text} opacity-60`}>•</span>
-                                          <span className={`text-xs ${rank.text} opacity-80 truncate`}>
-                                            {performer.subjectName}
-                                          </span>
+                                      <div className={`relative flex-shrink-0`}>
+                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-white/50 backdrop-blur-sm shadow-lg`}>
+                                          <Trophy className={`h-6 w-6 ${rank.trophy}`} />
                                         </div>
                                       </div>
                                     </div>
@@ -1295,21 +1308,24 @@ const AdminDashboard: React.FC = () => {
 
             {/* Growth Chart Content */}
             <div>
-              {selectedSubject && selectedStudent ? (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center space-x-3">
-                      <BarChart3 className="h-7 w-7 text-emerald-600" />
-                      <span>Student Performance Analytics</span>
-                    </h2>
-                    <p className="text-gray-600">
-                      {filteredStudents.find(s => s.id === selectedStudent)?.firstName || 'Student'} - {selectedSubject.name}
-                    </p>
-                  </div>
-
-                  {/* Sub-tab Navigation */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <div className="flex space-x-4">
+              {/* Sub-tab Navigation - Always visible */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => setGrowthSubTab('performance')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      growthSubTab === 'performance'
+                        ? 'bg-green-100 text-green-800 border-2 border-green-200'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-2 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>Performance Analytics</span>
+                    </div>
+                  </button>
+                  {selectedSubject && selectedStudent && (
+                    <>
                       <button
                         onClick={() => setGrowthSubTab('growth')}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -1336,10 +1352,36 @@ const AdminDashboard: React.FC = () => {
                           <span>Competency Analysis</span>
                         </div>
                       </button>
-                    </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Sub-tab Content */}
+              {growthSubTab === 'performance' ? (
+                <div>
+                  <SubjectPerformanceDashboard 
+                    schools={schools}
+                    grades={grades}
+                    selectedSchool={selectedSchool}
+                    selectedGrade={selectedGrade}
+                    selectedSubject={selectedSubject?.id || null}
+                    selectedStudent={selectedStudent}
+                    filteredStudents={filteredStudents}
+                  />
+                </div>
+              ) : selectedSubject && selectedStudent ? (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center space-x-3">
+                      <BarChart3 className="h-7 w-7 text-emerald-600" />
+                      <span>Student Performance Analytics</span>
+                    </h2>
+                    <p className="text-gray-600">
+                      {filteredStudents.find(s => s.id === selectedStudent)?.firstName || 'Student'} - {selectedSubject.name}
+                    </p>
                   </div>
 
-                  {/* Sub-tab Content */}
                   {growthSubTab === 'growth' ? (
                     <div>
                       {growthLoading ? (
@@ -1389,7 +1431,7 @@ const AdminDashboard: React.FC = () => {
                       <User className="h-12 w-12 text-emerald-600" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Select Subject & Student</h3>
-                    <p className="text-gray-600">Choose both a subject and a student to view detailed growth analysis.</p>
+                    <p className="text-gray-600">Choose both a subject and a student to view detailed growth analysis, or use Performance Analytics above for overall performance data.</p>
                   </div>
                 </div>
               )}

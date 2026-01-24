@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, User } from 'lucide-react';
 import maarifLogo from '../images/Marrif_V 1.1.png';
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
@@ -13,7 +15,16 @@ const Navigation: React.FC = () => {
       <div className="w-full px-6">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
+            <div 
+              onClick={() => {
+                if (user?.role === 'admin') {
+                  navigate('/admin', { state: { activeTab: 'dashboard' } });
+                } else {
+                  navigate('/dashboard');
+                }
+              }}
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <img 
                 src={maarifLogo} 
                 alt="Maarif Logo" 
@@ -21,9 +32,6 @@ const Navigation: React.FC = () => {
               />
               <h1 className="text-xl font-bold text-gray-900">Maarif Assessment Portal</h1>
             </div>
-            <span className="text-sm text-gray-700 bg-gradient-to-r from-yellow-100 to-pink-100 px-3 py-1 rounded-full border border-yellow-200">
-              {user.role === 'admin' ? 'Administrator' : 'Student'}
-            </span>
           </div>
 
           <div className="flex items-center space-x-4">

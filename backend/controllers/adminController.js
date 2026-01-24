@@ -1821,6 +1821,7 @@ export const getSubjectPerformanceDashboard = async (req, res) => {
   try {
     const { schoolId, gradeId, year } = req.query;
     
+    // Build where clause
     let whereClause = 'WHERE a.rit_score IS NOT NULL';
     let params = [];
     
@@ -1833,69 +1834,141 @@ export const getSubjectPerformanceDashboard = async (req, res) => {
       params.push(gradeId);
     }
     if (year) {
-      whereClause += ' AND a.year = ?';
-      params.push(year);
+      // Try both year column and created_at year
+      whereClause += ' AND (a.year = ? OR YEAR(a.created_at) = ?)';
+      params.push(year, year);
     }
 
-    // Get average Growth Metric scores by subject
-    const subjectPerformance = await executeQuery(`
-      SELECT 
-        s.id as subject_id,
-        s.name as subject_name,
-        AVG(a.rit_score) as average_rit_score,
-        COUNT(DISTINCT a.student_id) as student_count,
-        MIN(a.rit_score) as min_score,
-        MAX(a.rit_score) as max_score,
-        STDDEV(a.rit_score) as standard_deviation
-      FROM assessments a
-      JOIN users u ON a.student_id = u.id
-      JOIN subjects s ON a.subject_id = s.id
-      ${whereClause}
-      GROUP BY s.id, s.name
-      ORDER BY average_rit_score DESC
-    `, params);
+    let subjectPerformance = [];
+    let growthRates = [];
+    let yearTrends = [];
 
-    // Get growth rates (Fall to Spring) by subject
-    const growthRates = await executeQuery(`
-      SELECT 
-        s.id as subject_id,
-        s.name as subject_name,
-        AVG(CASE WHEN a.assessment_period = 'BOY' THEN a.rit_score END) as boy_avg,
-        AVG(CASE WHEN a.assessment_period = 'EOY' THEN a.rit_score END) as eoy_avg,
-        COUNT(DISTINCT a.student_id) as student_count
-      FROM assessments a
-      JOIN users u ON a.student_id = u.id
-      JOIN subjects s ON a.subject_id = s.id
-      ${whereClause}
-      GROUP BY s.id, s.name
-      HAVING boy_avg IS NOT NULL AND eoy_avg IS NOT NULL
-      ORDER BY (eoy_avg - boy_avg) DESC
-    `, params);
+    // Debug: Check what assessment periods exist
+    try {
+      const periodCheck = await executeQuery(`
+        SELECT DISTINCT assessment_period, COUNT(*) as count 
+        FROM assessments 
+        WHERE rit_score IS NOT NULL 
+        GROUP BY assessment_period
+      `);
+      console.log('Available assessment periods:', periodCheck);
+    } catch (e) {
+      console.log('Could not check assessment periods:', e.message);
+    }
 
-    // Get year-over-year trends
-    const yearTrends = await executeQuery(`
-      SELECT 
-        s.id as subject_id,
-        s.name as subject_name,
-        a.year,
-        AVG(a.rit_score) as average_rit_score,
-        COUNT(DISTINCT a.student_id) as student_count
-      FROM assessments a
-      JOIN users u ON a.student_id = u.id
-      JOIN subjects s ON a.subject_id = s.id
-      ${whereClause}
-      GROUP BY s.id, s.name, a.year
-      ORDER BY s.name, a.year
-    `, params);
+    try {
+      // Get average scores by subject
+      subjectPerformance = await executeQuery(`
+        SELECT 
+          s.id as subject_id,
+          s.name as subject_name,
+          AVG(a.rit_score) as average_rit_score,
+          COUNT(DISTINCT a.student_id) as student_count,
+          MIN(a.rit_score) as min_score,
+          MAX(a.rit_score) as max_score,
+          IFNULL(STDDEV_POP(a.rit_score), 0) as standard_deviation
+        FROM assessments a
+        JOIN users u ON a.student_id = u.id
+        JOIN subjects s ON a.subject_id = s.id
+        ${whereClause}
+        GROUP BY s.id, s.name
+        HAVING AVG(a.rit_score) > 0
+        ORDER BY AVG(a.rit_score) DESC
+      `, params);
+      
+      console.log(`Found ${subjectPerformance.length} subjects with performance data`);
 
+      // Get growth rates - handle both BOY/EOY and Fall/Spring/Winter periods
+      // Use subquery to avoid MySQL alias reference issues in HAVING/ORDER BY
+      growthRates = await executeQuery(`
+        SELECT 
+          subject_id,
+          subject_name,
+          boy_avg,
+          eoy_avg,
+          student_count,
+          (eoy_avg - boy_avg) as growth
+        FROM (
+          SELECT 
+            s.id as subject_id,
+            s.name as subject_name,
+            AVG(CASE 
+              WHEN a.assessment_period IN ('BOY', 'Fall') THEN a.rit_score 
+              ELSE NULL 
+            END) as boy_avg,
+            AVG(CASE 
+              WHEN a.assessment_period IN ('EOY', 'Spring') THEN a.rit_score 
+              ELSE NULL 
+            END) as eoy_avg,
+            COUNT(DISTINCT a.student_id) as student_count
+          FROM assessments a
+          JOIN users u ON a.student_id = u.id
+          JOIN subjects s ON a.subject_id = s.id
+          ${whereClause}
+          GROUP BY s.id, s.name
+        ) as subquery
+        WHERE boy_avg IS NOT NULL AND eoy_avg IS NOT NULL AND boy_avg > 0 AND eoy_avg > 0
+        ORDER BY (eoy_avg - boy_avg) DESC
+      `, params);
+
+      // Get year-over-year trends - use year column if exists, otherwise use created_at
+      yearTrends = await executeQuery(`
+        SELECT 
+          s.id as subject_id,
+          s.name as subject_name,
+          COALESCE(a.year, YEAR(a.created_at)) as year,
+          AVG(a.rit_score) as average_rit_score,
+          COUNT(DISTINCT a.student_id) as student_count
+        FROM assessments a
+        JOIN users u ON a.student_id = u.id
+        JOIN subjects s ON a.subject_id = s.id
+        ${whereClause}
+        GROUP BY s.id, s.name, COALESCE(a.year, YEAR(a.created_at))
+        HAVING AVG(a.rit_score) > 0
+        ORDER BY s.name, COALESCE(a.year, YEAR(a.created_at))
+      `, params);
+      
+      console.log(`Found ${growthRates.length} growth rate records and ${yearTrends.length} year trend records`);
+
+    } catch (queryError) {
+      console.error('Query error in getSubjectPerformanceDashboard:', queryError);
+      console.error('Query error details:', {
+        message: queryError.message,
+        code: queryError.code,
+        sqlState: queryError.sqlState,
+        sqlMessage: queryError.sqlMessage,
+        errno: queryError.errno
+      });
+      
+      // Return empty arrays if query fails - don't throw 500 error
+      subjectPerformance = [];
+      growthRates = [];
+      yearTrends = [];
+    }
+
+    // Always return success with data (even if empty)
     res.json({
-      subjectPerformance,
-      growthRates,
-      yearTrends
+      subjectPerformance: subjectPerformance || [],
+      growthRates: growthRates || [],
+      yearTrends: yearTrends || []
     });
   } catch (error) {
     console.error('Error in getSubjectPerformanceDashboard:', error);
-    res.status(500).json({ error: 'Failed to fetch subject performance data' });
+    console.error('Full error:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno
+    });
+    
+    // Return empty data instead of 500 error so frontend can still render
+    res.json({
+      subjectPerformance: [],
+      growthRates: [],
+      yearTrends: [],
+      error: 'Failed to fetch data',
+      message: error.message
+    });
   }
 };
 
@@ -1926,7 +1999,7 @@ export const getAchievementGapAnalysis = async (req, res) => {
         s.name as school_name,
         AVG(a.rit_score) as average_rit_score,
         COUNT(DISTINCT a.student_id) as student_count,
-        STDDEV(a.rit_score) as standard_deviation
+        STDDEV_POP(a.rit_score) as standard_deviation
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       JOIN schools s ON u.school_id = s.id
@@ -1942,7 +2015,7 @@ export const getAchievementGapAnalysis = async (req, res) => {
         g.display_name as grade_name,
         AVG(a.rit_score) as average_rit_score,
         COUNT(DISTINCT a.student_id) as student_count,
-        STDDEV(a.rit_score) as standard_deviation
+        STDDEV_POP(a.rit_score) as standard_deviation
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       JOIN grades g ON u.grade_id = g.id
@@ -1958,7 +2031,7 @@ export const getAchievementGapAnalysis = async (req, res) => {
         s.name as subject_name,
         AVG(a.rit_score) as average_rit_score,
         COUNT(DISTINCT a.student_id) as student_count,
-        STDDEV(a.rit_score) as standard_deviation
+        STDDEV_POP(a.rit_score) as standard_deviation
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       JOIN subjects s ON a.subject_id = s.id
@@ -2013,7 +2086,7 @@ export const getCompetencyMasteryReport = async (req, res) => {
         COUNT(DISTINCT scs.student_id) as student_count,
         SUM(CASE WHEN scs.final_score >= 75 THEN 1 ELSE 0 END) as proficient_count,
         SUM(CASE WHEN scs.final_score < 50 THEN 1 ELSE 0 END) as struggling_count,
-        STDDEV(scs.final_score) as standard_deviation
+        STDDEV_POP(scs.final_score) as standard_deviation
       FROM student_competency_scores scs
       JOIN assessments a ON scs.assessment_id = a.id
       JOIN users u ON a.student_id = u.id
