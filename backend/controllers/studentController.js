@@ -313,7 +313,7 @@ export const submitAnswer = async (req, res) => {
 
     // Check if assessment exists and get its mode
     const assessments = await executeQuery(
-      'SELECT id, student_id, subject_id, assessment_mode, total_questions, time_limit_minutes, created_at FROM assessments WHERE id = ?',
+      'SELECT id, student_id, subject_id, assessment_mode, total_questions, time_limit_minutes, created_at, assignment_id FROM assessments WHERE id = ?',
       [assessmentId]
     );
 
@@ -801,10 +801,27 @@ export const submitAnswer = async (req, res) => {
         [assessmentId]
       );
       if (assignmentResult3.length > 0 && assignmentResult3[0].assignment_id) {
-        await executeQuery(
-          'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
-          [assignmentResult3[0].assignment_id, studentId]
+        const assignmentId = assignmentResult3[0].assignment_id;
+        
+        // Check if assignment_students record exists
+        const existingRecord = await executeQuery(
+          'SELECT id FROM assignment_students WHERE assignment_id = ? AND student_id = ?',
+          [assignmentId, studentId]
         );
+        
+        if (existingRecord.length > 0) {
+          // Update existing record
+          await executeQuery(
+            'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
+            [assignmentId, studentId]
+          );
+        } else {
+          // Create new record for grade-level assignments
+          await executeQuery(
+            'INSERT INTO assignment_students (assignment_id, student_id, is_completed, completed_at) VALUES (?, ?, 1, NOW())',
+            [assignmentId, studentId]
+          );
+        }
       }
 
       // Clean up session (only for Adaptive mode)
@@ -850,10 +867,27 @@ export const submitAnswer = async (req, res) => {
         [assessmentId]
       );
       if (assignmentResult4.length > 0 && assignmentResult4[0].assignment_id) {
-        await executeQuery(
-          'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
-          [assignmentResult4[0].assignment_id, studentId]
+        const assignmentId = assignmentResult4[0].assignment_id;
+        
+        // Check if assignment_students record exists
+        const existingRecord = await executeQuery(
+          'SELECT id FROM assignment_students WHERE assignment_id = ? AND student_id = ?',
+          [assignmentId, studentId]
         );
+        
+        if (existingRecord.length > 0) {
+          // Update existing record
+          await executeQuery(
+            'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
+            [assignmentId, studentId]
+          );
+        } else {
+          // Create new record for grade-level assignments
+          await executeQuery(
+            'INSERT INTO assignment_students (assignment_id, student_id, is_completed, completed_at) VALUES (?, ?, 1, NOW())',
+            [assignmentId, studentId]
+          );
+        }
       }
 
       // Clean up session (only for Adaptive mode)
@@ -869,8 +903,80 @@ export const submitAnswer = async (req, res) => {
       });
     }
 
-    // For Standard mode, just return the answer result (frontend handles next question)
+    // For Standard mode, check if all questions are answered
     if (assessment.assessment_mode === 'Standard') {
+      // Count total responses for this assessment
+      const responseCount = await executeQuery(
+        'SELECT COUNT(*) as count FROM assessment_responses WHERE assessment_id = ?',
+        [assessmentId]
+      );
+      
+      const totalResponses = responseCount[0].count;
+      
+      // Check if all questions are answered
+      if (totalResponses >= assessment.total_questions) {
+        // Calculate final score and mark as complete
+        const startTime = assessment.created_at ? new Date(assessment.created_at).getTime() : Date.now();
+        const duration = Math.round((Date.now() - startTime) / 60000);
+        
+        // Calculate average difficulty across all attempted questions
+        const avgResult = await executeQuery(
+          'SELECT AVG(question_difficulty) as avg_difficulty FROM assessment_responses WHERE assessment_id = ?',
+          [assessmentId]
+        );
+        const ritScore = Math.round(avgResult[0].avg_difficulty || question.difficulty_level);
+        
+        // Calculate correct answers count
+        const correctAnswersResult = await executeQuery(
+          'SELECT COUNT(*) as correct_count FROM assessment_responses WHERE assessment_id = ? AND is_correct = 1',
+          [assessmentId]
+        );
+        const correctAnswers = correctAnswersResult[0].correct_count;
+        
+        // Update assessment with Growth Metric score
+        await executeQuery(
+          'UPDATE assessments SET rit_score = ?, correct_answers = ?, duration_minutes = ? WHERE id = ?',
+          [ritScore, correctAnswers, duration, assessmentId]
+        );
+        
+        // Update assignment_students if this is an assignment-based assessment
+        const assignmentResult5 = await executeQuery(
+          'SELECT assignment_id FROM assessments WHERE id = ?',
+          [assessmentId]
+        );
+        if (assignmentResult5.length > 0 && assignmentResult5[0].assignment_id) {
+          const assignmentId = assignmentResult5[0].assignment_id;
+          
+          // Check if assignment_students record exists
+          const existingRecord = await executeQuery(
+            'SELECT id FROM assignment_students WHERE assignment_id = ? AND student_id = ?',
+            [assignmentId, studentId]
+          );
+          
+          if (existingRecord.length > 0) {
+            // Update existing record
+            await executeQuery(
+              'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
+              [assignmentId, studentId]
+            );
+          } else {
+            // Create new record for grade-level assignments
+            await executeQuery(
+              'INSERT INTO assignment_students (assignment_id, student_id, is_completed, completed_at) VALUES (?, ?, 1, NOW())',
+              [assignmentId, studentId]
+            );
+          }
+        }
+        
+        return res.json({
+          completed: true,
+          isCorrect,
+          assessmentId: assessmentId,
+          message: `Assessment completed! Your Growth Metric score is ${ritScore}`
+        });
+      }
+      
+      // Not all questions answered yet
       return res.json({
         completed: false,
         isCorrect,
@@ -913,10 +1019,27 @@ export const submitAnswer = async (req, res) => {
         [assessmentId]
       );
       if (assignmentResult2.length > 0 && assignmentResult2[0].assignment_id) {
-        await executeQuery(
-          'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
-          [assignmentResult2[0].assignment_id, studentId]
+        const assignmentId = assignmentResult2[0].assignment_id;
+        
+        // Check if assignment_students record exists
+        const existingRecord = await executeQuery(
+          'SELECT id FROM assignment_students WHERE assignment_id = ? AND student_id = ?',
+          [assignmentId, studentId]
         );
+        
+        if (existingRecord.length > 0) {
+          // Update existing record
+          await executeQuery(
+            'UPDATE assignment_students SET is_completed = 1, completed_at = NOW() WHERE assignment_id = ? AND student_id = ?',
+            [assignmentId, studentId]
+          );
+        } else {
+          // Create new record for grade-level assignments
+          await executeQuery(
+            'INSERT INTO assignment_students (assignment_id, student_id, is_completed, completed_at) VALUES (?, ?, 1, NOW())',
+            [assignmentId, studentId]
+          );
+        }
       }
 
       // Clean up session (only for Adaptive mode)
@@ -2038,12 +2161,15 @@ export const getDashboardData = async (req, res) => {
         a.total_questions,
         a.date_taken,
         a.year,
+        a.assignment_id,
         s.id as subject_id,
-        s.name as subject_name
+        s.name as subject_name,
+        ass.name as assignment_name
       FROM assessments a
       JOIN subjects s ON a.subject_id = s.id
+      LEFT JOIN assignments ass ON a.assignment_id = ass.id
       WHERE a.student_id = ? AND a.rit_score IS NOT NULL
-      ORDER BY s.name, a.year DESC,
+      ORDER BY a.date_taken DESC, s.name, a.year DESC,
         CASE a.assessment_period 
           WHEN 'BOY' THEN 1 
           WHEN 'EOY' THEN 2 
