@@ -161,6 +161,7 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
           
           // Determine MIME type from file extension
           let mimeType = blob.type;
+          
           if (!mimeType || mimeType === 'application/octet-stream') {
             const ext = imageName.toLowerCase().split('.').pop();
             const mimeTypes: { [key: string]: string } = {
