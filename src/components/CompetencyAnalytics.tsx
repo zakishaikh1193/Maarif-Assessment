@@ -212,7 +212,9 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
               <span className="text-sm font-medium text-blue-700">Average Score</span>
             </div>
             <div className="text-2xl font-bold text-blue-900 mt-1">
-              {Math.round(currentScores.reduce((sum, s) => sum + s.finalScore, 0) / currentScores.length)}%
+              {currentScores.length > 0 
+                ? `${Math.round(currentScores.reduce((sum, s) => sum + (Number(s.finalScore) || 0), 0) / currentScores.length)}%`
+                : '0%'}
             </div>
           </div>
         </div>
@@ -279,38 +281,73 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
       )}
 
       {/* Competency Performance Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-          <BarChart className="h-5 w-5 text-blue-600" />
-          <span>Competency Performance Overview</span>
-        </h4>
-        <div className="h-80">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+            <BarChart className="h-5 w-5 text-purple-600" />
+            <span>Competency Performance Overview</span>
+          </h4>
+          <p className="text-sm text-gray-600">Performance scores across different competencies</p>
+        </div>
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-              <YAxis domain={[0, 100]} />
+            <BarChart 
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45} 
+                textAnchor="end" 
+                height={100}
+                tick={{ fontSize: 12, fill: '#6B7280' }}
+                interval={0}
+              />
+              <YAxis 
+                domain={[0, 100]}
+                tick={{ fontSize: 12, fill: '#6B7280' }}
+                tickCount={5}
+                label={{ value: 'Score (%)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6B7280' } }}
+              />
               <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  padding: '12px'
+                }}
                 formatter={(value: any, name: string) => [
                   `${value}%`, 
                   name === 'score' ? 'Final Score' : 
                   name === 'accuracy' ? 'Accuracy' : name
                 ]}
+                labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#111827' }}
               />
-              <Legend />
-              <Bar dataKey="score" fill="#8B5CF6" name="Final Score" />
+              <Bar 
+                dataKey="score" 
+                fill="#8B5CF6" 
+                name="Final Score"
+                radius={[8, 8, 0, 0]}
+                stroke="#7C3AED"
+                strokeWidth={1}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Competency Distribution Pie Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-          <PieChart className="h-5 w-5 text-green-600" />
-          <span>Performance Distribution</span>
-        </h4>
-        <div className="h-80">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+            <PieChart className="h-5 w-5 text-purple-600" />
+            <span>Performance Distribution</span>
+          </h4>
+          <p className="text-sm text-gray-600">Distribution of performance across competency categories</p>
+        </div>
+        <div className="h-[400px] flex items-center justify-center">
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -318,18 +355,103 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={100}
-                  paddingAngle={2}
+                  innerRadius={60}
+                  outerRadius={120}
+                  paddingAngle={3}
                   dataKey="value"
-                  minAngle={3}
+                  label={({ name, value, percent }) => {
+                    // Show label if value is greater than 0
+                    if (value > 0) {
+                      // Format percentage to show 2 decimal places if needed, otherwise whole number
+                      const displayValue = value % 1 === 0 ? value : value.toFixed(2);
+                      return `${displayValue}%`;
+                    }
+                    return '';
+                  }}
+                  labelLine={{
+                    stroke: '#6B7280',
+                    strokeWidth: 1.5,
+                    length: 15,
+                    lengthType: 'straight'
+                  }}
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
+                  {pieData.map((entry, index) => {
+                    // Use vibrant color palette similar to examples (light blue, red, purple, dark blue, pink)
+                    const colors = [
+                      '#60A5FA', // Light Blue
+                      '#EF4444', // Red
+                      '#A78BFA', // Purple
+                      '#3B82F6', // Dark Blue
+                      '#EC4899', // Pink/Magenta
+                      '#10B981', // Green
+                      '#F59E0B', // Amber
+                      '#6366F1'  // Indigo
+                    ];
+                    // Use light gray for zero values, otherwise use color from entry or palette
+                    const fillColor = entry.value > 0 
+                      ? (entry.color || colors[index % colors.length]) 
+                      : '#E5E7EB';
+                    return (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={fillColor}
+                        stroke="#FFFFFF"
+                        strokeWidth={3}
+                      />
+                    );
+                  })}
                 </Pie>
-                <Tooltip formatter={(value: any) => [`${value}%`, 'Score']} />
-                <Legend />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    padding: '12px'
+                  }}
+                  formatter={(value: any, name: string, props: any) => {
+                    const total = pieData.reduce((sum, item) => sum + item.value, 0);
+                    const percent = total > 0 ? ((value / total) * 100).toFixed(2) : '0';
+                    const displayValue = value % 1 === 0 ? value : parseFloat(value).toFixed(2);
+                    return [
+                      `${displayValue}% (${percent}% of total)`, 
+                      props.payload.name || 'Competency'
+                    ];
+                  }}
+                  labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#111827' }}
+                />
+                <Legend 
+                  verticalAlign="bottom"
+                  height={60}
+                  iconType="square"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  content={(props) => {
+                    const { payload } = props;
+                    if (!payload || payload.length === 0) return null;
+                    
+                    return (
+                      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4">
+                        {payload.map((entry: any, index: number) => {
+                          const data = entry.payload;
+                          const displayValue = data.value > 0 
+                            ? (data.value % 1 === 0 ? data.value : parseFloat(data.value).toFixed(2))
+                            : '0';
+                          return (
+                            <div key={index} className="flex items-center space-x-2">
+                              <div 
+                                className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                                style={{ backgroundColor: entry.color || '#E5E7EB' }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                {data.name}: {displayValue}%
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
