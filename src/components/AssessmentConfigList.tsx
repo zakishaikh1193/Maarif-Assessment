@@ -222,32 +222,6 @@ const AssessmentConfigList: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-lg border border-gray-200 p-1">
-        <div className="flex space-x-1">
-          <button
-            onClick={() => setActiveTab('assignments')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === 'assignments'
-                ? 'bg-blue-100 text-blue-800'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            Assignments ({assignments.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('configurations')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === 'configurations'
-                ? 'bg-blue-100 text-blue-800'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            Configurations ({configurations.length})
-          </button>
-        </div>
-      </div>
-
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex items-center space-x-4">

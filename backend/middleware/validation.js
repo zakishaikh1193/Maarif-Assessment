@@ -367,33 +367,41 @@ export const validateCompetency = (req, res, next) => {
     errors.push('Competency name must be 100 characters or less');
   }
 
-  if (!strong_description || strong_description.trim().length === 0) {
-    errors.push('Strong performance description is required');
+  // Optional fields - only validate format if provided
+  if (strong_description !== undefined && strong_description !== null && strong_description.trim().length === 0) {
+    // Allow empty string, but if provided it should not be just whitespace
+    // Actually, empty string is fine, so we'll allow it
   }
 
-  if (!neutral_description || neutral_description.trim().length === 0) {
-    errors.push('Neutral performance description is required');
+  if (neutral_description !== undefined && neutral_description !== null && neutral_description.trim().length === 0) {
+    // Allow empty string
   }
 
-  if (!growth_description || growth_description.trim().length === 0) {
-    errors.push('Growth needed description is required');
+  if (growth_description !== undefined && growth_description !== null && growth_description.trim().length === 0) {
+    // Allow empty string
   }
 
-  // Validate thresholds
-  if (strong_threshold !== undefined) {
-    if (!Number.isInteger(strong_threshold) || strong_threshold < 0 || strong_threshold > 100) {
+  // Validate thresholds if provided
+  if (strong_threshold !== undefined && strong_threshold !== null && strong_threshold !== '') {
+    const threshold = typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold;
+    if (!Number.isInteger(threshold) || threshold < 0 || threshold > 100) {
       errors.push('Strong threshold must be an integer between 0 and 100');
     }
   }
 
-  if (neutral_threshold !== undefined) {
-    if (!Number.isInteger(neutral_threshold) || neutral_threshold < 0 || neutral_threshold > 100) {
+  if (neutral_threshold !== undefined && neutral_threshold !== null && neutral_threshold !== '') {
+    const threshold = typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold;
+    if (!Number.isInteger(threshold) || threshold < 0 || threshold > 100) {
       errors.push('Neutral threshold must be an integer between 0 and 100');
     }
   }
 
-  if (strong_threshold !== undefined && neutral_threshold !== undefined) {
-    if (strong_threshold <= neutral_threshold) {
+  // Only validate threshold relationship if both are provided
+  if (strong_threshold !== undefined && strong_threshold !== null && strong_threshold !== '' &&
+      neutral_threshold !== undefined && neutral_threshold !== null && neutral_threshold !== '') {
+    const strong = typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold;
+    const neutral = typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold;
+    if (strong <= neutral) {
       errors.push('Strong threshold must be greater than neutral threshold');
     }
   }

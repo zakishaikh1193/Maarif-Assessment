@@ -9,7 +9,8 @@ import {
   updateCompetency,
   deleteCompetency,
   getCompetencyStats,
-  getCompetencyQuestions
+  getCompetencyQuestions,
+  importCompetenciesFromCSV
 } from '../controllers/competenciesController.js';
 
 const router = express.Router();
@@ -35,6 +36,9 @@ router.get('/:id/questions', getCompetencyQuestions);
 
 // Create new competency
 router.post('/', validateCompetency, createCompetency);
+
+// Import competencies from CSV
+router.post('/import-csv', importCompetenciesFromCSV);
 
 // Update competency
 router.put('/:id', validateCompetency, updateCompetency);
