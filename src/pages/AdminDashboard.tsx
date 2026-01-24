@@ -239,13 +239,14 @@ const AdminDashboard: React.FC = () => {
         subjectsAPI.getAll(),
         adminAPI.getStats(),
         adminAPI.getStudents(),
-        schoolsAPI.getAll(),
+        schoolsAPI.getAll(1, 1000), // Load all schools for the map (use high limit)
         gradesAPI.getActive()
       ]);
       setSubjects(subjectsData);
       setStats(statsData);
       setStudents(studentsData);
-      setSchools(schoolsData);
+      // schoolsAPI.getAll() returns { schools: [...], pagination: {...} }
+      setSchools(schoolsData.schools || (Array.isArray(schoolsData) ? schoolsData : []));
       setGrades(gradesData);
       if (subjectsData.length > 0) {
         setSelectedSubject(subjectsData[0]);

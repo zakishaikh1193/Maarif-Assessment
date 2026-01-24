@@ -18,6 +18,9 @@ export const getStudents = async (req, res) => {
     const total = countResult[0]?.total || 0;
 
     // Get paginated students
+    // Embed limit and offset directly to avoid parameter binding issues
+    const validatedLimit = Math.max(1, Math.min(1000, limit)); // Ensure limit is between 1 and 1000
+    const validatedOffset = Math.max(0, offset); // Ensure offset is non-negative
     const students = await executeQuery(`
       SELECT 
         u.id, 
@@ -33,8 +36,8 @@ export const getStudents = async (req, res) => {
       LEFT JOIN grades g ON u.grade_id = g.id
       WHERE u.role = 'student'
       ORDER BY u.first_name, u.last_name, u.username
-      LIMIT ? OFFSET ?
-    `, [limit, offset]);
+      LIMIT ${validatedLimit} OFFSET ${validatedOffset}
+    `);
     
     res.json({
       students,
@@ -57,10 +60,21 @@ export const getStudents = async (req, res) => {
 // Get flexible growth data at different levels (district, school, class, student)
 export const getGrowthData = async (req, res) => {
   try {
+    // Support both single IDs and arrays
     const { schoolId, gradeId, studentId, subjectId } = req.query;
+    const schoolIds = req.query.schoolIds ? (Array.isArray(req.query.schoolIds) ? req.query.schoolIds : [req.query.schoolIds]) : [];
+    const gradeIds = req.query.gradeIds ? (Array.isArray(req.query.gradeIds) ? req.query.gradeIds : [req.query.gradeIds]) : [];
+    const studentIds = req.query.studentIds ? (Array.isArray(req.query.studentIds) ? req.query.studentIds : [req.query.studentIds]) : [];
+    const subjectIds = req.query.subjectIds ? (Array.isArray(req.query.subjectIds) ? req.query.subjectIds : [req.query.subjectIds]) : [];
+    
+    // Use arrays if provided, otherwise fall back to single IDs
+    const finalSchoolIds = schoolIds.length > 0 ? schoolIds : (schoolId ? [schoolId] : []);
+    const finalGradeIds = gradeIds.length > 0 ? gradeIds : (gradeId ? [gradeId] : []);
+    const finalStudentIds = studentIds.length > 0 ? studentIds : (studentId ? [studentId] : []);
+    const finalSubjectIds = subjectIds.length > 0 ? subjectIds : (subjectId ? [subjectId] : []);
     
     // If no subject provided, get the first available subject or use a default
-    let actualSubjectId = subjectId;
+    let actualSubjectId = finalSubjectIds.length > 0 ? finalSubjectIds[0] : subjectId;
     if (!actualSubjectId) {
       const defaultSubject = await executeQuery('SELECT id, name FROM subjects ORDER BY id ASC LIMIT 1', []);
       if (defaultSubject.length === 0) {
@@ -128,10 +142,63 @@ export const getGrowthData = async (req, res) => {
     
     const districtAverages = await executeQuery(districtQuery, districtParams);
 
-    // 2. School averages (if schoolId provided)
+    // 2. School averages (if schoolIds provided) - support multiple schools
     let schoolAverages = [];
-    if (schoolId) {
+    if (finalSchoolIds.length > 0) {
+      // Build query with IN clause for multiple schools
+      const placeholders = finalSchoolIds.map(() => '?').join(',');
       let schoolQuery = `
+        SELECT 
+          CONCAT(a.assessment_period, ' ', a.year) as period,
+          a.year,
+          a.assessment_period,
+          u.school_id,
+          AVG(a.rit_score) as averageRITScore,
+          COUNT(DISTINCT a.student_id) as studentCount
+        FROM assessments a
+        JOIN users u ON a.student_id = u.id
+        WHERE a.subject_id = ? 
+        AND a.rit_score IS NOT NULL
+        AND u.school_id IN (${placeholders})
+      `;
+      const schoolParams = [actualSubjectId, ...finalSchoolIds.map(id => parseInt(id))];
+      
+      if (finalGradeIds.length > 0) {
+        const gradePlaceholders = finalGradeIds.map(() => '?').join(',');
+        schoolQuery += ` AND u.grade_id IN (${gradePlaceholders})`;
+        schoolParams.push(...finalGradeIds.map(id => parseInt(id)));
+      }
+      
+      schoolQuery += `
+        GROUP BY u.school_id, a.assessment_period, a.year
+        ORDER BY u.school_id, a.year ASC, 
+          CASE a.assessment_period 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
+          END ASC
+      `;
+      
+      const schoolResults = await executeQuery(schoolQuery, schoolParams);
+      
+      // Always include schoolId when schools are selected (even for single school, to allow frontend flexibility)
+      // This allows frontend to render individual lines for each school
+      schoolAverages = schoolResults.map(r => ({
+        period: r.period,
+        year: r.year,
+        assessmentPeriod: r.assessment_period,
+        schoolId: r.school_id, // Always include schoolId when schools are filtered
+        averageRITScore: parseFloat(r.averageRITScore),
+        studentCount: r.studentCount
+      }));
+    }
+
+    // 3. Class averages (if gradeIds and schoolIds provided)
+    let classAverages = [];
+    if (finalGradeIds.length > 0 && finalSchoolIds.length > 0) {
+      // Support multiple schools and grades
+      const schoolPlaceholders = finalSchoolIds.map(() => '?').join(',');
+      const gradePlaceholders = finalGradeIds.map(() => '?').join(',');
+      const classQuery = `
         SELECT 
           CONCAT(a.assessment_period, ' ', a.year) as period,
           a.year,
@@ -142,16 +209,8 @@ export const getGrowthData = async (req, res) => {
         JOIN users u ON a.student_id = u.id
         WHERE a.subject_id = ? 
         AND a.rit_score IS NOT NULL
-        AND u.school_id = ?
-      `;
-      const schoolParams = [actualSubjectId, schoolId];
-      
-      if (gradeId) {
-        schoolQuery += ' AND u.grade_id = ?';
-        schoolParams.push(gradeId);
-      }
-      
-      schoolQuery += `
+        AND u.school_id IN (${schoolPlaceholders})
+        AND u.grade_id IN (${gradePlaceholders})
         GROUP BY a.assessment_period, a.year
         ORDER BY a.year ASC, 
           CASE a.assessment_period 
@@ -160,12 +219,13 @@ export const getGrowthData = async (req, res) => {
           END ASC
       `;
       
-      schoolAverages = await executeQuery(schoolQuery, schoolParams);
-    }
-
-    // 3. Class averages (if gradeId and schoolId provided)
-    let classAverages = [];
-    if (gradeId && schoolId) {
+      classAverages = await executeQuery(classQuery, [
+        actualSubjectId,
+        ...finalSchoolIds.map(id => parseInt(id)),
+        ...finalGradeIds.map(id => parseInt(id))
+      ]);
+    } else if (gradeId && schoolId) {
+      // Legacy support for single IDs
       const classQuery = `
         SELECT 
           CONCAT(a.assessment_period, ' ', a.year) as period,
@@ -190,9 +250,59 @@ export const getGrowthData = async (req, res) => {
       classAverages = await executeQuery(classQuery, [actualSubjectId, schoolId, gradeId]);
     }
 
-    // 4. Student scores (if studentId provided)
+    // 4. Student scores (if studentIds provided)
     let studentScores = [];
-    if (studentId) {
+    if (finalStudentIds.length > 0) {
+      // Support multiple students
+      const studentPlaceholders = finalStudentIds.map(() => '?').join(',');
+      const studentQuery = `
+        SELECT 
+          CONCAT(assessment_period, ' ', year) as period,
+          year,
+          assessment_period,
+          student_id,
+          rit_score,
+          date_taken
+        FROM (
+          SELECT 
+            assessment_period,
+            year,
+            student_id,
+            rit_score,
+            date_taken,
+            ROW_NUMBER() OVER (
+              PARTITION BY student_id, year, assessment_period 
+              ORDER BY date_taken DESC, id DESC
+            ) as rn
+          FROM assessments 
+          WHERE student_id IN (${studentPlaceholders})
+          AND subject_id = ? 
+          AND rit_score IS NOT NULL
+        ) ranked
+        WHERE rn = 1
+        ORDER BY student_id, year ASC, 
+          CASE assessment_period 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
+          END ASC
+      `;
+      
+      const studentResults = await executeQuery(studentQuery, [
+        ...finalStudentIds.map(id => parseInt(id)),
+        actualSubjectId
+      ]);
+      
+      // Format results
+      studentScores = studentResults.map(score => ({
+        period: score.period,
+        year: score.year,
+        assessmentPeriod: score.assessment_period,
+        studentId: score.student_id,
+        ritScore: score.rit_score,
+        dateTaken: score.date_taken
+      }));
+    } else if (studentId) {
+      // Legacy support for single student ID
       const studentQuery = `
         SELECT 
           CONCAT(assessment_period, ' ', year) as period,
@@ -226,9 +336,11 @@ export const getGrowthData = async (req, res) => {
       studentScores = await executeQuery(studentQuery, [studentId, actualSubjectId]);
     }
 
-    // 5. Period distributions (for background areas) - use class level if available, otherwise school, otherwise district
+    // 5. Period distributions (for background areas) - use selected school(s) only, not district
     let periodDistributions = [];
-    const distributionLevel = (gradeId && schoolId) ? 'class' : schoolId ? 'school' : 'district';
+    
+    // Use school level if schools are selected, otherwise use district
+    const useSchoolLevel = finalSchoolIds.length > 0;
     
     let distQuery = `
       SELECT 
@@ -247,20 +359,24 @@ export const getGrowthData = async (req, res) => {
     `;
     const distParams = [actualSubjectId];
     
-    if (distributionLevel === 'class' && schoolId && gradeId) {
-      distQuery += ' AND u.school_id = ? AND u.grade_id = ?';
-      distParams.push(schoolId, gradeId);
-    } else if (distributionLevel === 'school' && schoolId) {
-      distQuery += ' AND u.school_id = ?';
-      distParams.push(schoolId);
-      if (gradeId) {
-        distQuery += ' AND u.grade_id = ?';
-        distParams.push(gradeId);
+    if (useSchoolLevel) {
+      // Use selected school(s) for distribution - this is the key fix
+      const placeholders = finalSchoolIds.map(() => '?').join(',');
+      distQuery += ` AND u.school_id IN (${placeholders})`;
+      distParams.push(...finalSchoolIds.map(id => parseInt(id)));
+      
+      if (finalGradeIds.length > 0) {
+        const gradePlaceholders = finalGradeIds.map(() => '?').join(',');
+        distQuery += ` AND u.grade_id IN (${gradePlaceholders})`;
+        distParams.push(...finalGradeIds.map(id => parseInt(id)));
       }
-    } else if (gradeId) {
-      distQuery += ' AND u.grade_id = ?';
-      distParams.push(gradeId);
+    } else if (finalGradeIds.length > 0) {
+      // If only grades selected (no schools), use grade level
+      const gradePlaceholders = finalGradeIds.map(() => '?').join(',');
+      distQuery += ` AND u.grade_id IN (${gradePlaceholders})`;
+      distParams.push(...finalGradeIds.map(id => parseInt(id)));
     }
+    // If no schools or grades selected, use district level (default - no additional WHERE clause needed)
     
     distQuery += `
       GROUP BY a.assessment_period, a.year
@@ -291,11 +407,19 @@ export const getGrowthData = async (req, res) => {
     // Get school and grade names if applicable
     let schoolName = null;
     let gradeName = null;
-    if (schoolId) {
+    if (finalSchoolIds.length === 1) {
+      const schoolResult = await executeQuery('SELECT name FROM schools WHERE id = ?', [finalSchoolIds[0]]);
+      schoolName = schoolResult.length > 0 ? schoolResult[0].name : null;
+    } else if (schoolId) {
+      // Legacy support
       const schoolResult = await executeQuery('SELECT name FROM schools WHERE id = ?', [schoolId]);
       schoolName = schoolResult.length > 0 ? schoolResult[0].name : null;
     }
-    if (gradeId) {
+    if (finalGradeIds.length === 1) {
+      const gradeResult = await executeQuery('SELECT display_name FROM grades WHERE id = ?', [finalGradeIds[0]]);
+      gradeName = gradeResult.length > 0 ? gradeResult[0].display_name : null;
+    } else if (gradeId) {
+      // Legacy support
       const gradeResult = await executeQuery('SELECT display_name FROM grades WHERE id = ?', [gradeId]);
       gradeName = gradeResult.length > 0 ? gradeResult[0].display_name : null;
     }

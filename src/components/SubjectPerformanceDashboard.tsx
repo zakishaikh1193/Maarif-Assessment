@@ -6,6 +6,7 @@ import { School, Grade, Subject, GrowthOverTimeData } from '../types';
 import GrowthOverTimeChart from './GrowthOverTimeChart';
 import GrowthTabularView from './GrowthTabularView';
 import { exportCompletePerformanceReportToPDF } from '../utils/performanceReportExport';
+import MultiSelectDropdown from './MultiSelectDropdown';
 
 interface SubjectPerformanceDashboardProps {
   schools: School[];
@@ -24,11 +25,11 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
   const [growthData, setGrowthData] = useState<GrowthOverTimeData | null>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
   
-  // Internal filter state
-  const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
-  const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
-  const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
+  // Internal filter state - now using arrays for multi-select
+  const [selectedSchools, setSelectedSchools] = useState<number[]>([]);
+  const [selectedGrades, setSelectedGrades] = useState<number[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Array<{id: number, username: string, firstName?: string, lastName?: string}>>([]);
   const [showFilters, setShowFilters] = useState(true);
   const [growthViewMode, setGrowthViewMode] = useState<'graphical' | 'tabular'>('graphical');
@@ -45,27 +46,22 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
     }
   }, [subjects.length]);
 
-  // Load filtered students when school and grade change
+  // Load filtered students when schools or grades change (no blocking)
   useEffect(() => {
-    if (selectedSchool && selectedGrade) {
-      loadFilteredStudents();
-    } else {
-      setFilteredStudents([]);
-      setSelectedStudent(null);
-    }
-  }, [selectedSchool, selectedGrade]);
+    loadFilteredStudents();
+  }, [selectedSchools, selectedGrades]);
 
   // Load performance data
   useEffect(() => {
     loadData();
-  }, [selectedSchool, selectedGrade, selectedSubject, selectedStudent]);
+  }, [selectedSchools, selectedGrades]);
 
-  // Load growth data - always load, even without subject (will use first subject or aggregate)
+  // Load growth data when filters change
   useEffect(() => {
     if (subjects.length > 0) {
       loadGrowthData();
     }
-  }, [selectedSchool, selectedGrade, selectedStudent, selectedSubject, subjects.length]);
+  }, [selectedSchools, selectedGrades, selectedStudents, selectedSubjects, subjects.length]);
 
   const loadSubjects = async () => {
     try {
@@ -78,13 +74,60 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
 
   const loadFilteredStudents = async () => {
     try {
-      if (selectedSchool && selectedGrade) {
-        const students = await studentsAPI.getBySchoolAndGrade(selectedSchool, selectedGrade);
-        setFilteredStudents(students);
+      const allStudents: Array<{id: number, username: string, firstName?: string, lastName?: string}> = [];
+      
+      // If both schools and grades are selected, load by school+grade
+      if (selectedSchools.length > 0 && selectedGrades.length > 0) {
+        for (const schoolId of selectedSchools) {
+          for (const gradeId of selectedGrades) {
+            try {
+              const students = await studentsAPI.getBySchoolAndGrade(schoolId, gradeId);
+              allStudents.push(...students);
+            } catch (error) {
+              console.error(`Error loading students for school ${schoolId}, grade ${gradeId}:`, error);
+            }
+          }
+        }
       }
+      // If only grades are selected (no schools), load students from all schools with those grades
+      else if (selectedGrades.length > 0 && selectedSchools.length === 0) {
+        // Use schools from props
+        for (const school of schools) {
+          for (const gradeId of selectedGrades) {
+            try {
+              const students = await studentsAPI.getBySchoolAndGrade(school.id, gradeId);
+              allStudents.push(...students);
+            } catch (error) {
+              console.error(`Error loading students for school ${school.id}, grade ${gradeId}:`, error);
+            }
+          }
+        }
+      }
+      // If only schools are selected (no grades), load all students from those schools
+      else if (selectedSchools.length > 0 && selectedGrades.length === 0) {
+        // Use grades from props
+        for (const schoolId of selectedSchools) {
+          for (const grade of grades) {
+            try {
+              const students = await studentsAPI.getBySchoolAndGrade(schoolId, grade.id);
+              allStudents.push(...students);
+            } catch (error) {
+              console.error(`Error loading students for school ${schoolId}, grade ${grade.id}:`, error);
+            }
+          }
+        }
+      }
+      // If neither schools nor grades are selected, don't load students (too many)
+      // Users can still select students if they've been loaded before
+      
+      // Remove duplicates based on id
+      const uniqueStudents = Array.from(
+        new Map(allStudents.map(student => [student.id, student])).values()
+      );
+      setFilteredStudents(uniqueStudents);
     } catch (error) {
       console.error('Error loading filtered students:', error);
-      setFilteredStudents([]);
+      // Don't clear students if there's an error - keep existing list
     }
   };
 
@@ -96,12 +139,12 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
     
     setGrowthLoading(true);
     try {
-      // If no subject selected, backend will use first available subject
+      // Support multiple selections - pass arrays
       const growth = await adminAPI.getGrowthData({
-        schoolId: selectedSchool || undefined,
-        gradeId: selectedGrade || undefined,
-        studentId: selectedStudent || undefined,
-        subjectId: selectedSubject || undefined
+        schoolIds: selectedSchools.length > 0 ? selectedSchools : undefined,
+        gradeIds: selectedGrades.length > 0 ? selectedGrades : undefined,
+        studentIds: selectedStudents.length > 0 ? selectedStudents : undefined,
+        subjectIds: selectedSubjects.length > 0 ? selectedSubjects : undefined
       });
       setGrowthData(growth);
     } catch (error) {
@@ -116,8 +159,21 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
     setLoading(true);
     try {
       const filters: any = {};
-      if (selectedSchool) filters.schoolId = selectedSchool;
-      if (selectedGrade) filters.gradeId = selectedGrade;
+      if (selectedSchools.length > 0) {
+        // For backward compatibility, use schoolId for single, schoolIds for multiple
+        if (selectedSchools.length === 1) {
+          filters.schoolId = selectedSchools[0];
+        } else {
+          filters.schoolIds = selectedSchools;
+        }
+      }
+      if (selectedGrades.length > 0) {
+        if (selectedGrades.length === 1) {
+          filters.gradeId = selectedGrades[0];
+        } else {
+          filters.gradeIds = selectedGrades;
+        }
+      }
       // Note: Subject and Student filters are handled in the view logic, not in API call
 
       const response = await adminAPI.getSubjectPerformance(filters);
@@ -172,10 +228,10 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
 
   // Determine view level based on filters
   const getViewLevel = () => {
-    if (selectedStudent) return 'student';
-    if (selectedSubject) return 'subject';
-    if (selectedGrade) return 'grade';
-    if (selectedSchool) return 'school';
+    if (selectedStudents.length > 0) return 'student';
+    if (selectedSubjects.length > 0) return 'subject';
+    if (selectedGrades.length > 0) return 'grade';
+    if (selectedSchools.length > 0) return 'school';
     return 'all-schools';
   };
 
@@ -187,9 +243,9 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
 
     let filtered = data.subjectPerformance;
 
-    // Filter by subject if selected
-    if (selectedSubject) {
-      filtered = filtered.filter((s: any) => s.subject_id === selectedSubject);
+    // Filter by subjects if selected
+    if (selectedSubjects.length > 0) {
+      filtered = filtered.filter((s: any) => selectedSubjects.includes(s.subject_id));
     }
 
     return filtered;
@@ -202,19 +258,31 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
   const getTitle = () => {
     switch (viewLevel) {
       case 'student':
-        const student = filteredStudents.find(s => s.id === selectedStudent);
-        return `${student?.firstName && student?.lastName 
-          ? `${student.firstName} ${student.lastName}`
-          : student?.username || 'Student'} - Individual Performance`;
+        if (selectedStudents.length === 1) {
+          const student = filteredStudents.find(s => s.id === selectedStudents[0]);
+          return `${student?.firstName && student?.lastName 
+            ? `${student.firstName} ${student.lastName}`
+            : student?.username || 'Student'} - Individual Performance`;
+        }
+        return `${selectedStudents.length} Students Performance`;
       case 'subject':
-        const subject = subjects.find(s => s.id === selectedSubject);
-        return `${subject?.name || 'Subject'} Performance`;
+        if (selectedSubjects.length === 1) {
+          const subject = subjects.find(s => s.id === selectedSubjects[0]);
+          return `${subject?.name || 'Subject'} Performance`;
+        }
+        return `${selectedSubjects.length} Subjects Performance`;
       case 'grade':
-        const grade = grades.find(g => g.id === selectedGrade);
-        return `${grade?.display_name || 'Grade'} Performance`;
+        if (selectedGrades.length === 1) {
+          const grade = grades.find(g => g.id === selectedGrades[0]);
+          return `${grade?.display_name || 'Grade'} Performance`;
+        }
+        return `${selectedGrades.length} Grades Performance`;
       case 'school':
-        const school = schools.find(s => s.id === selectedSchool);
-        return `${school?.name || 'School'} Performance`;
+        if (selectedSchools.length === 1) {
+          const school = schools.find(s => s.id === selectedSchools[0]);
+          return `${school?.name || 'School'} Performance`;
+        }
+        return `${selectedSchools.length} Schools Performance`;
       default:
         return 'All Schools Performance Overview';
     }
@@ -270,7 +338,7 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.growthRates
-                .filter((subject: any) => !selectedSubject || subject.subject_id === selectedSubject)
+                .filter((subject: any) => selectedSubjects.length === 0 || selectedSubjects.includes(subject.subject_id))
                 .map((subject: any) => {
                   const growthRate = getGrowthRate(subject);
                   return (
@@ -385,7 +453,7 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-600" />
             <span className="font-medium text-gray-900">Filters</span>
-            {(selectedSchool || selectedGrade || selectedSubject || selectedStudent) && (
+            {(selectedSchools.length > 0 || selectedGrades.length > 0 || selectedSubjects.length > 0 || selectedStudents.length > 0) && (
               <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
                 Active
               </span>
@@ -401,112 +469,73 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
         {showFilters && (
           <div className="border-t border-gray-200 p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* School Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                  <Building className="h-4 w-4 text-purple-600" />
-                  <span>School</span>
-                </label>
-                <select
-                  value={selectedSchool || ''}
-                  onChange={(e) => {
-                    setSelectedSchool(e.target.value ? Number(e.target.value) : null);
-                    setSelectedGrade(null);
-                    setSelectedStudent(null);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="">All Schools</option>
-                  {schools.map((school) => (
-                    <option key={school.id} value={school.id}>
-                      {school.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* School Filter - Multi-select */}
+              <MultiSelectDropdown
+                label="School"
+                icon={<Building className="h-4 w-4 text-purple-600" />}
+                options={schools.map(s => ({ id: s.id, name: s.name }))}
+                selectedIds={selectedSchools}
+                onChange={(ids) => {
+                  setSelectedSchools(ids);
+                  if (ids.length === 0) {
+                    setSelectedGrades([]);
+                    setSelectedStudents([]);
+                  }
+                }}
+                placeholder="All Schools"
+                getLabel={(opt) => opt.name || ''}
+              />
 
-              {/* Grade Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                  <GraduationCap className="h-4 w-4 text-orange-600" />
-                  <span>Grade</span>
-                </label>
-                <select
-                  value={selectedGrade || ''}
-                  onChange={(e) => {
-                    setSelectedGrade(e.target.value ? Number(e.target.value) : null);
-                    setSelectedStudent(null);
-                  }}
-                  disabled={!selectedSchool}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm ${
-                    !selectedSchool ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <option value="">All Grades</option>
-                  {grades.map((grade) => (
-                    <option key={grade.id} value={grade.id}>
-                      {grade.display_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Grade Filter - Multi-select */}
+              <MultiSelectDropdown
+                label="Grade"
+                icon={<GraduationCap className="h-4 w-4 text-orange-600" />}
+                options={grades.map(g => ({ id: g.id, label: g.display_name, display_name: g.display_name }))}
+                selectedIds={selectedGrades}
+                onChange={(ids) => {
+                  setSelectedGrades(ids);
+                }}
+                placeholder="All Grades"
+                getLabel={(opt) => opt.display_name || opt.label || ''}
+              />
 
-              {/* Student Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                  <User className="h-4 w-4 text-emerald-600" />
-                  <span>Student</span>
-                </label>
-                <select
-                  value={selectedStudent || ''}
-                  onChange={(e) => setSelectedStudent(e.target.value ? Number(e.target.value) : null)}
-                  disabled={!selectedGrade}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm ${
-                    !selectedGrade ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <option value="">All Students</option>
-                  {filteredStudents.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.firstName && student.lastName 
-                        ? `${student.firstName} ${student.lastName}`
-                        : student.username
-                      }
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Student Filter - Multi-select */}
+              <MultiSelectDropdown
+                label="Student"
+                icon={<User className="h-4 w-4 text-emerald-600" />}
+                options={filteredStudents.map(s => ({
+                  id: s.id,
+                  label: s.firstName && s.lastName 
+                    ? `${s.firstName} ${s.lastName}`
+                    : s.username
+                }))}
+                selectedIds={selectedStudents}
+                onChange={setSelectedStudents}
+                placeholder="All Students"
+                getLabel={(opt) => opt.label || opt.username || ''}
+              />
 
-              {/* Subject Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                  <BookOpen className="h-4 w-4 text-blue-600" />
-                  <span>Subject</span>
-                </label>
-                <select
-                  value={selectedSubject || ''}
-                  onChange={(e) => setSelectedSubject(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="">All Subjects</option>
-                  {subjects.map((subject) => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Subject Filter - Multi-select */}
+              <MultiSelectDropdown
+                label="Subject"
+                icon={<BookOpen className="h-4 w-4 text-blue-600" />}
+                options={subjects.map(s => ({ id: s.id, label: s.name, name: s.name }))}
+                selectedIds={selectedSubjects}
+                onChange={setSelectedSubjects}
+                placeholder="All Subjects"
+                getLabel={(opt) => opt.name || opt.label || ''}
+              />
             </div>
             
             {/* Clear Filters Button */}
-            {(selectedSchool || selectedGrade || selectedSubject || selectedStudent) && (
+            {(selectedSchools.length > 0 || selectedGrades.length > 0 || selectedSubjects.length > 0 || selectedStudents.length > 0) && (
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => {
-                    setSelectedSchool(null);
-                    setSelectedGrade(null);
-                    setSelectedSubject(null);
-                    setSelectedStudent(null);
+                    setSelectedSchools([]);
+                    setSelectedGrades([]);
+                    setSelectedSubjects([]);
+                    setSelectedStudents([]);
                   }}
                   className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 >
@@ -549,12 +578,31 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
                       yearTrends: data.yearTrends
                     },
                     {
-                      schoolName: selectedSchool ? schools.find(s => s.id === selectedSchool)?.name || null : null,
-                      gradeName: selectedGrade ? grades.find(g => g.id === selectedGrade)?.display_name || null : null,
-                      studentName: selectedStudent ? filteredStudents.find(s => s.id === selectedStudent)?.firstName && filteredStudents.find(s => s.id === selectedStudent)?.lastName
-                        ? `${filteredStudents.find(s => s.id === selectedStudent)?.firstName} ${filteredStudents.find(s => s.id === selectedStudent)?.lastName}`
-                        : filteredStudents.find(s => s.id === selectedStudent)?.username || null : null,
-                      subjectName: selectedSubject ? subjects.find(s => s.id === selectedSubject)?.name || null : null
+                      schoolName: selectedSchools.length === 1 
+                        ? schools.find(s => s.id === selectedSchools[0])?.name || null 
+                        : selectedSchools.length > 1 
+                        ? `${selectedSchools.length} Schools` 
+                        : null,
+                      gradeName: selectedGrades.length === 1 
+                        ? grades.find(g => g.id === selectedGrades[0])?.display_name || null 
+                        : selectedGrades.length > 1 
+                        ? `${selectedGrades.length} Grades` 
+                        : null,
+                      studentName: selectedStudents.length === 1 
+                        ? (() => {
+                            const student = filteredStudents.find(s => s.id === selectedStudents[0]);
+                            return student?.firstName && student?.lastName
+                              ? `${student.firstName} ${student.lastName}`
+                              : student?.username || null;
+                          })()
+                        : selectedStudents.length > 1 
+                        ? `${selectedStudents.length} Students` 
+                        : null,
+                      subjectName: selectedSubjects.length === 1 
+                        ? subjects.find(s => s.id === selectedSubjects[0])?.name || null 
+                        : selectedSubjects.length > 1 
+                        ? `${selectedSubjects.length} Subjects` 
+                        : null
                     },
                     {
                       performanceOverview: 'performance-overview-chart',
@@ -626,30 +674,75 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
                 data={growthData} 
                 userRole="admin"
                 filters={{
-                  schoolName: selectedSchool ? schools.find(s => s.id === selectedSchool)?.name || null : null,
-                  gradeName: selectedGrade ? grades.find(g => g.id === selectedGrade)?.display_name || null : null,
-                  studentName: selectedStudent ? filteredStudents.find(s => s.id === selectedStudent)?.firstName && filteredStudents.find(s => s.id === selectedStudent)?.lastName
-                    ? `${filteredStudents.find(s => s.id === selectedStudent)?.firstName} ${filteredStudents.find(s => s.id === selectedStudent)?.lastName}`
-                    : filteredStudents.find(s => s.id === selectedStudent)?.username || null : null,
-                  subjectName: selectedSubject ? subjects.find(s => s.id === selectedSubject)?.name || null : null
+                  schoolName: selectedSchools.length === 1 
+                    ? schools.find(s => s.id === selectedSchools[0])?.name || null 
+                    : selectedSchools.length > 1 
+                    ? `${selectedSchools.length} Schools` 
+                    : null,
+                  gradeName: selectedGrades.length === 1 
+                    ? grades.find(g => g.id === selectedGrades[0])?.display_name || null 
+                    : selectedGrades.length > 1 
+                    ? `${selectedGrades.length} Grades` 
+                    : null,
+                  studentName: selectedStudents.length === 1 
+                    ? (() => {
+                        const student = filteredStudents.find(s => s.id === selectedStudents[0]);
+                        return student?.firstName && student?.lastName
+                          ? `${student.firstName} ${student.lastName}`
+                          : student?.username || null;
+                      })()
+                    : selectedStudents.length > 1 
+                    ? `${selectedStudents.length} Students` 
+                    : null,
+                  subjectName: selectedSubjects.length === 1 
+                    ? subjects.find(s => s.id === selectedSubjects[0])?.name || null 
+                    : selectedSubjects.length > 1 
+                    ? `${selectedSubjects.length} Subjects` 
+                    : null
                 }}
                 performanceData={data ? {
                   subjectPerformance: data.subjectPerformance,
                   growthRates: data.growthRates,
                   yearTrends: data.yearTrends
                 } : undefined}
+                schoolNamesMap={selectedSchools.reduce((acc, schoolId) => {
+                  const school = schools.find(s => s.id === schoolId);
+                  if (school) {
+                    acc[schoolId] = school.name;
+                  }
+                  return acc;
+                }, {} as { [key: number]: string })}
               />
             ) : (
               <GrowthTabularView 
                 data={growthData} 
                 userRole="admin"
                 filters={{
-                  schoolName: selectedSchool ? schools.find(s => s.id === selectedSchool)?.name || null : null,
-                  gradeName: selectedGrade ? grades.find(g => g.id === selectedGrade)?.display_name || null : null,
-                  studentName: selectedStudent ? filteredStudents.find(s => s.id === selectedStudent)?.firstName && filteredStudents.find(s => s.id === selectedStudent)?.lastName
-                    ? `${filteredStudents.find(s => s.id === selectedStudent)?.firstName} ${filteredStudents.find(s => s.id === selectedStudent)?.lastName}`
-                    : filteredStudents.find(s => s.id === selectedStudent)?.username || null : null,
-                  subjectName: selectedSubject ? subjects.find(s => s.id === selectedSubject)?.name || null : null
+                  schoolName: selectedSchools.length === 1 
+                    ? schools.find(s => s.id === selectedSchools[0])?.name || null 
+                    : selectedSchools.length > 1 
+                    ? `${selectedSchools.length} Schools` 
+                    : null,
+                  gradeName: selectedGrades.length === 1 
+                    ? grades.find(g => g.id === selectedGrades[0])?.display_name || null 
+                    : selectedGrades.length > 1 
+                    ? `${selectedGrades.length} Grades` 
+                    : null,
+                  studentName: selectedStudents.length === 1 
+                    ? (() => {
+                        const student = filteredStudents.find(s => s.id === selectedStudents[0]);
+                        return student?.firstName && student?.lastName
+                          ? `${student.firstName} ${student.lastName}`
+                          : student?.username || null;
+                      })()
+                    : selectedStudents.length > 1 
+                    ? `${selectedStudents.length} Students` 
+                    : null,
+                  subjectName: selectedSubjects.length === 1 
+                    ? subjects.find(s => s.id === selectedSubjects[0])?.name || null 
+                    : selectedSubjects.length > 1 
+                    ? `${selectedSubjects.length} Subjects` 
+                    : null
                 }}
                 performanceData={data ? {
                   subjectPerformance: data.subjectPerformance,

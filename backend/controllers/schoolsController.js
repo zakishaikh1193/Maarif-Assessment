@@ -14,9 +14,11 @@ export const getAllSchools = async (req, res) => {
     const total = countResult[0]?.total || 0;
 
     // Get paginated schools
+    // Embed limit and offset directly to avoid parameter binding issues
+    const validatedLimit = Math.max(1, Math.min(1000, limit)); // Ensure limit is between 1 and 1000
+    const validatedOffset = Math.max(0, offset); // Ensure offset is non-negative
     const schools = await executeQuery(
-      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools ORDER BY name LIMIT ? OFFSET ?',
-      [limit, offset]
+      `SELECT id, name, address, contact_email, contact_phone, created_at FROM schools ORDER BY name LIMIT ${validatedLimit} OFFSET ${validatedOffset}`
     );
 
     res.json({
