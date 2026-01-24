@@ -66,6 +66,9 @@ const AdminDashboard: React.FC = () => {
 
   // Cascading filter states for growth analysis
   const [schools, setSchools] = useState<School[]>([]);
+  
+  // Ensure schools is always an array
+  const safeSchools = Array.isArray(schools) ? schools : [];
   const [grades, setGrades] = useState<Grade[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Array<{id: number, username: string, firstName?: string, lastName?: string, schoolName?: string, gradeName?: string}>>([]);
   const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
@@ -235,16 +238,18 @@ const AdminDashboard: React.FC = () => {
 
   const loadInitialData = async () => {
     try {
-      const [subjectsData, statsData, studentsData, schoolsData, gradesData] = await Promise.all([
+      const [subjectsData, statsData, studentsData, schoolsResponse, gradesData] = await Promise.all([
         subjectsAPI.getAll(),
         adminAPI.getStats(),
         adminAPI.getStudents(),
-        schoolsAPI.getAll(),
+        schoolsAPI.getAll(1, 1000), // Get all schools for dropdown (large limit)
         gradesAPI.getActive()
       ]);
       setSubjects(subjectsData);
       setStats(statsData);
       setStudents(studentsData);
+      // Handle paginated response structure
+      const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
       setSchools(schoolsData);
       setGrades(gradesData);
       if (subjectsData.length > 0) {
@@ -1193,10 +1198,237 @@ const AdminDashboard: React.FC = () => {
         {/* Student Growth Tab Content - Redirected to Performance (Consolidated) */}
         {activeTab === 'growth' && (
           <div className="space-y-6">
-            <SubjectPerformanceDashboard 
-              schools={schools}
-              grades={grades}
-            />
+            {/* Filter Controls - Horizontal Layout */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <span>Growth Analysis Filters</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* School Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <Building className="h-4 w-4 text-purple-600" />
+                    <span>School</span>
+                  </label>
+                  <select
+                    value={selectedSchool || ''}
+                    onChange={(e) => setSelectedSchool(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">Select School</option>
+                    {safeSchools.map((school) => (
+                      <option key={school.id} value={school.id}>
+                        {school.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Grade Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <GraduationCap className="h-4 w-4 text-orange-600" />
+                    <span>Grade</span>
+                  </label>
+                  <select
+                    value={selectedGrade || ''}
+                    onChange={(e) => setSelectedGrade(e.target.value ? Number(e.target.value) : null)}
+                    disabled={!selectedSchool}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm ${
+                      !selectedSchool ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <option value="">Select Grade</option>
+                    {grades.map((grade) => (
+                      <option key={grade.id} value={grade.id}>
+                        {grade.display_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Student Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <User className="h-4 w-4 text-emerald-600" />
+                    <span>Student</span>
+                  </label>
+                  <select
+                    value={selectedStudent || ''}
+                    onChange={(e) => setSelectedStudent(e.target.value ? Number(e.target.value) : null)}
+                    disabled={!selectedGrade}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm ${
+                      !selectedGrade ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <option value="">Select Student</option>
+                    {filteredStudents.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.firstName && student.lastName 
+                          ? `${student.firstName} ${student.lastName}`
+                          : student.username
+                        }
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subject Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-blue-600" />
+                    <span>Subject</span>
+                  </label>
+                  <select
+                    value={selectedSubject?.id || ''}
+                    onChange={(e) => {
+                      const subject = subjects.find(s => s.id === Number(e.target.value));
+                      setSelectedSubject(subject || null);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.map((subject) => (
+                      <option key={subject.id} value={subject.id}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Growth Chart Content */}
+            <div>
+              {/* Sub-tab Navigation - Always visible */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => setGrowthSubTab('performance')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      growthSubTab === 'performance'
+                        ? 'bg-green-100 text-green-800 border-2 border-green-200'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-2 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>Performance Analytics</span>
+                    </div>
+                  </button>
+                  {selectedSubject && selectedStudent && (
+                    <>
+                      <button
+                        onClick={() => setGrowthSubTab('growth')}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          growthSubTab === 'growth'
+                            ? 'bg-blue-100 text-blue-800 border-2 border-blue-200'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-2 border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <TrendingUp className="h-4 w-4" />
+                          <span>Growth Over Time</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setGrowthSubTab('competency')}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          growthSubTab === 'competency'
+                            ? 'bg-purple-100 text-purple-800 border-2 border-purple-200'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-2 border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Brain className="h-4 w-4" />
+                          <span>Competency Analysis</span>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Sub-tab Content */}
+              {growthSubTab === 'performance' ? (
+                <div>
+                  <SubjectPerformanceDashboard 
+                    schools={schools}
+                    grades={grades}
+                    selectedSchool={selectedSchool}
+                    selectedGrade={selectedGrade}
+                    selectedSubject={selectedSubject?.id || null}
+                    selectedStudent={selectedStudent}
+                    filteredStudents={filteredStudents}
+                  />
+                </div>
+              ) : selectedSubject && selectedStudent ? (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center space-x-3">
+                      <BarChart3 className="h-7 w-7 text-emerald-600" />
+                      <span>Student Performance Analytics</span>
+                    </h2>
+                    <p className="text-gray-600">
+                      {filteredStudents.find(s => s.id === selectedStudent)?.firstName || 'Student'} - {selectedSubject.name}
+                    </p>
+                  </div>
+
+                  {growthSubTab === 'growth' ? (
+                    <div>
+                      {growthLoading ? (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                          <div className="flex items-center justify-center h-64">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                          </div>
+                        </div>
+                      ) : growthData ? (
+                        <GrowthOverTimeChart data={growthData} userRole="admin" />
+                      ) : (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                          <div className="text-center">
+                            <p className="text-gray-600">Select a subject and student to view growth data.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      {competencyLoading ? (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                          <div className="flex items-center justify-center h-64">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                          </div>
+                        </div>
+                      ) : competencyScores.length > 0 ? (
+                        <CompetencyAnalytics 
+                          currentScores={competencyScores}
+                          growthData={competencyGrowthData}
+                        />
+                      ) : (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                          <div className="text-center">
+                            <p className="text-gray-600">No competency data available for this student and subject.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                  <div className="text-center">
+                    <div className="flex justify-center space-x-4 mb-6">
+                      <BookOpen className="h-12 w-12 text-blue-600" />
+                      <User className="h-12 w-12 text-emerald-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Select Subject & Student</h3>
+                    <p className="text-gray-600">Choose both a subject and a student to view detailed growth analysis, or use Performance Analytics above for overall performance data.</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

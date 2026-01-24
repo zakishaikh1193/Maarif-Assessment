@@ -4,6 +4,7 @@ export interface User {
   role: 'admin' | 'student';
   firstName?: string;
   lastName?: string;
+  profilePicture?: string;
   school?: {
     id: number;
     name: string;

@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DetailedAssessmentResults, AssessmentResult, CompetencyScore, CompetencyGrowthData } from '../types';
+import { DetailedAssessmentResults, AssessmentResult, CompetencyScore, CompetencyGrowthData, DashboardData, Subject } from '../types';
 import Navigation from '../components/Navigation';
 import DifficultyProgressionChart from '../components/DifficultyProgressionChart';
 import GrowthOverTimeChart from '../components/GrowthOverTimeChart';
 import CompetencyAnalytics from '../components/CompetencyAnalytics';
+import { studentAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   Trophy, 
   Target, 
@@ -20,7 +22,12 @@ import {
   BarChart3,
   BarChart,
   LineChart,
-  Brain
+  Brain,
+  Eye,
+  LayoutDashboard,
+  Menu,
+  X,
+  Play
 } from 'lucide-react';
 
 const ResultsPage: React.FC = () => {
@@ -34,7 +41,12 @@ const ResultsPage: React.FC = () => {
   const [competencyScores, setCompetencyScores] = useState<CompetencyScore[]>([]);
   const [competencyGrowthData, setCompetencyGrowthData] = useState<CompetencyGrowthData[]>([]);
   const [competencyLoading, setCompetencyLoading] = useState(false);
+  const [allAssessments, setAllAssessments] = useState<any[]>([]);
+  const [assessmentsLoading, setAssessmentsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const competencyDataFetched = useRef(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Check if we have detailed results or basic results
@@ -46,11 +58,77 @@ const ResultsPage: React.FC = () => {
       setCompetencyScores([]);
       setCompetencyGrowthData([]);
       competencyDataFetched.current = false;
-    } else {
+    } else if (location.state?.ritScore) {
       // We have basic results, show fallback
       setLoading(false);
+    } else {
+      // No state passed, fetch all assessments
+      fetchAllAssessments();
     }
   }, [location.state]);
+
+  const fetchAllAssessments = async () => {
+    setAssessmentsLoading(true);
+    try {
+      const [dashboardData, subjectsData] = await Promise.all([
+        studentAPI.getDashboardData(),
+        studentAPI.getAvailableSubjects().catch(() => [])
+      ]);
+      
+      setSubjects(subjectsData);
+      
+      // Extract all assessments from dashboard data
+      const assessments: any[] = [];
+      dashboardData.forEach((subjectData: DashboardData) => {
+        if (subjectData.assessments && subjectData.assessments.length > 0) {
+          subjectData.assessments.forEach((assessment: any) => {
+            assessments.push({
+              ...assessment,
+              subjectId: subjectData.subjectId,
+              subjectName: subjectData.subjectName
+            });
+          });
+        }
+      });
+      // Sort by date (most recent first)
+      assessments.sort((a, b) => new Date(b.dateTaken).getTime() - new Date(a.dateTaken).getTime());
+      setAllAssessments(assessments);
+    } catch (error) {
+      console.error('Failed to fetch assessments:', error);
+      setAllAssessments([]);
+    } finally {
+      setAssessmentsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  // Get current period
+  const getCurrentPeriod = () => {
+    const month = new Date().getMonth();
+    if (month >= 7 || month <= 0) return 'BOY';
+    return 'EOY';
+  };
+
+  const currentPeriod = getCurrentPeriod();
+
+  const startAssessment = (subjectId: number, period: string) => {
+    navigate('/assessment', {
+      state: {
+        subjectId,
+        period
+      }
+    });
+  };
+
+  const viewAssessmentDetails = async (assessmentId: number) => {
+    try {
+      const detailedResults = await studentAPI.getDetailedResults(assessmentId);
+      setResults(detailedResults);
+      setActiveTab('assessment');
+    } catch (error) {
+      console.error('Failed to fetch assessment details:', error);
+    }
+  };
 
   // Fetch growth data when switching to overall tab
   useEffect(() => {
@@ -159,74 +237,254 @@ const ResultsPage: React.FC = () => {
     };
   };
 
+  // Sidebar component
+  const Sidebar = () => (
+    <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 fixed left-0 top-16 h-[calc(100vh-4rem)] transition-all duration-300 z-40 shadow-sm`}>
+      <div className="p-4">
+        {/* Sidebar Toggle Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="w-full flex items-center justify-center p-2 mb-4 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        {/* Navigation Items */}
+        <nav className="space-y-2">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors group"
+          >
+            <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
+            {sidebarOpen && <span className="font-medium">Dashboard</span>}
+          </button>
+          
+          <button
+            onClick={() => navigate('/results')}
+            className="w-full flex items-center space-x-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg transition-colors group"
+          >
+            <BarChart3 className="h-5 w-5 flex-shrink-0" />
+            {sidebarOpen && <span className="font-medium">Results</span>}
+          </button>
+        </nav>
+
+        {/* Divider */}
+        {sidebarOpen && (
+          <div className="my-6 border-t border-gray-200">
+            <div className="px-4 py-2 mt-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Access</p>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions in Sidebar */}
+        {sidebarOpen && (
+          <div className="mt-4 space-y-2">
+            {subjects.length > 0 ? (
+              subjects.slice(0, 5).map((subject) => (
+                <button
+                  key={subject.id}
+                  onClick={() => startAssessment(subject.id, currentPeriod)}
+                  className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors"
+                >
+                  <BookOpen className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{subject.name}</span>
+                </button>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500 px-4 py-2">No subjects available</p>
+            )}
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex pt-16">
+          <Sidebar />
+          <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          </main>
         </div>
       </div>
     );
   }
 
   if (!results) {
-    // Fallback for basic results
+    // Check if we have basic results in state
     const basicResults = location.state as {
-      ritScore: number;
-      correctAnswers: number;
-      totalQuestions: number;
-      duration: number;
-      subjectId: number;
-      period: string;
+      ritScore?: number;
+      correctAnswers?: number;
+      totalQuestions?: number;
+      duration?: number;
+      subjectId?: number;
+      period?: string;
       message?: string;
     };
 
+    // If we have basic results, show them
+    if (basicResults?.ritScore !== undefined && basicResults.ritScore !== null) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+          <Navigation />
+          <div className="flex pt-16">
+            <Sidebar />
+            <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+              <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="text-center mb-8">
+              <div className="text-6xl mb-4">{getScoreIcon(basicResults.ritScore)}</div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
+              <p className="text-xl text-gray-600 mb-4">
+                {basicResults.message || 'Your assessment has been completed successfully.'}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8">
+              <div className="text-center mb-8">
+                <div className={`text-6xl font-bold ${getScoreColor(basicResults.ritScore)} mb-2`}>
+                  {basicResults.ritScore}
+                </div>
+                <div className="text-xl text-gray-600">Growth Metric Score</div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200">
+                  <div className="text-2xl font-bold text-emerald-900">{basicResults.correctAnswers || 0}</div>
+                  <div className="text-sm text-emerald-700">Correct Answers</div>
+                </div>
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                  <div className="text-2xl font-bold text-blue-900">{basicResults.totalQuestions || 0}</div>
+                  <div className="text-sm text-blue-700">Total Questions</div>
+                </div>
+                <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
+                  <div className="text-2xl font-bold text-purple-900">{basicResults.duration || 0}</div>
+                  <div className="text-sm text-purple-700">Minutes</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                <span>Back to Dashboard</span>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    // Show all assessments list
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <Navigation />
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex pt-16">
+          <Sidebar />
+          <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+            <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">{getScoreIcon(basicResults.ritScore)}</div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
-            <p className="text-xl text-gray-600 mb-4">
-              {basicResults.message}
-            </p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Results</h1>
+            <p className="text-xl text-gray-600">View all your completed assessments</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8">
-            <div className="text-center mb-8">
-              <div className={`text-6xl font-bold ${getScoreColor(basicResults.ritScore)} mb-2`}>
-                {basicResults.ritScore}
-              </div>
-              <div className="text-xl text-gray-600">Growth Metric Score</div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200">
-                <div className="text-2xl font-bold text-emerald-900">{basicResults.correctAnswers}</div>
-                <div className="text-sm text-emerald-700">Correct Answers</div>
-              </div>
-              <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                <div className="text-2xl font-bold text-blue-900">{basicResults.totalQuestions}</div>
-                <div className="text-sm text-blue-700">Total Questions</div>
-              </div>
-              <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
-                <div className="text-2xl font-bold text-purple-900">{basicResults.duration}</div>
-                <div className="text-sm text-purple-700">Minutes</div>
+          {assessmentsLoading ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
             </div>
-          </div>
-
-          <div className="flex justify-center">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              <span>Back to Dashboard</span>
-              <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
+          ) : allAssessments.length > 0 ? (
+            <div className="space-y-4">
+              {allAssessments.map((assessment: any) => {
+                const ritScore = assessment.rit_score || assessment.ritScore || 0;
+                return (
+                  <div
+                    key={assessment.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => viewAssessmentDetails(assessment.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${
+                            ritScore >= 350 ? 'bg-purple-100' :
+                            ritScore >= 300 ? 'bg-blue-100' :
+                            ritScore >= 250 ? 'bg-emerald-100' :
+                            ritScore >= 200 ? 'bg-orange-100' :
+                            'bg-red-100'
+                          }`}>
+                            {getScoreIcon(ritScore)}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {assessment.subjectName || 'Assessment'}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {assessment.assessmentPeriod} {assessment.year || new Date(assessment.dateTaken).getFullYear()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4 mt-3 text-sm text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <Trophy className="h-4 w-4" />
+                            <span className="font-medium">{ritScore} Growth Metric</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <CheckCircle className="h-4 w-4 text-emerald-600" />
+                            <span>{assessment.correctAnswers || 0} / {assessment.totalQuestions || 0} Correct</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(assessment.dateTaken).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewAssessmentDetails(assessment.id);
+                          }}
+                          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span>View Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessments Found</h3>
+              <p className="text-gray-600 mb-4">
+                You haven't completed any assessments yet.
+              </p>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -237,8 +495,10 @@ const ResultsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navigation />
-      
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="flex pt-16">
+        <Sidebar />
+        <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+          <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Results Header */}
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">{getScoreIcon(results.statistics.currentRIT)}</div>
@@ -829,6 +1089,8 @@ const ResultsPage: React.FC = () => {
             )}
           </div>
         )}
+          </div>
+        </main>
       </div>
     </div>
   );

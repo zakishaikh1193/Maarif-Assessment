@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Grade, Subject, School, Question } from '../types';
 import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown, Filter } from 'lucide-react';
+import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown, Filter, CheckCircle2, Type, FileText, ArrowLeftRight, Droplets } from 'lucide-react';
 import { exportAssessmentToPDF } from '../utils/pdfExport';
 
 type AssessmentMode = 'Standard' | 'Adaptive';
@@ -62,7 +62,7 @@ const CreateAssessmentPage: React.FC = () => {
   // Filter states - using arrays for multi-select
   const [filterQuestionType, setFilterQuestionType] = useState<string[]>([]); // Array of selected question types
   const [filterDokLevel, setFilterDokLevel] = useState<number | 'all'>('all'); // 'all', 1, 2, 3, 4
-  const [filterDifficulty, setFilterDifficulty] = useState<string[]>([]); // Array of selected difficulty ranges
+  const [filterDifficulty, setFilterDifficulty] = useState<string | 'all'>('all'); // 'all' or difficulty range like '100-150'
   
   const [assignData, setAssignData] = useState<AssignFormData>({
     selectedSchools: [],
@@ -848,103 +848,101 @@ const CreateAssessmentPage: React.FC = () => {
                           <h3 className="text-sm font-semibold text-gray-700">Filters</h3>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          {/* Question Type Filter - Multi-select with checkboxes */}
+                        <div className="space-y-4">
+                          {/* Question Type Filter - Multi-select with icon buttons in one line */}
                           <div>
                             <label className="block text-xs font-medium text-gray-700 mb-3">
                               Question Type
                             </label>
-                            <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                            <div className="flex flex-wrap gap-2">
                               {[
-                                { value: 'MCQ', label: 'MCQs' },
-                                { value: 'FillInBlank', label: 'Fill in the Blanks' },
-                                { value: 'Matching', label: 'Matching' },
-                                { value: 'MultipleSelect', label: 'Multiple Select' },
-                                { value: 'ShortAnswer', label: 'Short Answer' },
-                                { value: 'Essay', label: 'Essay' },
-                                { value: 'TrueFalse', label: 'True/False' }
-                              ].map((type) => (
-                                <label key={type.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                                  <input
-                                    type="checkbox"
-                                    checked={filterQuestionType.includes(type.value)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setFilterQuestionType([...filterQuestionType, type.value]);
-                                      } else {
+                                { value: 'MCQ', label: 'Multiple Choice', icon: List },
+                                { value: 'TrueFalse', label: 'True/False', icon: CheckCircle2 },
+                                { value: 'ShortAnswer', label: 'Short Answer', icon: Type },
+                                { value: 'Essay', label: 'Essay', icon: FileText },
+                                { value: 'Matching', label: 'Matching', icon: ArrowLeftRight },
+                                { value: 'FillInBlank', label: 'Fill in Blank', icon: Droplets },
+                                { value: 'MultipleSelect', label: 'Multiple Select', icon: List }
+                              ].map((type) => {
+                                const Icon = type.icon;
+                                const isSelected = filterQuestionType.includes(type.value);
+                                return (
+                                  <button
+                                    key={type.value}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
                                         setFilterQuestionType(filterQuestionType.filter(t => t !== type.value));
+                                      } else {
+                                        setFilterQuestionType([...filterQuestionType, type.value]);
                                       }
                                     }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                  />
-                                  <span className="text-sm text-gray-700">{type.label}</span>
-                                </label>
-                              ))}
+                                    className={`flex flex-col items-center justify-center p-3 border-2 rounded-lg transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'border-blue-500 bg-blue-50'
+                                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    <Icon className={`h-5 w-5 mb-1 ${isSelected ? 'text-blue-600' : 'text-gray-600'}`} />
+                                    <span className={`text-xs font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                                      {type.label}
+                                    </span>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
 
-                          {/* DOK Level Filter */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-2">
-                              DOK Level
-                            </label>
-                            <select
-                              value={filterDokLevel}
-                              onChange={(e) => setFilterDokLevel(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                              <option value="all">All Levels</option>
-                              <option value="1">DOK Level 1</option>
-                              <option value="2">DOK Level 2</option>
-                              <option value="3">DOK Level 3</option>
-                              <option value="4">DOK Level 4</option>
-                            </select>
-                          </div>
+                          {/* DOK Level and Difficulty Level Filters - Side by side */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* DOK Level Filter */}
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-2">
+                                DOK Level
+                              </label>
+                              <select
+                                value={filterDokLevel}
+                                onChange={(e) => setFilterDokLevel(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="all">All Levels</option>
+                                <option value="1">DOK Level 1</option>
+                                <option value="2">DOK Level 2</option>
+                                <option value="3">DOK Level 3</option>
+                                <option value="4">DOK Level 4</option>
+                              </select>
+                            </div>
 
-                          {/* Growth Metric Difficulty Filter - Multi-select with checkboxes */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-3">
-                              Growth Metric Difficulty
-                            </label>
-                            <div className="space-y-2 border border-gray-200 rounded-md p-3 bg-white">
-                              {[
-                                { value: '100-150', label: '100-150', color: 'bg-red-100 text-red-800' },
-                                { value: '151-200', label: '151-200', color: 'bg-orange-100 text-orange-800' },
-                                { value: '201-250', label: '201-250', color: 'bg-yellow-100 text-yellow-800' },
-                                { value: '251-300', label: '251-300', color: 'bg-green-100 text-green-800' },
-                                { value: '301-350', label: '301-350', color: 'bg-blue-100 text-blue-800' }
-                              ].map((range) => (
-                                <label key={range.value} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                                  <input
-                                    type="checkbox"
-                                    checked={filterDifficulty.includes(range.value)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setFilterDifficulty([...filterDifficulty, range.value]);
-                                      } else {
-                                        setFilterDifficulty(filterDifficulty.filter(d => d !== range.value));
-                                      }
-                                    }}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                  />
-                                  <span className={`text-sm px-2 py-1 rounded ${range.color}`}>
-                                    {range.label}
-                                  </span>
-                                </label>
-                              ))}
+                            {/* Growth Metric Difficulty Filter - Dropdown */}
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-2">
+                                Growth Metric Difficulty
+                              </label>
+                              <select
+                                value={filterDifficulty}
+                                onChange={(e) => setFilterDifficulty(e.target.value === 'all' ? 'all' : e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="all">All Ranges</option>
+                                <option value="100-150">100-150</option>
+                                <option value="151-200">151-200</option>
+                                <option value="201-250">201-250</option>
+                                <option value="251-300">251-300</option>
+                                <option value="301-350">301-350</option>
+                              </select>
                             </div>
                           </div>
                         </div>
 
                         {/* Clear Filters Button */}
-                        {(filterQuestionType.length > 0 || filterDokLevel !== 'all' || filterDifficulty.length > 0) && (
+                        {(filterQuestionType.length > 0 || filterDokLevel !== 'all' || filterDifficulty !== 'all') && (
                           <div className="pt-2 border-t border-gray-200">
                             <button
                               type="button"
                               onClick={() => {
                                 setFilterQuestionType([]);
                                 setFilterDokLevel('all');
-                                setFilterDifficulty([]);
+                                setFilterDifficulty('all');
                               }}
                               className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                             >
@@ -985,28 +983,21 @@ const CreateAssessmentPage: React.FC = () => {
                             }
                           }
 
-                          // Growth Metric Difficulty Filter - Multi-select with new ranges
-                          if (filterDifficulty.length > 0) {
+                          // Growth Metric Difficulty Filter - Single select dropdown
+                          if (filterDifficulty !== 'all') {
                             const difficulty = question.difficultyLevel;
                             let matchesRange = false;
                             
-                            for (const range of filterDifficulty) {
-                              if (range === '100-150' && difficulty >= 100 && difficulty <= 150) {
-                                matchesRange = true;
-                                break;
-                              } else if (range === '151-200' && difficulty >= 151 && difficulty <= 200) {
-                                matchesRange = true;
-                                break;
-                              } else if (range === '201-250' && difficulty >= 201 && difficulty <= 250) {
-                                matchesRange = true;
-                                break;
-                              } else if (range === '251-300' && difficulty >= 251 && difficulty <= 300) {
-                                matchesRange = true;
-                                break;
-                              } else if (range === '301-350' && difficulty >= 301 && difficulty <= 350) {
-                                matchesRange = true;
-                                break;
-                              }
+                            if (filterDifficulty === '100-150' && difficulty >= 100 && difficulty <= 150) {
+                              matchesRange = true;
+                            } else if (filterDifficulty === '151-200' && difficulty >= 151 && difficulty <= 200) {
+                              matchesRange = true;
+                            } else if (filterDifficulty === '201-250' && difficulty >= 201 && difficulty <= 250) {
+                              matchesRange = true;
+                            } else if (filterDifficulty === '251-300' && difficulty >= 251 && difficulty <= 300) {
+                              matchesRange = true;
+                            } else if (filterDifficulty === '301-350' && difficulty >= 301 && difficulty <= 350) {
+                              matchesRange = true;
                             }
                             
                             if (!matchesRange) {

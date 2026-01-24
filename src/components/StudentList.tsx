@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { studentsAPI, schoolsAPI, gradesAPI } from '../services/api';
 import StudentForm from './StudentForm';
-import { Search, Building, GraduationCap, X, Upload } from 'lucide-react';
+import { Search, Building, GraduationCap, X, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface StudentListProps {
   onStudentSelected?: (student: any) => void;
@@ -17,6 +17,12 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const [editingStudent, setEditingStudent] = useState<any | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<number | null>(null);
   
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const studentsPerPage = 10;
+  
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(null);
@@ -24,11 +30,18 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const [schools, setSchools] = useState<any[]>([]);
   const [grades, setGrades] = useState<any[]>([]);
 
-  const fetchStudents = async () => {
+  // Ensure schools is always an array
+  const safeSchools = Array.isArray(schools) ? schools : [];
+
+  const fetchStudents = async (page: number = currentPage) => {
     try {
       setLoading(true);
-      const data = await studentsAPI.getAll();
-      setStudents(data);
+      const response = await studentsAPI.getAll(page, studentsPerPage);
+      setStudents(response.students || []);
+      if (response.pagination) {
+        setTotalPages(response.pagination.totalPages);
+        setTotalStudents(response.pagination.totalStudents);
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to fetch students');
     } finally {
@@ -38,10 +51,12 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
 
   const fetchSchoolsAndGrades = async () => {
     try {
-      const [schoolsData, gradesData] = await Promise.all([
-        schoolsAPI.getAll(),
+      const [schoolsResponse, gradesData] = await Promise.all([
+        schoolsAPI.getAll(1, 1000), // Get all schools for dropdown (large limit)
         gradesAPI.getActive()
       ]);
+      // Handle paginated response structure
+      const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
       setSchools(schoolsData);
       setGrades(gradesData);
     } catch (err: any) {
@@ -50,9 +65,14 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudents(currentPage);
     fetchSchoolsAndGrades();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, currentPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSchoolId, selectedGradeId]);
 
   // Filter students based on search term, school, and grade
   const filteredStudents = useMemo(() => {
@@ -74,13 +94,33 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     });
   }, [students, searchTerm, selectedSchoolId, selectedGradeId]);
 
+  // Check if filters are active
+  const hasActiveFilters = searchTerm || selectedSchoolId || selectedGradeId;
+
+  // Paginate filtered students
+  const paginatedStudents = useMemo(() => {
+    if (hasActiveFilters) {
+      const startIndex = (currentPage - 1) * studentsPerPage;
+      const endIndex = startIndex + studentsPerPage;
+      return filteredStudents.slice(startIndex, endIndex);
+    }
+    return filteredStudents;
+  }, [filteredStudents, currentPage, hasActiveFilters]);
+
+  // Calculate total pages for filtered results
+  const filteredTotalPages = useMemo(() => {
+    if (hasActiveFilters) {
+      return Math.ceil(filteredStudents.length / studentsPerPage);
+    }
+    return totalPages;
+  }, [filteredStudents.length, hasActiveFilters, totalPages]);
+
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedSchoolId(null);
     setSelectedGradeId(null);
+    setCurrentPage(1); // Reset to first page when clearing filters
   };
-
-  const hasActiveFilters = searchTerm || selectedSchoolId || selectedGradeId;
 
   const handleAddStudent = () => {
     setEditingStudent(null);
@@ -100,7 +140,12 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     try {
       setDeletingStudent(studentId);
       await studentsAPI.delete(studentId);
-      await fetchStudents();
+      // If current page becomes empty after deletion, go to previous page
+      if (filteredStudents.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        await fetchStudents(currentPage);
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to delete student';
       alert(errorMessage);
@@ -110,11 +155,20 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   };
 
   const handleStudentCreated = () => {
-    fetchStudents();
+    // Reset to first page and fetch
+    setCurrentPage(1);
+    fetchStudents(1);
   };
 
   const handleStudentUpdated = () => {
-    fetchStudents();
+    fetchStudents(currentPage);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   if (loading) {
@@ -208,7 +262,7 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
             >
               <option value="">All Schools</option>
-              {schools.map((school) => (
+              {safeSchools.map((school) => (
                 <option key={school.id} value={school.id}>
                   {school.name}
                 </option>
@@ -238,14 +292,25 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
         </div>
 
         {/* Results Count */}
-        {hasActiveFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-gray-900">{filteredStudents.length}</span> of{' '}
-              <span className="font-semibold text-gray-900">{students.length}</span> students
-            </p>
-          </div>
-        )}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            {hasActiveFilters ? (
+              <>
+                Showing <span className="font-semibold text-gray-900">
+                  {Math.min((currentPage - 1) * studentsPerPage + 1, filteredStudents.length)} - {Math.min(currentPage * studentsPerPage, filteredStudents.length)}
+                </span> of{' '}
+                <span className="font-semibold text-gray-900">{filteredStudents.length}</span> filtered students
+              </>
+            ) : (
+              <>
+                Showing <span className="font-semibold text-gray-900">
+                  {Math.min((currentPage - 1) * studentsPerPage + 1, totalStudents)} - {Math.min(currentPage * studentsPerPage, totalStudents)}
+                </span> of{' '}
+                <span className="font-semibold text-gray-900">{totalStudents}</span> students
+              </>
+            )}
+          </p>
+        </div>
       </div>
 
       {error && (
@@ -254,7 +319,7 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
         </div>
       )}
 
-      {filteredStudents.length === 0 && students.length > 0 ? (
+      {paginatedStudents.length === 0 && filteredStudents.length === 0 && students.length > 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
           <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No students found</h3>
@@ -297,7 +362,7 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
             <h3 className="text-lg font-semibold text-gray-900">Students</h3>
           </div>
           <ul className="divide-y divide-gray-200">
-            {filteredStudents.map((student) => (
+            {paginatedStudents.map((student) => (
               <li key={student.id} className="px-6 py-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
@@ -369,6 +434,74 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
               </li>
             ))}
           </ul>
+          
+          {/* Pagination Controls */}
+          {(filteredTotalPages > 1 || totalPages > 1) && (
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="flex items-center text-sm text-gray-700">
+                <span>
+                  Page <span className="font-medium">{currentPage}</span> of{' '}
+                  <span className="font-medium">{hasActiveFilters ? filteredTotalPages : totalPages}</span>
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                
+                {/* Page Numbers */}
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, hasActiveFilters ? filteredTotalPages : totalPages) }, (_, i) => {
+                    const maxPages = hasActiveFilters ? filteredTotalPages : totalPages;
+                    let pageNum: number;
+                    if (maxPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= maxPages - 2) {
+                      pageNum = maxPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === (hasActiveFilters ? filteredTotalPages : totalPages)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    currentPage === (hasActiveFilters ? filteredTotalPages : totalPages)
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

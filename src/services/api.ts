@@ -220,8 +220,8 @@ export const adminAPI = {
 };
 
 export const schoolsAPI = {
-  getAll: async (): Promise<School[]> => {
-    const response = await api.get('/schools');
+  getAll: async (page: number = 1, limit: number = 10) => {
+    const response = await api.get(`/schools?page=${page}&limit=${limit}`);
     return response.data;
   },
 
@@ -435,8 +435,8 @@ export const studentAPI = {
 
 // Students API (Admin)
 export const studentsAPI = {
-  getAll: async () => {
-    const response = await api.get('/admin/students');
+  getAll: async (page: number = 1, limit: number = 10) => {
+    const response = await api.get(`/admin/students?page=${page}&limit=${limit}`);
     return response.data;
   },
 
