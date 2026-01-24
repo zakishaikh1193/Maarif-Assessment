@@ -180,16 +180,24 @@ export const getGrowthData = async (req, res) => {
       
       const schoolResults = await executeQuery(schoolQuery, schoolParams);
       
+      console.log('[Backend] School query results:', JSON.stringify(schoolResults.slice(0, 2), null, 2));
+      console.log('[Backend] finalSchoolIds:', finalSchoolIds);
+      
       // Always include schoolId when schools are selected (even for single school, to allow frontend flexibility)
       // This allows frontend to render individual lines for each school
-      schoolAverages = schoolResults.map(r => ({
-        period: r.period,
-        year: r.year,
-        assessmentPeriod: r.assessment_period,
-        schoolId: r.school_id, // Always include schoolId when schools are filtered
-        averageRITScore: parseFloat(r.averageRITScore),
-        studentCount: r.studentCount
-      }));
+      schoolAverages = schoolResults.map(r => {
+        const schoolId = r.school_id !== undefined && r.school_id !== null ? parseInt(r.school_id) : null;
+        return {
+          period: r.period,
+          year: r.year,
+          assessmentPeriod: r.assessment_period,
+          schoolId: schoolId, // Always include schoolId when schools are filtered
+          averageRITScore: parseFloat(r.averageRITScore),
+          studentCount: r.studentCount
+        };
+      });
+      
+      console.log('[Backend] schoolAverages after mapping:', JSON.stringify(schoolAverages.slice(0, 2), null, 2));
     }
 
     // 3. Class averages (if gradeIds and schoolIds provided)
@@ -292,15 +300,20 @@ export const getGrowthData = async (req, res) => {
         actualSubjectId
       ]);
       
-      // Format results
-      studentScores = studentResults.map(score => ({
-        period: score.period,
-        year: score.year,
-        assessmentPeriod: score.assessment_period,
-        studentId: score.student_id,
-        ritScore: score.rit_score,
-        dateTaken: score.date_taken
-      }));
+      // Format results - always include studentId for multiple students support
+      studentScores = studentResults.map(score => {
+        const studentId = score.student_id !== undefined && score.student_id !== null 
+          ? parseInt(score.student_id) 
+          : null;
+        return {
+          period: score.period,
+          year: score.year,
+          assessmentPeriod: score.assessment_period,
+          studentId: studentId, // Always include studentId when students are filtered
+          ritScore: score.rit_score,
+          dateTaken: score.date_taken
+        };
+      });
     } else if (studentId) {
       // Legacy support for single student ID
       const studentQuery = `
@@ -333,7 +346,16 @@ export const getGrowthData = async (req, res) => {
           END ASC
       `;
       
-      studentScores = await executeQuery(studentQuery, [studentId, actualSubjectId]);
+      const singleStudentResults = await executeQuery(studentQuery, [studentId, actualSubjectId]);
+      // Format results - include studentId for consistency
+      studentScores = singleStudentResults.map(score => ({
+        period: score.period,
+        year: score.year,
+        assessmentPeriod: score.assessment_period,
+        studentId: parseInt(studentId), // Include studentId for single student too
+        ritScore: score.rit_score,
+        dateTaken: score.date_taken
+      }));
     }
 
     // 5. Period distributions (for background areas) - use selected school(s) only, not district
@@ -424,17 +446,34 @@ export const getGrowthData = async (req, res) => {
       gradeName = gradeResult.length > 0 ? gradeResult[0].display_name : null;
     }
 
+    // Debug: Log data before mapping
+    console.log('[Backend] schoolAverages before mapping:', JSON.stringify(schoolAverages.slice(0, 2), null, 2));
+    console.log('[Backend] studentScores before mapping:', JSON.stringify(studentScores.slice(0, 2), null, 2));
+    
+    // Map studentScores for response - preserve studentId
+    // Note: studentScores already has the correct structure from the query mapping (line 304-316)
+    // So we just need to ensure studentId is included in the response
+    const mappedStudentScores = studentScores.map(score => {
+      // The score object already has the correct structure from the previous mapping
+      // Just ensure all fields are present, especially studentId
+      return {
+        period: score.period,
+        year: score.year,
+        assessmentPeriod: score.assessmentPeriod,
+        ritScore: score.ritScore,
+        dateTaken: score.dateTaken,
+        // CRITICAL: Include studentId if it exists
+        ...(score.studentId !== undefined && score.studentId !== null ? { studentId: score.studentId } : {})
+      };
+    });
+    
+    console.log('[Backend] studentScores after mapping:', JSON.stringify(mappedStudentScores.slice(0, 2), null, 2));
+    
     res.json({
       subjectName,
       schoolName: schoolName || null,
       gradeName: gradeName || null,
-      studentScores: studentScores.map(score => ({
-        period: score.period,
-        year: score.year,
-        assessmentPeriod: score.assessment_period,
-        ritScore: score.rit_score,
-        dateTaken: score.date_taken
-      })),
+      studentScores: mappedStudentScores,
       classAverages: classAverages.map(avg => ({
         period: avg.period,
         year: avg.year,
@@ -442,13 +481,32 @@ export const getGrowthData = async (req, res) => {
         averageRITScore: Math.round(avg.averageRITScore),
         studentCount: avg.studentCount
       })),
-      schoolAverages: schoolAverages.map(avg => ({
-        period: avg.period,
-        year: avg.year,
-        assessmentPeriod: avg.assessment_period,
-        averageRITScore: Math.round(avg.averageRITScore),
-        studentCount: avg.studentCount
-      })),
+      schoolAverages: schoolAverages.map(avg => {
+        // Ensure schoolId is included - check both schoolId and school_id
+        // Convert to number if it's a string
+        let schoolId = null;
+        if (avg.schoolId !== undefined && avg.schoolId !== null) {
+          schoolId = typeof avg.schoolId === 'number' ? avg.schoolId : parseInt(avg.schoolId);
+        } else if (avg.school_id !== undefined && avg.school_id !== null) {
+          schoolId = typeof avg.school_id === 'number' ? avg.school_id : parseInt(avg.school_id);
+        }
+        
+        // Only include schoolId if it's a valid number (not NaN)
+        const result = {
+          period: avg.period,
+          year: avg.year,
+          assessmentPeriod: avg.assessment_period,
+          averageRITScore: Math.round(avg.averageRITScore),
+          studentCount: avg.studentCount
+        };
+        
+        // Only add schoolId if it's valid
+        if (schoolId !== null && !isNaN(schoolId)) {
+          result.schoolId = schoolId;
+        }
+        
+        return result;
+      }),
       districtAverages: districtAverages.map(avg => ({
         period: avg.period,
         year: avg.year,

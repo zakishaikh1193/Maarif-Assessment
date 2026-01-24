@@ -48,9 +48,10 @@ interface GrowthOverTimeChartProps {
     }>;
   };
   schoolNamesMap?: { [schoolId: number]: string }; // Map of schoolId to school name
+  studentNamesMap?: { [studentId: number]: string }; // Map of studentId to student name
 }
 
-const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRole = 'student', filters = {}, performanceData, schoolNamesMap = {} }) => {
+const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRole = 'student', filters = {}, performanceData, schoolNamesMap = {}, studentNamesMap = {} }) => {
   // Get all unique periods from all data sources
   const allPeriods = new Set<string>();
   if (data.classAverages && data.classAverages.length > 0) {
@@ -84,16 +85,24 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
   if (data.schoolAverages && data.schoolAverages.length > 0) {
     data.schoolAverages.forEach((avg: any) => {
       // Check for schoolId property (could be schoolId or school_id from backend)
-      const schoolId = avg.schoolId !== undefined && avg.schoolId !== null 
-        ? avg.schoolId 
-        : (avg.school_id !== undefined && avg.school_id !== null ? avg.school_id : null);
+      let schoolId: number | null = null;
       
-      if (schoolId !== null && schoolId !== undefined) {
+      // Try schoolId first
+      if (avg.schoolId !== undefined && avg.schoolId !== null) {
+        schoolId = typeof avg.schoolId === 'number' ? avg.schoolId : parseInt(avg.schoolId);
+      }
+      // Fallback to school_id
+      else if (avg.school_id !== undefined && avg.school_id !== null) {
+        schoolId = typeof avg.school_id === 'number' ? avg.school_id : parseInt(avg.school_id);
+      }
+      
+      // Only process if we have a valid schoolId
+      if (schoolId !== null && !isNaN(schoolId)) {
         if (!schoolAveragesBySchool[schoolId]) {
           schoolAveragesBySchool[schoolId] = [];
-          if (!schoolIds.includes(schoolId)) {
-            schoolIds.push(schoolId);
-          }
+        }
+        if (!schoolIds.includes(schoolId)) {
+          schoolIds.push(schoolId);
         }
         schoolAveragesBySchool[schoolId].push(avg);
       }
@@ -102,6 +111,52 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
   
   // Sort schoolIds to ensure consistent ordering
   schoolIds.sort((a, b) => a - b);
+  
+  // Handle multiple students - group by studentId if present
+  const studentScoresByStudent: { [studentId: number]: any[] } = {};
+  const studentIds: number[] = [];
+  if (data.studentScores && data.studentScores.length > 0) {
+    data.studentScores.forEach((score: any) => {
+      // Check for studentId property (could be studentId or student_id from backend)
+      let studentId: number | null = null;
+      
+      // Try studentId first
+      if (score.studentId !== undefined && score.studentId !== null) {
+        studentId = typeof score.studentId === 'number' ? score.studentId : parseInt(score.studentId);
+      }
+      // Fallback to student_id
+      else if (score.student_id !== undefined && score.student_id !== null) {
+        studentId = typeof score.student_id === 'number' ? score.student_id : parseInt(score.student_id);
+      }
+      
+      // Only process if we have a valid studentId
+      if (studentId !== null && !isNaN(studentId)) {
+        if (!studentScoresByStudent[studentId]) {
+          studentScoresByStudent[studentId] = [];
+        }
+        if (!studentIds.includes(studentId)) {
+          studentIds.push(studentId);
+        }
+        studentScoresByStudent[studentId].push(score);
+      }
+    });
+  }
+  
+  // Sort studentIds to ensure consistent ordering
+  studentIds.sort((a, b) => a - b);
+  
+  // Debug logging for students
+  if (data.studentScores && data.studentScores.length > 0) {
+    console.log('[GrowthOverTimeChart] Student scores received:', data.studentScores);
+    console.log('[GrowthOverTimeChart] First student score structure:', JSON.stringify(data.studentScores[0], null, 2));
+    console.log('[GrowthOverTimeChart] First student score studentId:', data.studentScores[0]?.studentId, 'type:', typeof data.studentScores[0]?.studentId);
+    console.log('[GrowthOverTimeChart] First student score student_id:', data.studentScores[0]?.student_id, 'type:', typeof data.studentScores[0]?.student_id);
+    console.log('[GrowthOverTimeChart] Student IDs detected:', studentIds);
+    console.log('[GrowthOverTimeChart] Student scores by student:', studentScoresByStudent);
+  }
+  
+  // Light blue shades for multiple student lines (lighter to darker)
+  const studentColors = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'];
   
   // Gray shades for multiple school lines (lighter to darker)
   const schoolColors = ['#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937', '#111827'];
@@ -114,8 +169,12 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
       ? (data.schoolAverages?.find((a: any) => a.period === period && !a.schoolId) || 
          data.schoolAverages?.find((a: any) => a.period === period))
       : null; // Don't use single schoolAvg when we have multiple schools
-    const studentScore = data.studentScores?.find((s: any) => s.period === period && !s.studentId) ||
-                         data.studentScores?.find((s: any) => s.period === period);
+    // For single student (no studentId property), use first student score
+    // For multiple students, we'll add separate data keys - don't use single studentScore
+    const studentScore = studentIds.length === 0 
+      ? (data.studentScores?.find((s: any) => s.period === period && !s.studentId) ||
+         data.studentScores?.find((s: any) => s.period === period))
+      : null; // Don't use single studentScore when we have multiple students
     const distribution = data.periodDistributions?.find(d => d.period === period);
     const districtAvg = data.districtAverages?.find(d => d.period === period);
     
@@ -127,15 +186,25 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
         schoolData[`school${schoolId}`] = schoolAvgForPeriod?.averageRITScore ?? null;
       });
     }
+    
+    // Add student scores for each student if multiple students
+    const studentData: { [key: string]: number | null } = {};
+    if (studentIds.length > 0) {
+      studentIds.forEach((studentId) => {
+        const studentScoreForPeriod = studentScoresByStudent[studentId]?.find((s: any) => s.period === period);
+        studentData[`student${studentId}`] = studentScoreForPeriod?.ritScore ?? null;
+      });
+    }
 
     // Determine year and assessmentPeriod from any available source
-    const source = classAvg || (schoolIds.length > 0 ? schoolAveragesBySchool[schoolIds[0]]?.[0] : schoolAvg) || districtAvg || studentScore;
+    const source = classAvg || (schoolIds.length > 0 ? schoolAveragesBySchool[schoolIds[0]]?.[0] : schoolAvg) || 
+                   (studentIds.length > 0 ? studentScoresByStudent[studentIds[0]]?.[0] : studentScore) || districtAvg;
     
     return {
       period,
       year: source?.year || 0,
       assessmentPeriod: source?.assessmentPeriod || 'BOY',
-      ritScore: studentScore?.ritScore ?? null,
+      ritScore: studentScore?.ritScore ?? null, // For single student or fallback
       dateTaken: studentScore?.dateTaken ?? '',
       classAverage: classAvg?.averageRITScore ?? null,
       schoolAverage: schoolAvg?.averageRITScore ?? null, // For single school or fallback
@@ -148,7 +217,9 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
       green: distribution ? distribution.distributions.green : 0,
       blue: distribution ? distribution.distributions.blue : 0,
       // Add school-specific data for multiple schools
-      ...schoolData
+      ...schoolData,
+      // Add student-specific data for multiple students
+      ...studentData
     };
   });
 
@@ -331,16 +402,40 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
             />
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Overlay student + class average + district average lines */}
-            <Line
-              type="monotone"
-              dataKey="ritScore"
-              yAxisId={1} // secondary axis
-              stroke="#1f2937"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#1f2937", stroke: "white", strokeWidth: 2 }}
-              connectNulls={false}
-            />
+            {/* Student Line(s) - show one line per student if multiple students */}
+            {studentIds.length > 0 ? (
+              // Multiple students - show a line for each with light blue shades
+              studentIds.map((studentId, idx) => {
+                const studentName = studentNamesMap[studentId] || `Student ${idx + 1}`;
+                return (
+                  <Line
+                    key={`student-${studentId}`}
+                    type="monotone"
+                    dataKey={`student${studentId}`}
+                    yAxisId={1}
+                    stroke={studentColors[idx % studentColors.length]}
+                    strokeWidth={studentIds.length === 1 ? 4 : 3} // Bold for single student
+                    dot={{ r: 5, fill: studentColors[idx % studentColors.length], stroke: "white", strokeWidth: 2 }}
+                    connectNulls={false}
+                    name={studentName}
+                  />
+                );
+              })
+            ) : (
+              // Single student without studentId property - show single bold light blue line
+              data.studentScores && data.studentScores.length > 0 && data.studentScores.every((s: any) => !s.studentId) && (
+                <Line
+                  type="monotone"
+                  dataKey="ritScore"
+                  yAxisId={1}
+                  stroke="#60a5fa" // Light blue
+                  strokeWidth={4} // Bold
+                  dot={{ r: 5, fill: "#60a5fa", stroke: "white", strokeWidth: 2 }}
+                  connectNulls={false}
+                  name="Student"
+                />
+              )
+            )}
             {/* School Average Line(s) - show one line per school if multiple schools */}
             {schoolIds.length > 0 ? (
               // Multiple schools - show a line for each with gray shades
@@ -424,11 +519,58 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
 
         {/* Legend */}
         <div className="mt-6 flex flex-wrap gap-6 justify-center">
-          {data.studentScores && data.studentScores.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-1 bg-gray-900"></div>
-              <span className="text-sm text-gray-600">Student Growth Metric Score</span>
-            </div>
+          {/* Student Legend */}
+          {studentIds.length > 0 ? (
+            // Multiple students - show legend for each with student names
+            studentIds.map((studentId, idx) => {
+              const studentName = studentNamesMap[studentId] || `Student ${idx + 1}`;
+              return (
+                <div key={`legend-student-${studentId}`} className="flex items-center space-x-2">
+                  <div 
+                    className="w-4 h-1" 
+                    style={{ 
+                      backgroundColor: studentColors[idx % studentColors.length]
+                    }}
+                  ></div>
+                  <span className="text-sm text-gray-600">{studentName}</span>
+                </div>
+              );
+            })
+          ) : (
+            // Single student without studentId - show single legend
+            data.studentScores && data.studentScores.length > 0 && data.studentScores.every((s: any) => !s.studentId) && (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-1 bg-blue-400"></div>
+                <span className="text-sm text-gray-600">Student</span>
+              </div>
+            )
+          )}
+          {/* Student Legend */}
+          {studentIds.length > 0 ? (
+            // Multiple students - show legend for each with student names
+            studentIds.map((studentId, idx) => {
+              const studentName = studentNamesMap[studentId] || `Student ${idx + 1}`;
+              return (
+                <div key={`legend-student-${studentId}`} className="flex items-center space-x-2">
+                  <div 
+                    className="w-4 h-1" 
+                    style={{ 
+                      backgroundColor: studentColors[idx % studentColors.length],
+                      borderColor: studentColors[idx % studentColors.length]
+                    }}
+                  ></div>
+                  <span className="text-sm text-gray-600">{studentName}</span>
+                </div>
+              );
+            })
+          ) : (
+            // Single student without studentId - show single legend
+            data.studentScores && data.studentScores.length > 0 && data.studentScores.every((s: any) => !s.studentId) && (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-1 bg-blue-400"></div>
+                <span className="text-sm text-gray-600">Student</span>
+              </div>
+            )
           )}
           {data.classAverages && data.classAverages.length > 0 && (
             <div className="flex items-center space-x-2">
