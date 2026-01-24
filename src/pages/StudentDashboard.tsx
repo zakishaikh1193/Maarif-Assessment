@@ -628,12 +628,12 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Completed Assessments</h2>
                   <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                    {completedAssignments.length} Completed
+                    {Math.min(completedAssignments.length, 5)} Completed
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  {completedAssignments.map((assignment) => (
+                  {completedAssignments.slice(0, 5).map((assignment) => (
                     <div key={assignment.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
