@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Building, GraduationCap, Clock, CheckCircle, XCircle, Trophy, Calendar, Search } from 'lucide-react';
+import { X, User, Building, GraduationCap, Clock, CheckCircle, XCircle, Trophy, Calendar, Search, FileText } from 'lucide-react';
 import { assignmentsAPI } from '../services/api';
 
 interface AssignmentViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   assignmentId: number;
+  onViewQuestions?: () => void;
 }
 
 interface StudentResult {
@@ -40,7 +41,7 @@ interface AssignmentData {
   students: StudentResult[];
 }
 
-const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClose, assignmentId }) => {
+const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClose, assignmentId, onViewQuestions }) => {
   const [data, setData] = useState<AssignmentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,12 +99,23 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
               </p>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-3">
+            {onViewQuestions && (
+              <button
+                onClick={onViewQuestions}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <FileText className="h-4 w-4" />
+                <span>View All Questions</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

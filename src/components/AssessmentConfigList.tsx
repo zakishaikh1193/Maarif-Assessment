@@ -5,6 +5,7 @@ import { assessmentConfigAPI, gradesAPI, subjectsAPI, assignmentsAPI } from '../
 import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye } from 'lucide-react';
 import AssessmentConfigForm from './AssessmentConfigForm';
 import AssignmentViewModal from './AssignmentViewModal';
+import AssessmentQuestionsModal from './AssessmentQuestionsModal';
 
 interface Assignment {
   id: number;
@@ -44,6 +45,8 @@ const AssessmentConfigList: React.FC = () => {
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
   const [viewingAssignmentId, setViewingAssignmentId] = useState<number | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingQuestionsAssignmentId, setViewingQuestionsAssignmentId] = useState<number | null>(null);
+  const [showQuestionsModal, setShowQuestionsModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -296,7 +299,16 @@ const AssessmentConfigList: React.FC = () => {
                     <tr key={assignment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{assignment.name}</div>
+                          <button
+                            onClick={() => {
+                              setViewingQuestionsAssignmentId(assignment.id);
+                              setShowQuestionsModal(true);
+                            }}
+                            className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors text-left cursor-pointer"
+                            title="Click to view questions"
+                          >
+                            {assignment.name}
+                          </button>
                           {assignment.description && (
                             <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">
                               {assignment.description}
@@ -540,6 +552,23 @@ const AssessmentConfigList: React.FC = () => {
             setViewingAssignmentId(null);
           }}
           assignmentId={viewingAssignmentId}
+          onViewQuestions={() => {
+            setShowViewModal(false);
+            setViewingQuestionsAssignmentId(viewingAssignmentId);
+            setShowQuestionsModal(true);
+          }}
+        />
+      )}
+
+      {/* Assessment Questions Modal */}
+      {showQuestionsModal && viewingQuestionsAssignmentId && (
+        <AssessmentQuestionsModal
+          isOpen={showQuestionsModal}
+          onClose={() => {
+            setShowQuestionsModal(false);
+            setViewingQuestionsAssignmentId(null);
+          }}
+          assignmentId={viewingQuestionsAssignmentId}
         />
       )}
     </div>
