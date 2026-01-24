@@ -478,6 +478,11 @@ export const studentAPI = {
   getCompetencyRecommendations: async (assessmentId: number) => {
     const response = await api.get(`/student/assessments/${assessmentId}/competency-recommendations`);
     return response.data;
+  },
+
+  getCompetencyFeedback: async (assessmentId: number, competencyId: number) => {
+    const response = await api.get(`/student/assessments/${assessmentId}/competencies/${competencyId}/feedback`);
+    return response.data;
   }
 };
 

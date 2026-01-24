@@ -83,6 +83,11 @@ const DifficultyProgressionChart: React.FC<DifficultyProgressionChartProps> = ({
         ? performanceData?.find(d => d.questionNumber === label)
         : data.find(d => d.questionNumber === label);
       
+      // Type guard for performance data
+      const performancePoint = isStandardMode && dataPoint && 'cumulativeCorrect' in dataPoint 
+        ? dataPoint as { questionNumber: number; performance: number; cumulativeCorrect: number; isCorrect: boolean }
+        : null;
+      
       return (
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
           <p className="font-medium text-gray-900">Question {label}</p>
@@ -92,7 +97,7 @@ const DifficultyProgressionChart: React.FC<DifficultyProgressionChartProps> = ({
                 Performance: <span className="font-medium">{payload[0].value}%</span>
               </p>
               <p className="text-gray-600 text-sm">
-                Cumulative Correct: <span className="font-medium">{dataPoint?.cumulativeCorrect || 0} / {label}</span>
+                Cumulative Correct: <span className="font-medium">{performancePoint?.cumulativeCorrect || 0} / {label}</span>
               </p>
             </>
           ) : (

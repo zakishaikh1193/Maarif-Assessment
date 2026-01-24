@@ -13,7 +13,8 @@ import {
   getAssessmentConfiguration,
   generateQuestionDescriptionEndpoint,
   generatePerformanceAnalysisEndpoint,
-  generateCompetencyRecommendationsEndpoint
+  generateCompetencyRecommendationsEndpoint,
+  generateCompetencyFeedbackEndpoint
 } from '../controllers/studentController.js';
 import {
   getStudentAssignments,
@@ -59,6 +60,9 @@ router.get('/assessments/:assessmentId/performance-analysis', validateAssessment
 
 // Competency Recommendations (AI-generated)
 router.get('/assessments/:assessmentId/competency-recommendations', validateAssessmentId, generateCompetencyRecommendationsEndpoint);
+
+// Competency Feedback (AI-generated for individual competency)
+router.get('/assessments/:assessmentId/competencies/:competencyId/feedback', validateAssessmentId, generateCompetencyFeedbackEndpoint);
 
 // Assignments
 router.get('/assignments', getStudentAssignments);

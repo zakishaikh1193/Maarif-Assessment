@@ -24,6 +24,18 @@ interface CompetencyRecommendations {
   strengths: string[];
   studyTips: string[];
   focusAreas: string[];
+  overallAnalysis?: string[];
+  detailedStrengths?: Array<{
+    competency: string;
+    description: string;
+    score: number;
+  }>;
+  detailedFocusAreas?: Array<{
+    competency: string;
+    description: string;
+    score: number;
+    improvementTips: string[];
+  }>;
 }
 
 const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({ 
@@ -34,6 +46,7 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
   const [recommendations, setRecommendations] = useState<CompetencyRecommendations | null>(null);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [competencyFeedbacks, setCompetencyFeedbacks] = useState<Record<number, { feedback: string; loading: boolean }>>({});
 
   useEffect(() => {
     // Only fetch once when assessmentId is available and we have scores
@@ -42,6 +55,44 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId, currentScores.length]);
+
+  // Fetch AI-generated feedback for each competency
+  useEffect(() => {
+    if (assessmentId && currentScores.length > 0) {
+      currentScores.forEach((score) => {
+        // Only fetch if we haven't already fetched for this competency
+        if (!competencyFeedbacks[score.competencyId] && !competencyFeedbacks[score.competencyId]?.loading) {
+          fetchCompetencyFeedback(score.competencyId);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assessmentId, currentScores]);
+
+  const fetchCompetencyFeedback = async (competencyId: number) => {
+    if (!assessmentId) return;
+
+    // Mark as loading
+    setCompetencyFeedbacks(prev => ({
+      ...prev,
+      [competencyId]: { feedback: '', loading: true }
+    }));
+
+    try {
+      const data = await studentAPI.getCompetencyFeedback(assessmentId, competencyId);
+      setCompetencyFeedbacks(prev => ({
+        ...prev,
+        [competencyId]: { feedback: data.feedback, loading: false }
+      }));
+    } catch (error) {
+      console.error(`Failed to fetch feedback for competency ${competencyId}:`, error);
+      // Keep existing feedback or set empty
+      setCompetencyFeedbacks(prev => ({
+        ...prev,
+        [competencyId]: { feedback: '', loading: false }
+      }));
+    }
+  };
 
   const fetchCompetencyRecommendations = async () => {
     if (!assessmentId || hasFetched || currentScores.length === 0) {
@@ -506,11 +557,22 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
               <div className="bg-white bg-opacity-50 p-4 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <Lightbulb className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <div>
+                  <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900 mb-1">Personalized Feedback</div>
-                    <div className="text-sm text-gray-700 leading-relaxed">
-                      {score.feedbackText}
-                    </div>
+                    {competencyFeedbacks[score.competencyId]?.loading ? (
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-600"></div>
+                        <span>Generating AI feedback...</span>
+                      </div>
+                    ) : competencyFeedbacks[score.competencyId]?.feedback ? (
+                      <div className="text-sm text-gray-700 leading-relaxed bg-blue-50 p-2 rounded border border-blue-200">
+                        {competencyFeedbacks[score.competencyId].feedback}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-700 leading-relaxed">
+                        {score.feedbackText || `${score.competencyName} ${score.feedbackType === 'strong' ? 'Growth Achieved' : score.feedbackType === 'neutral' ? 'Growth Developing' : 'Growth Needed'}`}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -580,8 +642,44 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
           </div>
         ) : recommendations ? (
           <div className="space-y-4">
-            {/* Your Strengths */}
-            {recommendations.strengths.length > 0 && (
+            {/* Overall Analysis */}
+            {recommendations.overallAnalysis && recommendations.overallAnalysis.length > 0 && (
+              <div className="bg-white bg-opacity-90 p-5 rounded-lg border border-blue-300 shadow-sm">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Brain className="h-5 w-5 text-blue-600" />
+                  <span className="font-semibold text-blue-900">Overall Performance Analysis</span>
+                </div>
+                <ul className="space-y-2">
+                  {recommendations.overallAnalysis.map((point, index) => (
+                    <li key={index} className="text-sm text-gray-700 flex items-start space-x-2">
+                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Detailed Strengths */}
+            {recommendations.detailedStrengths && recommendations.detailedStrengths.length > 0 ? (
+              <div className="bg-white bg-opacity-90 p-5 rounded-lg border border-green-300 shadow-sm">
+                <div className="flex items-center space-x-2 mb-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="font-semibold text-green-800">Your Strengths</span>
+                </div>
+                <div className="space-y-3">
+                  {recommendations.detailedStrengths.map((strength, index) => (
+                    <div key={index} className="bg-green-50 p-3 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-green-900">{strength.competency}</span>
+                        <span className="text-sm font-bold text-green-700">{strength.score}%</span>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed">{strength.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : recommendations.strengths.length > 0 && (
               <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-green-200">
                 <div className="flex items-center space-x-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -593,8 +691,39 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
               </div>
             )}
 
-            {/* Focus Areas */}
-            {recommendations.focusAreas.length > 0 && (
+            {/* Detailed Focus Areas */}
+            {recommendations.detailedFocusAreas && recommendations.detailedFocusAreas.length > 0 ? (
+              <div className="bg-white bg-opacity-90 p-5 rounded-lg border border-amber-300 shadow-sm">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Target className="h-5 w-5 text-amber-600" />
+                  <span className="font-semibold text-amber-800">Focus Areas</span>
+                </div>
+                <div className="space-y-4">
+                  {recommendations.detailedFocusAreas.map((area, index) => (
+                    <div key={index} className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-amber-900">{area.competency}</span>
+                        <span className="text-sm font-bold text-amber-700">{area.score}%</span>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed mb-3">{area.description}</p>
+                      {area.improvementTips && area.improvementTips.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-amber-200">
+                          <p className="text-xs font-semibold text-amber-800 mb-2">Improvement Tips:</p>
+                          <ul className="space-y-1">
+                            {area.improvementTips.map((tip, tipIndex) => (
+                              <li key={tipIndex} className="text-xs text-gray-700 flex items-start space-x-2">
+                                <span className="text-amber-600 font-bold mt-0.5">→</span>
+                                <span>{tip}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : recommendations.focusAreas.length > 0 && (
               <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-amber-200">
                 <div className="flex items-center space-x-2 mb-2">
                   <Target className="h-5 w-5 text-amber-600" />
@@ -606,6 +735,23 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
               </div>
             )}
 
+            {/* Study Tips */}
+            {recommendations.studyTips && recommendations.studyTips.length > 0 && (
+              <div className="bg-white bg-opacity-90 p-5 rounded-lg border border-purple-300 shadow-sm">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Lightbulb className="h-5 w-5 text-purple-600" />
+                  <span className="font-semibold text-purple-800">Study Tips</span>
+                </div>
+                <ul className="space-y-2">
+                  {recommendations.studyTips.map((tip, index) => (
+                    <li key={index} className="text-sm text-gray-700 flex items-start space-x-2">
+                      <span className="text-purple-600 font-bold mt-0.5">•</span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
