@@ -56,6 +56,9 @@ const AssessmentPage: React.FC = () => {
   const [mode, setMode] = useState<'Standard' | 'Adaptive'>(state?.mode || 'Adaptive');
   const [allQuestions, setAllQuestions] = useState<any[]>(state?.allQuestions || []);
   const [assignmentName, setAssignmentName] = useState<string>(state?.assignmentName || '');
+  const [questionDescription, setQuestionDescription] = useState<string>('');
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const hasStartedRef = useRef(false);
 
   useEffect(() => {
@@ -83,6 +86,11 @@ const AssessmentPage: React.FC = () => {
       setCurrentQuestion(question);
       setQuestionType((question.questionType || 'MCQ') as AssessmentQuestion['questionType']);
       setQuestionMetadata(state.question.questionMetadata || null);
+      
+      // Fetch question description
+      if (question.id) {
+        fetchQuestionDescription(question.id);
+      }
       // Initialize FillInBlank answers array if needed
       if (question.questionType === 'FillInBlank' && state.question.questionMetadata?.blanks) {
         setFillInBlankAnswers(Array(state.question.questionMetadata.blanks.length).fill(null));
@@ -98,6 +106,7 @@ const AssessmentPage: React.FC = () => {
       // Initialize text answer for ShortAnswer/Essay
       setTextAnswer('');
       setWordCount(0);
+      setIsSubmitted(false);
       setTimeLimit(state.timeLimitMinutes || 30);
       setTimeRemaining((state.timeLimitMinutes || 30) * 60);
       setTotalQuestions(state.question.totalQuestions || state.allQuestions?.length || 10);
@@ -167,6 +176,21 @@ const AssessmentPage: React.FC = () => {
     }
   }, [loading, timeRemaining, selectedAnswer, currentQuestion, assessmentId]);
 
+  const fetchQuestionDescription = async (questionId: number) => {
+    setDescriptionLoading(true);
+    setQuestionDescription('');
+    try {
+      const response = await studentAPI.getQuestionDescription(questionId);
+      setQuestionDescription(response.description || '');
+    } catch (error) {
+      console.error('Failed to fetch question description:', error);
+      // Set a fallback description
+      setQuestionDescription('This question helps you develop critical thinking and problem-solving skills.\nMastering this concept is important for your academic growth.');
+    } finally {
+      setDescriptionLoading(false);
+    }
+  };
+
   const startAssessment = async () => {
     try {
       if (!state?.subjectId || !state?.period) {
@@ -181,6 +205,12 @@ const AssessmentPage: React.FC = () => {
       setCurrentQuestion(response.question);
       setQuestionType((response.question.questionType || 'MCQ') as AssessmentQuestion['questionType']);
       setQuestionMetadata(response.question.questionMetadata || null);
+      setIsSubmitted(false);
+      
+      // Fetch question description
+      if (response.question.id) {
+        fetchQuestionDescription(response.question.id);
+      }
       // Initialize FillInBlank answers array if needed
       if (response.question.questionType === 'FillInBlank' && response.question.questionMetadata?.blanks) {
         setFillInBlankAnswers(Array(response.question.questionMetadata.blanks.length).fill(null));
@@ -275,6 +305,7 @@ const AssessmentPage: React.FC = () => {
 
       // Mark current question as answered
       setAnsweredQuestions(prev => new Set([...prev, currentQuestion.questionNumber]));
+      setIsSubmitted(true);
 
       // Show feedback only for Adaptive mode (Standard mode doesn't show feedback)
       if (mode === 'Adaptive') {
@@ -291,19 +322,26 @@ const AssessmentPage: React.FC = () => {
             // Move to next question (convert 1-based to 0-based index)
             const nextQuestion = allQuestions[nextQuestionIndex];
             const nextQuestionType = (nextQuestion.questionType || 'MCQ') as AssessmentQuestion['questionType'];
-            setCurrentQuestion({
+            const newQuestion = {
               id: nextQuestion.id,
               text: nextQuestion.text,
               options: nextQuestion.options,
               questionNumber: nextQuestionIndex + 1,
               totalQuestions: allQuestions.length,
               questionType: nextQuestionType
-            });
+            };
+            setCurrentQuestion(newQuestion);
             setQuestionType(nextQuestionType);
             setQuestionMetadata(nextQuestion.questionMetadata || null);
             setCurrentQuestionNumber(nextQuestionIndex + 1);
+            
+            // Fetch question description
+            if (nextQuestion.id) {
+              fetchQuestionDescription(nextQuestion.id);
+            }
             setSelectedAnswer(null);
             setSelectedAnswers([]);
+            setIsSubmitted(false);
             // Initialize FillInBlank answers array if needed
             if (nextQuestionType === 'FillInBlank' && nextQuestion.questionMetadata?.blanks) {
               setFillInBlankAnswers(Array(nextQuestion.questionMetadata.blanks.length).fill(null));
@@ -359,8 +397,15 @@ const AssessmentPage: React.FC = () => {
             setCurrentQuestionNumber(response.question.questionNumber);
             setQuestionType(nextQuestionType);
             setQuestionMetadata(response.question.questionMetadata || null);
+            setIsSubmitted(false);
+            
+            // Fetch question description
+            if (response.question.id) {
+              fetchQuestionDescription(response.question.id);
+            }
             setSelectedAnswer(null);
             setSelectedAnswers([]);
+            setIsSubmitted(false);
             // Initialize FillInBlank answers array if needed
             if (nextQuestionType === 'FillInBlank' && response.question.questionMetadata?.blanks) {
               setFillInBlankAnswers(Array(response.question.questionMetadata.blanks.length).fill(null));
@@ -992,6 +1037,11 @@ const AssessmentPage: React.FC = () => {
               >
                 {submitting ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                ) : isSubmitted ? (
+                  <>
+                    <CheckCircle className="h-5 w-5" />
+                    <span>Submitted</span>
+                  </>
                 ) : (
                   <>
                     <span>Submit Answer</span>
@@ -1001,6 +1051,26 @@ const AssessmentPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Question Description - AI Generated (Separate Container) */}
+          {(questionDescription || descriptionLoading) && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5 mb-6 shadow-sm">
+              {descriptionLoading ? (
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm">Generating description...</span>
+                </div>
+              ) : questionDescription ? (
+                <div className="space-y-1.5">
+                  {questionDescription.split('\n').map((line, index) => (
+                    <p key={index} className="text-sm text-gray-700 leading-relaxed">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     </div>

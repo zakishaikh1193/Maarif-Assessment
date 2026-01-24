@@ -712,6 +712,15 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
                   }
                   return acc;
                 }, {} as { [key: number]: string })}
+                studentNamesMap={selectedStudents.reduce((acc, studentId) => {
+                  const student = filteredStudents.find(s => s.id === studentId);
+                  if (student) {
+                    acc[studentId] = student.firstName && student.lastName
+                      ? `${student.firstName} ${student.lastName}`
+                      : student.username || `Student ${studentId}`;
+                  }
+                  return acc;
+                }, {} as { [key: number]: string })}
               />
             ) : (
               <GrowthTabularView 

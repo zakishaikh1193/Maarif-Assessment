@@ -35,6 +35,13 @@ const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState<DetailedAssessmentResults | null>(null);
   const [loading, setLoading] = useState(true);
+  const [performanceAnalysis, setPerformanceAnalysis] = useState<{
+    overallAnalysis: string[];
+    strengths: string[];
+    areasOfImprovement: string[];
+    studyTips: string[];
+  } | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'assessment' | 'overall' | 'competency'>('assessment');
   const [growthData, setGrowthData] = useState<any>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
@@ -52,12 +59,18 @@ const ResultsPage: React.FC = () => {
     // Check if we have detailed results or basic results
     if (location.state?.statistics) {
       // We have detailed results
-      setResults(location.state as DetailedAssessmentResults);
+      const detailedResults = location.state as DetailedAssessmentResults;
+      setResults(detailedResults);
       setLoading(false);
       // Reset competency data when assessment changes
       setCompetencyScores([]);
       setCompetencyGrowthData([]);
       competencyDataFetched.current = false;
+      
+      // Fetch performance analysis
+      if (detailedResults?.assessment?.id) {
+        fetchPerformanceAnalysis(detailedResults.assessment.id);
+      }
     } else if (location.state?.ritScore) {
       // We have basic results, show fallback
       setLoading(false);
@@ -85,13 +98,37 @@ const ResultsPage: React.FC = () => {
             assessments.push({
               ...assessment,
               subjectId: subjectData.subjectId,
-              subjectName: subjectData.subjectName
+              subjectName: subjectData.subjectName,
+              // Normalize field names for consistency
+              dateTaken: assessment.date_taken || assessment.dateTaken,
+              date_taken: assessment.date_taken || assessment.dateTaken,
+              assessmentPeriod: assessment.assessment_period || assessment.assessmentPeriod,
+              assessment_period: assessment.assessment_period || assessment.assessmentPeriod,
+              ritScore: assessment.rit_score || assessment.ritScore,
+              rit_score: assessment.rit_score || assessment.ritScore,
+              correctAnswers: assessment.correct_answers || assessment.correctAnswers,
+              correct_answers: assessment.correct_answers || assessment.correctAnswers,
+              totalQuestions: assessment.total_questions || assessment.totalQuestions,
+              total_questions: assessment.total_questions || assessment.totalQuestions,
+              assignmentName: assessment.assignment_name || assessment.assignmentName || null,
+              assignment_name: assessment.assignment_name || assessment.assignmentName || null,
+              assignmentId: assessment.assignment_id || assessment.assignmentId || null,
+              assignment_id: assessment.assignment_id || assessment.assignmentId || null
             });
           });
         }
       });
       // Sort by date (most recent first)
-      assessments.sort((a, b) => new Date(b.dateTaken).getTime() - new Date(a.dateTaken).getTime());
+      assessments.sort((a, b) => {
+        const dateA = a.date_taken || a.dateTaken;
+        const dateB = b.date_taken || b.dateTaken;
+        if (!dateA || !dateB) return 0;
+        try {
+          return new Date(dateB).getTime() - new Date(dateA).getTime();
+        } catch {
+          return 0;
+        }
+      });
       setAllAssessments(assessments);
     } catch (error) {
       console.error('Failed to fetch assessments:', error);
@@ -120,11 +157,28 @@ const ResultsPage: React.FC = () => {
     });
   };
 
+  const fetchPerformanceAnalysis = async (assessmentId: number) => {
+    setAnalysisLoading(true);
+    try {
+      const analysis = await studentAPI.getPerformanceAnalysis(assessmentId);
+      setPerformanceAnalysis(analysis);
+    } catch (error) {
+      console.error('Failed to fetch performance analysis:', error);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   const viewAssessmentDetails = async (assessmentId: number) => {
     try {
       const detailedResults = await studentAPI.getDetailedResults(assessmentId);
       setResults(detailedResults);
       setActiveTab('assessment');
+      
+      // Fetch performance analysis
+      if (detailedResults?.assessment?.id) {
+        fetchPerformanceAnalysis(detailedResults.assessment.id);
+      }
     } catch (error) {
       console.error('Failed to fetch assessment details:', error);
     }
@@ -302,13 +356,13 @@ const ResultsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex pt-16">
           <Sidebar />
           <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
             </div>
           </main>
         </div>
@@ -331,7 +385,7 @@ const ResultsPage: React.FC = () => {
     // If we have basic results, show them
     if (basicResults?.ritScore !== undefined && basicResults.ritScore !== null) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-screen bg-gray-50">
           <Navigation />
           <div className="flex pt-16">
             <Sidebar />
@@ -387,88 +441,144 @@ const ResultsPage: React.FC = () => {
 
     // Show all assessments list
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex pt-16">
           <Sidebar />
           <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
-            <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Results</h1>
-            <p className="text-xl text-gray-600">View all your completed assessments</p>
+            <div className="w-full px-6 py-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Results</h1>
+            <p className="text-gray-600">View all your completed assessments</p>
           </div>
 
           {assessmentsLoading ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
               <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
               </div>
             </div>
           ) : allAssessments.length > 0 ? (
-            <div className="space-y-4">
-              {allAssessments.map((assessment: any) => {
-                const ritScore = assessment.rit_score || assessment.ritScore || 0;
-                return (
-                  <div
-                    key={assessment.id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => viewAssessmentDetails(assessment.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${
-                            ritScore >= 350 ? 'bg-purple-100' :
-                            ritScore >= 300 ? 'bg-blue-100' :
-                            ritScore >= 250 ? 'bg-emerald-100' :
-                            ritScore >= 200 ? 'bg-orange-100' :
-                            'bg-red-100'
-                          }`}>
-                            {getScoreIcon(ritScore)}
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {assessment.subjectName || 'Assessment'}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {assessment.assessmentPeriod} {assessment.year || new Date(assessment.dateTaken).getFullYear()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4 mt-3 text-sm text-gray-600">
-                          <div className="flex items-center space-x-1">
-                            <Trophy className="h-4 w-4" />
-                            <span className="font-medium">{ritScore} Growth Metric</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <CheckCircle className="h-4 w-4 text-emerald-600" />
-                            <span>{assessment.correctAnswers || 0} / {assessment.totalQuestions || 0} Correct</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(assessment.dateTaken).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            viewAssessmentDetails(assessment.id);
-                          }}
-                          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Assessment Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Subject
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Period
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Growth Metric
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Score
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date Completed
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {allAssessments.map((assessment: any) => {
+                      const ritScore = assessment.rit_score || assessment.ritScore || 0;
+                      const dateTaken = assessment.date_taken || assessment.dateTaken;
+                      const assessmentPeriod = assessment.assessment_period || assessment.assessmentPeriod || '';
+                      const year = assessment.year || (dateTaken ? new Date(dateTaken).getFullYear() : new Date().getFullYear());
+                      const correctAnswers = assessment.correct_answers || assessment.correctAnswers || 0;
+                      const totalQuestions = assessment.total_questions || assessment.totalQuestions || 0;
+                      const assignmentName = assessment.assignment_name || assessment.assignmentName || null;
+                      const subjectName = assessment.subjectName || assessment.subject_name || 'Assessment';
+                      
+                      // Format date safely
+                      let formattedDate = 'N/A';
+                      if (dateTaken) {
+                        try {
+                          const date = new Date(dateTaken);
+                          if (!isNaN(date.getTime())) {
+                            formattedDate = date.toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric' 
+                            });
+                          }
+                        } catch (e) {
+                          console.error('Error formatting date:', e);
+                        }
+                      }
+                      
+                      // Format assessment period display
+                      const periodDisplay = assessmentPeriod ? `${assessmentPeriod} ${year}` : year.toString();
+                      
+                      return (
+                        <tr 
+                          key={assessment.id}
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => viewAssessmentDetails(assessment.id)}
                         >
-                          <Eye className="h-4 w-4" />
-                          <span>View Details</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-50 mr-3">
+                                <TrendingUp className="h-5 w-5 text-purple-600" />
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {assignmentName || subjectName}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{subjectName}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{periodDisplay}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Trophy className="h-4 w-4 text-yellow-600 mr-2" />
+                              <span className="text-sm font-medium text-gray-900">{ritScore}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <CheckCircle className="h-4 w-4 text-emerald-600 mr-2" />
+                              <span className="text-sm text-gray-900">{correctAnswers}/{totalQuestions}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="text-sm text-gray-600">{formattedDate}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                viewAssessmentDetails(assessment.id);
+                              }}
+                              className="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span>View Details</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
               <div className="text-6xl mb-4">📊</div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assessments Found</h3>
               <p className="text-gray-600 mb-4">
@@ -493,7 +603,7 @@ const ResultsPage: React.FC = () => {
   const ritChange = getRITChange();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       <div className="flex pt-16">
         <Sidebar />
@@ -700,12 +810,13 @@ const ResultsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Difficulty Progression Chart */}
+        {/* Difficulty Progression Chart / Performance Progression Chart */}
         <div className="mb-8">
           <DifficultyProgressionChart
             data={results.difficultyProgression}
             currentRIT={results.statistics.currentRIT}
             previousRIT={results.statistics.previousRIT}
+            mode={results.assessment.mode}
           />
         </div>
 
@@ -956,6 +1067,103 @@ const ResultsPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Performance Analysis Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center space-x-2">
+            <Brain className="h-5 w-5 text-purple-600" />
+            <span>Performance Analysis & Improvement</span>
+          </h3>
+          
+          {analysisLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <span className="ml-3 text-gray-600">Generating AI-powered analysis...</span>
+            </div>
+          ) : performanceAnalysis ? (
+            <div className="space-y-6">
+              {/* Overall Analysis */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <span>Overall Performance Analysis</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.overallAnalysis.map((point, index) => {
+                    // Highlight important metrics (numbers, percentages, RIT scores)
+                    const highlightedPoint = point
+                      .replace(/(\d+%)/g, '<span class="font-bold text-blue-700">$1</span>')
+                      .replace(/(RIT score[:\s]+)(\d+)/gi, '$1<span class="font-bold text-blue-700">$2</span>')
+                      .replace(/(accuracy[:\s]+)(\d+%)/gi, '$1<span class="font-bold text-blue-700">$2</span>')
+                      .replace(/(\d+\s+questions?)/gi, '<span class="font-semibold text-indigo-700">$1</span>')
+                      .replace(/(correct[:\s]+)(\d+)/gi, '$1<span class="font-semibold text-emerald-700">$2</span>')
+                      .replace(/(improvement|improving|strong|excellent|great)/gi, '<span class="font-semibold text-emerald-700">$1</span>')
+                      .replace(/(needs?|practice|focus|areas?)/gi, '<span class="font-semibold text-amber-700">$1</span>');
+                    
+                    return (
+                      <li key={index} className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                        <p 
+                          className="text-gray-700 flex-1 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: highlightedPoint }}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              {/* Areas of Improvement */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-6 border border-amber-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-amber-600" />
+                  <span>Areas of Improvement</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.areasOfImprovement.map((area, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center mt-0.5">
+                        <span className="text-amber-700 text-sm font-medium">{index + 1}</span>
+                      </div>
+                      <p className="text-gray-700 flex-1">{area}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Your Strengths */}
+              <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg p-6 border border-emerald-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <span>Your Strengths</span>
+                </h4>
+                <p className="text-gray-700">
+                  You're excelling in: {performanceAnalysis.strengths.join(', ')}. Continue building on these strong foundations!
+                </p>
+              </div>
+
+              {/* Study Tips */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  <span>Study Tips</span>
+                </h4>
+                <ul className="space-y-3">
+                  {performanceAnalysis.studyTips.map((tip, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-600 mt-2"></div>
+                      <p className="text-gray-700 flex-1">{tip}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Performance analysis will be generated here.</p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}

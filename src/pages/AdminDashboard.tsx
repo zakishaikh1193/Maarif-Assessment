@@ -6,9 +6,7 @@ import QuestionForm from '../components/QuestionForm';
 import QuestionList from '../components/QuestionList';
 import SubjectForm from '../components/SubjectForm';
 import SubjectList from '../components/SubjectList';
-import SchoolForm from '../components/SchoolForm';
 import SchoolList from '../components/SchoolList';
-import GradeForm from '../components/GradeForm';
 import GradeList from '../components/GradeList';
 import StudentList from '../components/StudentList';
 import AdminStatsCard from '../components/AdminStatsCard';
@@ -24,7 +22,7 @@ import CSVImportModal from '../components/CSVImportModal';
 import QuestionCSVImportModal from '../components/QuestionCSVImportModal';
 import SSOSettings from '../components/SSOSettings';
 import SaudiArabiaMap from '../components/SaudiArabiaMap';
-import { Plus, BookOpen, Users, FileQuestion, BarChart3, TrendingUp, User, Settings, Building, GraduationCap, Clock, Target, Brain, Upload, Sparkles, Database, Activity, Zap, Key, FileText, ChevronDown, ChevronRight, AlertTriangle, Bell, CheckCircle, ArrowDownRight, MessageCircle, Trophy } from 'lucide-react';
+import { Plus, BookOpen, Users, FileQuestion, BarChart3, TrendingUp, User, Settings, Building, GraduationCap, Clock, Target, Brain, Upload, Database, Activity, Zap, Key, FileText, ChevronDown, ChevronRight, AlertTriangle, ArrowDownRight, Trophy } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -55,7 +53,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'reports' | 'students' | 'questions' | 'growth' | 'subjects' | 'schools' | 'grades' | 'configs' | 'competencies' | 'performance' | 'competency-analytics' | 'sso'>(
     (location.state as any)?.activeTab || 'dashboard'
   );
-  const [students, setStudents] = useState<Array<{id: number, username: string, firstName?: string, lastName?: string}>>([]);
+  const [, setStudents] = useState<Array<{id: number, username: string, firstName?: string, lastName?: string}>>([]);
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [growthData, setGrowthData] = useState<any>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
@@ -74,17 +72,16 @@ const AdminDashboard: React.FC = () => {
   // Subjects management states
   const [showSubjectForm, setShowSubjectForm] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
-  const [subjectsLoading, setSubjectsLoading] = useState(false);
 
-  // Schools management states
-  const [showSchoolForm, setShowSchoolForm] = useState(false);
-  const [editingSchool, setEditingSchool] = useState<School | null>(null);
-  const [schoolsLoading, setSchoolsLoading] = useState(false);
+  // Schools management states - kept for potential future use
+  // const [showSchoolForm, setShowSchoolForm] = useState(false);
+  // const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  // const [schoolsLoading, setSchoolsLoading] = useState(false);
 
-  // Grades management states
-  const [showGradeForm, setShowGradeForm] = useState(false);
-  const [editingGrade, setEditingGrade] = useState<Grade | null>(null);
-  const [gradesLoading, setGradesLoading] = useState(false);
+  // Grades management states - kept for potential future use
+  // const [showGradeForm, setShowGradeForm] = useState(false);
+  // const [editingGrade, setEditingGrade] = useState<Grade | null>(null);
+  // const [gradesLoading, setGradesLoading] = useState(false);
 
   // Competencies management states
   const [showCompetencyForm, setShowCompetencyForm] = useState(false);
@@ -95,7 +92,6 @@ const AdminDashboard: React.FC = () => {
   const [showCSVImportModal, setShowCSVImportModal] = useState(false);
   const [showQuestionCSVImportModal, setShowQuestionCSVImportModal] = useState(false);
   const [studentRefreshTrigger, setStudentRefreshTrigger] = useState(0);
-  const [questionRefreshTrigger, setQuestionRefreshTrigger] = useState(0);
 
   // Config dropdown state
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -282,7 +278,7 @@ const AdminDashboard: React.FC = () => {
       setQuestions(response.questions);
       setCurrentPage(response.pagination.currentPage);
       setTotalPages(response.pagination.totalPages);
-      setTotalQuestions(response.pagination.totalQuestions);
+      setTotalQuestions(response.pagination.totalQuestions || 0);
     } catch (error) {
       console.error('Failed to load questions:', error);
     }
@@ -1219,7 +1215,7 @@ const AdminDashboard: React.FC = () => {
               onEdit={handleEditSubject}
               onDelete={handleSubjectDeleted}
               onAddNew={handleAddSubject}
-              loading={subjectsLoading}
+              loading={false}
             />
           </div>
         )}
@@ -1352,11 +1348,11 @@ const AdminDashboard: React.FC = () => {
           isOpen={showQuestionCSVImportModal}
           onClose={() => setShowQuestionCSVImportModal(false)}
           onImportComplete={() => {
-            setQuestionRefreshTrigger(prev => prev + 1);
             // Refresh questions for current subject
             if (selectedSubject) {
               loadQuestions(selectedSubject.id, 1);
             }
+            loadInitialData(); // Refresh stats
           }}
         />
           </div>
