@@ -18,7 +18,7 @@ export const getAllSchools = async (req, res) => {
     const validatedLimit = Math.max(1, Math.min(1000, limit)); // Ensure limit is between 1 and 1000
     const validatedOffset = Math.max(0, offset); // Ensure offset is non-negative
     const schools = await executeQuery(
-      `SELECT id, name, address, contact_email, contact_phone, created_at FROM schools ORDER BY name LIMIT ${validatedLimit} OFFSET ${validatedOffset}`
+      `SELECT id, name, address, contact_email, contact_phone, school_type, created_at FROM schools ORDER BY name LIMIT ${validatedLimit} OFFSET ${validatedOffset}`
     );
 
     res.json({
@@ -45,7 +45,7 @@ export const getSchoolById = async (req, res) => {
     const { id } = req.params;
     
     const schools = await executeQuery(
-      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools WHERE id = ?',
+      'SELECT id, name, address, contact_email, contact_phone, school_type, created_at FROM schools WHERE id = ?',
       [id]
     );
 
@@ -69,7 +69,7 @@ export const getSchoolById = async (req, res) => {
 // Create new school (admin only)
 export const createSchool = async (req, res) => {
   try {
-    const { name, address, contact_email, contact_phone } = req.body;
+    const { name, address, contact_email, contact_phone, school_type } = req.body;
 
     // Check if school already exists
     const existingSchools = await executeQuery(
@@ -86,13 +86,13 @@ export const createSchool = async (req, res) => {
 
     // Insert new school
     const result = await executeQuery(
-      'INSERT INTO schools (name, address, contact_email, contact_phone) VALUES (?, ?, ?, ?)',
-      [name, address, contact_email, contact_phone]
+      'INSERT INTO schools (name, address, contact_email, contact_phone, school_type) VALUES (?, ?, ?, ?, ?)',
+      [name, address, contact_email, contact_phone, school_type]
     );
 
     // Get the created school
     const newSchools = await executeQuery(
-      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools WHERE id = ?',
+      'SELECT id, name, address, contact_email, contact_phone, school_type, created_at FROM schools WHERE id = ?',
       [result.insertId]
     );
 
@@ -114,7 +114,7 @@ export const createSchool = async (req, res) => {
 export const updateSchool = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, contact_email, contact_phone } = req.body;
+    const { name, address, contact_email, contact_phone, school_type } = req.body;
 
     // Check if school exists
     const existingSchools = await executeQuery(
@@ -144,13 +144,13 @@ export const updateSchool = async (req, res) => {
 
     // Update school
     await executeQuery(
-      'UPDATE schools SET name = ?, address = ?, contact_email = ?, contact_phone = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [name, address, contact_email, contact_phone, id]
+      'UPDATE schools SET name = ?, address = ?, contact_email = ?, contact_phone = ?, school_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [name, address, contact_email, contact_phone, school_type, id]
     );
 
     // Get updated school
     const updatedSchools = await executeQuery(
-      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools WHERE id = ?',
+      'SELECT id, name, address, contact_email, contact_phone, school_type, created_at FROM schools WHERE id = ?',
       [id]
     );
 

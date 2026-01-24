@@ -1,226 +1,252 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { School } from '../types';
-import { MapPin } from 'lucide-react';
-import api from '../services/api';
-
-interface SchoolLocation {
-  school: School;
-  lat: number;
-  lng: number;
-  originalAddress: string;
-}
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import mapImage from '../images/map-patch2.png';
+import bluePinIcon from '../images/blue.png';
 
 interface SaudiArabiaMapProps {
   schools: School[];
 }
 
-const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
-  const [schoolLocations, setSchoolLocations] = useState<SchoolLocation[]>([]);
-  const [loading, setLoading] = useState(true);
+const cityCoordinates: { [key: string]: { x: number; y: number } } = {
+  'Riyadh': { x: 50, y: 45 },
+  'Jeddah': { x: 25, y: 35 },
+  'Medina': { x: 30, y: 40 },
+  'Dammam': { x: 55, y: 50 },
+  'Mecca': { x: 28, y: 38 },
+  'Taif': { x: 32, y: 38 },
+  'Abha': { x: 35, y: 20 },
+  'Tabuk': { x: 20, y: 55 },
+  'Buraydah': { x: 45, y: 48 },
+  'Khobar': { x: 58, y: 52 },
+  'Hail': { x: 42, y: 52 },
+  'Jazan': { x: 30, y: 15 },
+  'Najran': { x: 40, y: 18 },
+  'Khamis Mushait': { x: 33, y: 22 },
+  'Al-Madinah': { x: 30, y: 40 },
+  'Al-Madinah Al-Munawarah': { x: 30, y: 40 },
+};
 
-  // Get approximate location based on address keywords
-  const getApproximateLocation = (address: string): { lat: number; lng: number } | null => {
-    if (!address || address.trim() === '') {
-      return null;
+const extractCityFromAddress = (address: string): string | null => {
+  if (!address) return null;
+  const addressLower = address.toLowerCase();
+  for (const city of Object.keys(cityCoordinates)) {
+    if (addressLower.includes(city.toLowerCase())) {
+      return city;
     }
-
-    const addressLower = address.toLowerCase();
-    
-    // Approximate coordinates for major Saudi cities
-    const cityCoordinates: { [key: string]: { lat: number; lng: number } } = {
-      'riyadh': { lat: 24.7136, lng: 46.6753 },
-      'medina': { lat: 24.5247, lng: 39.5692 },
-      'al-madinah': { lat: 24.5247, lng: 39.5692 },
-      'madinah': { lat: 24.5247, lng: 39.5692 },
-      'jeddah': { lat: 21.4858, lng: 39.1925 },
-      'dammam': { lat: 26.4207, lng: 50.0888 },
-      'khobar': { lat: 26.2041, lng: 50.1970 },
-      'al-khobar': { lat: 26.2041, lng: 50.1970 },
-      'makkah': { lat: 21.3891, lng: 39.8579 },
-      'mecca': { lat: 21.3891, lng: 39.8579 },
-      'taif': { lat: 21.2703, lng: 40.4158 },
-      'abha': { lat: 18.2164, lng: 42.5042 },
-      'tabuk': { lat: 28.3998, lng: 36.5700 },
-      'hail': { lat: 27.5114, lng: 41.7208 },
-      'buraidah': { lat: 26.3260, lng: 43.9750 },
-      'khamis mushait': { lat: 18.3000, lng: 42.7333 },
-      'najran': { lat: 17.4924, lng: 44.1277 },
-      'jazan': { lat: 16.8894, lng: 42.5611 },
-      'al-khalidiyah': { lat: 24.5247, lng: 39.5692 },
-      'hiteen': { lat: 24.7136, lng: 46.6753 },
-    };
-
-    // Check for city matches
-    for (const [city, coords] of Object.entries(cityCoordinates)) {
-      if (addressLower.includes(city)) {
-        // Add small random offset to show multiple schools in same city
-        const offset = (Math.random() - 0.5) * 0.15; // ~17km max offset
-        return {
-          lat: coords.lat + offset,
-          lng: coords.lng + offset
-        };
-      }
-    }
-
-    // Default to Riyadh if no match found
-    return { lat: 24.7136, lng: 46.6753 };
-  };
-
-  useEffect(() => {
-    const loadSchoolLocations = async () => {
-      setLoading(true);
-      
-      const locations: SchoolLocation[] = [];
-      
-      schools.forEach((school) => {
-        if (school.address) {
-          const coords = getApproximateLocation(school.address);
-          if (coords) {
-            locations.push({
-              school,
-              lat: coords.lat,
-              lng: coords.lng,
-              originalAddress: school.address
-            });
-          }
-        }
-      });
-
-      setSchoolLocations(locations);
-      setLoading(false);
-    };
-
-    if (schools.length > 0) {
-      loadSchoolLocations();
-    } else {
-      setLoading(false);
-    }
-  }, [schools]);
-
-  // Calculate map bounds for Saudi Arabia
-  // Saudi Arabia approximate bounds: lat 16-32, lng 34-56
-  const saudiBounds = {
-    minLat: 16,
-    maxLat: 32,
-    minLng: 34,
-    maxLng: 56,
-    centerLat: 24,
-    centerLng: 45
-  };
-
-  // Convert lat/lng to pixel coordinates
-  const latLngToPixel = (lat: number, lng: number, width: number, height: number) => {
-    const latRange = saudiBounds.maxLat - saudiBounds.minLat;
-    const lngRange = saudiBounds.maxLng - saudiBounds.minLng;
-    
-    const normalizedLat = (lat - saudiBounds.minLat) / latRange;
-    const normalizedLng = (lng - saudiBounds.minLng) / lngRange;
-    
-    // Convert to pixel coordinates (invert Y for screen coordinates)
-    const x = normalizedLng * width;
-    const y = (1 - normalizedLat) * height;
-    
-    return { x, y };
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-8 h-96 flex items-center justify-center border-2 border-gray-200">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-sm text-gray-600">Loading map...</p>
-        </div>
-      </div>
-    );
   }
+  if (addressLower.includes('riyadh')) return 'Riyadh';
+  if (addressLower.includes('jeddah')) return 'Jeddah';
+  if (addressLower.includes('medina') || addressLower.includes('madinah')) return 'Medina';
+  if (addressLower.includes('dammam')) return 'Dammam';
+  if (addressLower.includes('mecca') || addressLower.includes('makkah')) return 'Mecca';
+  return null;
+};
+
+const getSchoolCoordinates = (school: School): { x: number; y: number } => {
+  const city = extractCityFromAddress(school.address || '');
+  if (city && cityCoordinates[city]) {
+    const base = cityCoordinates[city];
+    const offsetX = ((school.id || 0) % 5) * 0.8 - 1.6;
+    const offsetY = (((school.id || 0) * 3) % 5) * 0.8 - 1.6;
+    return { x: base.x + offsetX, y: base.y + offsetY };
+  }
+  return { x: 50, y: 45 };
+};
+
+const getSchoolTypeFilter = (schoolType?: string): string => {
+  switch (schoolType) {
+    case 'National & International': 
+      // Blue - match bg-blue-600 (#2563eb) / bg-blue-500 (#3b82f6)
+      return 'brightness(0.95) saturate(1.3) hue-rotate(-5deg)';
+    case 'National': 
+      // Green - match bg-green-600 (#16a34a) / bg-green-500 (#22c55e) - vibrant green
+      return 'brightness(1.15) saturate(1.6) hue-rotate(130deg)';
+    case 'International': 
+      // Purple - match bg-purple-600 (#9333ea) / bg-purple-500 (#a855f7) - vibrant purple
+      return 'brightness(1.1) saturate(1.7) hue-rotate(255deg)';
+    default: 
+      return 'brightness(0.8) saturate(0.5)';
+  }
+};
+
+const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
+  const [selectedFilter, setSelectedFilter] = useState<string>('All');
+  const [zoom, setZoom] = useState(1);
+
+  const filteredSchools = useMemo(() => {
+    if (selectedFilter === 'All') return schools;
+    return schools.filter(school => school.school_type === selectedFilter);
+  }, [schools, selectedFilter]);
+
+  const schoolTypeCounts = useMemo(() => ({
+    'All': schools.length,
+    'National & International': schools.filter(s => s.school_type === 'National & International').length,
+    'National': schools.filter(s => s.school_type === 'National').length,
+    'International': schools.filter(s => s.school_type === 'International').length,
+  }), [schools]);
+
+  const filterOptions = [
+    { label: 'All', value: 'All' },
+    { label: 'National & International', value: 'National & International' },
+    { label: 'National', value: 'National' },
+    { label: 'International', value: 'International' },
+  ];
+
+  const getFilterButtonStyle = (value: string) => {
+    const isActive = selectedFilter === value;
+    const baseStyle = "w-full px-4 py-3.5 rounded-xl font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg";
+    
+    if (value === 'All') {
+      return `${baseStyle} ${isActive ? 'bg-gray-700' : 'bg-gray-600'}`;
+    } else if (value === 'National & International') {
+      return `${baseStyle} ${isActive ? 'bg-blue-600' : 'bg-blue-500'}`;
+    } else if (value === 'National') {
+      return `${baseStyle} ${isActive ? 'bg-purple-600' : 'bg-purple-500'}`;
+    } else if (value === 'International') {
+      return `${baseStyle} ${isActive ? 'bg-green-600' : 'bg-green-500'}`;
+    }
+    return baseStyle;
+  };
 
   return (
-    <div className="relative bg-gradient-to-br from-gray-50 via-blue-50/50 to-gray-50 rounded-xl h-96 overflow-hidden border-2 border-gray-200 shadow-inner">
-      {/* Saudi Arabia Map Background */}
-      <div className="absolute inset-0">
-        {/* Map-like background with grid */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-green-50/30 to-amber-50/20">
-          {/* Grid pattern */}
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
-            backgroundSize: '30px 30px'
-          }}></div>
+    <div className="relative w-full h-[650px] bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 rounded-xl overflow-hidden">
+
+      <div className="absolute left-4 top-4 bottom-4 z-10">
+        <div className="h-full flex flex-col gap-3 min-w-[240px] justify-between">
+          <div className="flex flex-col gap-3">
+            {filterOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSelectedFilter(option.value)}
+                className={getFilterButtonStyle(option.value)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{option.label}</span>
+                  {selectedFilter === option.value && (
+                    <span className="text-xs bg-gray-500/80 text-white px-2.5 py-1 rounded-md font-bold">
+                      {schoolTypeCounts[option.value as keyof typeof schoolTypeCounts] || 0}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
           
-          {/* Major city labels (simplified representation) */}
-          <div className="absolute inset-0">
-            {/* Riyadh */}
-            <div className="absolute" style={{ left: '45%', top: '35%' }}>
-              <div className="text-xs text-gray-400 font-medium">Riyadh</div>
-            </div>
-            {/* Jeddah */}
-            <div className="absolute" style={{ left: '20%', top: '60%' }}>
-              <div className="text-xs text-gray-400 font-medium">Jeddah</div>
-            </div>
-            {/* Dammam */}
-            <div className="absolute" style={{ left: '75%', top: '25%' }}>
-              <div className="text-xs text-gray-400 font-medium">Dammam</div>
-            </div>
-            {/* Medina */}
-            <div className="absolute" style={{ left: '15%', top: '35%' }}>
-              <div className="text-xs text-gray-400 font-medium">Medina</div>
+          {/* School Count Footer */}
+          <div className="mt-auto pt-4 border-t border-gray-300/50">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{filteredSchools.length} {filteredSchools.length === 1 ? 'School' : 'Schools'} on map</span>
             </div>
           </div>
         </div>
-        
-        {/* School markers */}
-        {schoolLocations.map((location) => {
-          const { x, y } = latLngToPixel(location.lat, location.lng, 100, 100);
-          const percentageX = x;
-          const percentageY = y;
-          
-          return (
-            <div
-              key={location.school.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10"
-              style={{
-                left: `${percentageX}%`,
-                top: `${percentageY}%`,
+      </div>
+
+      <div className="absolute inset-0 flex items-center justify-center pl-[260px] pr-4">
+        <div className="relative" style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}>
+          {/* Map Image */}
+          <div className="relative flex items-center justify-center">
+            <img 
+              src={mapImage} 
+              alt="Saudi Arabia Map" 
+              className="max-w-full max-h-[580px] w-auto h-auto object-contain"
+              style={{ 
+                filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.4))'
               }}
-              title={`${location.school.name}\n${location.originalAddress}`}
+            />
+            
+            {/* School Location Pins Overlay */}
+            <svg 
+              className="absolute top-0 left-0 w-full h-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="xMidYMid meet"
+              style={{ 
+                width: '100%',
+                height: '100%'
+              }}
             >
-              {/* Marker pin */}
-              <div className="relative">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full border-3 border-white shadow-xl flex items-center justify-center transform group-hover:scale-125 transition-transform duration-300">
-                  <MapPin className="h-5 w-5 text-white" />
-                </div>
-                {/* Outer glow */}
-                <div className="absolute inset-0 w-8 h-8 bg-blue-400 rounded-full opacity-30 group-hover:opacity-50 group-hover:scale-150 transition-all duration-300"></div>
-              </div>
-              
-              {/* Tooltip on hover */}
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                <div className="bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-2xl whitespace-nowrap min-w-max">
-                  <p className="font-bold text-sm mb-1">{location.school.name}</p>
-                  {location.originalAddress && (
-                    <p className="text-gray-300 text-xs">{location.originalAddress}</p>
-                  )}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                    <div className="border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+              {filteredSchools.map((school, index) => {
+                const coords = getSchoolCoordinates(school);
+                const colorFilter = getSchoolTypeFilter(school.school_type);
+                return (
+                  <g key={school.id || index} className="school-pin group" style={{ pointerEvents: 'auto', cursor: 'pointer' }}>
+                    {/* Pin Icon Image - Using blue.png with color filter based on school type - Much larger size */}
+                    <image
+                      href={bluePinIcon}
+                      x={coords.x - 10}
+                      y={coords.y - 18}
+                      width="20"
+                      height="25"
+                      className="hover:opacity-90 transition-opacity"
+                      style={{ 
+                        filter: `${colorFilter} drop-shadow(0 4px 8px rgba(0,0,0,0.5))`,
+                        pointerEvents: 'auto',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    
+                    {/* Hover Tooltip - School name and address, complete text */}
+                    <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" transform={`translate(0, -12)`}>
+                      {/* School Name - Complete name, no truncation */}
+                      <text
+                        x={coords.x}
+                        y={coords.y - 20}
+                        textAnchor="middle"
+                        fontSize="4.2"
+                        fill="#000000"
+                        fontWeight="900"
+                        style={{ 
+                          textShadow: '0 2px 8px rgba(255,255,255,1), 0 0 12px rgba(255,255,255,1), 0 1px 4px rgba(255,255,255,0.9)',
+                          filter: 'drop-shadow(0 3px 6px rgba(255,255,255,0.9))'
+                        }}
+                      >
+                        {school.name}
+                      </text>
+                      {/* Address - Complete address, positioned directly below school name with minimal gap */}
+                      {school.address && (
+                        <text
+                          x={coords.x}
+                          y={coords.y - 14}
+                          textAnchor="middle"
+                          fontSize="2.2"
+                          fill="#4b5563"
+                          fontWeight="700"
+                          style={{ 
+                            textShadow: '0 1px 4px rgba(255,255,255,1), 0 0 8px rgba(255,255,255,0.8)',
+                            filter: 'drop-shadow(0 2px 3px rgba(255,255,255,0.7))'
+                          }}
+                        >
+                          {school.address}
+                        </text>
+                      )}
+                    </g>
+                    
+                    {/* School Name Tooltip (for accessibility) */}
+                    <title>{school.name} - {school.address || 'No address'} - {school.school_type || 'Unknown type'}</title>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
       </div>
-      
-      {/* Legend/Info */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200">
-        <p className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-blue-600" />
-          <span>{schoolLocations.length} {schoolLocations.length === 1 ? 'School' : 'Schools'} on map</span>
-        </p>
+
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <button onClick={() => setZoom(prev => Math.min(prev + 0.2, 2))} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Zoom In">
+          <ZoomIn className="w-5 h-5 text-gray-700" />
+        </button>
+        <button onClick={() => setZoom(prev => Math.max(prev - 0.2, 0.5))} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Zoom Out">
+          <ZoomOut className="w-5 h-5 text-gray-700" />
+        </button>
+        <button onClick={() => setZoom(1)} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Reset View">
+          <RotateCcw className="w-5 h-5 text-gray-700" />
+        </button>
       </div>
-      
-      {/* Map title */}
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-lg border border-gray-200">
-        <p className="text-xs font-semibold text-gray-700">Saudi Arabia</p>
-      </div>
+
     </div>
   );
 };

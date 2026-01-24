@@ -12,6 +12,8 @@
     "migrate": "node scripts/run-migration.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@react-google-maps/api": "^2.20.8",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -24,8 +26,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "mysql2": "^3.6.5",
-    "uuid": "^9.0.1",
-    "@google/generative-ai": "^0.21.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

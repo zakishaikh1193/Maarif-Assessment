@@ -725,30 +725,8 @@ const AdminDashboard: React.FC = () => {
                                 Track and manage all schools in the Maarif Assessment system. Monitor performance across different institutions.
                               </p>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <div className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
-                                {schools.length} Schools
-                              </div>
-                            </div>
                           </div>
-                          <div className="flex items-center justify-between mb-4">
-                            <button 
-                              onClick={() => setActiveTab('schools')}
-                              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105"
-                            >
-                              <span className="flex items-center gap-2">
-                                <Activity className="h-4 w-4" />
-                                Check Details
-                              </span>
-                            </button>
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                              <p className="text-sm font-medium text-gray-700">
-                                {schools.length} Active Institutions
-                              </p>
-                            </div>
-                          </div>
-                          {/* Saudi Arabia Map with School Locations */}
+                          {/* Saudi Arabia Map with School Locations and Filters */}
                           <SaudiArabiaMap schools={schools} />
                         </div>
                       </div>

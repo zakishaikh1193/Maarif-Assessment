@@ -29,6 +29,7 @@ export interface School {
   address?: string;
   contact_email?: string;
   contact_phone?: string;
+  school_type?: 'National & International' | 'National' | 'International';
   created_at?: string;
 }
 

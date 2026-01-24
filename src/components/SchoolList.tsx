@@ -55,7 +55,8 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
         (school.name && school.name.toLowerCase().includes(searchLower)) ||
         (school.address && school.address.toLowerCase().includes(searchLower)) ||
         (school.contact_email && school.contact_email.toLowerCase().includes(searchLower)) ||
-        (school.contact_phone && school.contact_phone.toLowerCase().includes(searchLower))
+        (school.contact_phone && school.contact_phone.toLowerCase().includes(searchLower)) ||
+        (school.school_type && school.school_type.toLowerCase().includes(searchLower))
       );
     });
   }, [schools, searchTerm]);
@@ -301,6 +302,11 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
                           </p>
                         )}
                         <div className="flex space-x-4 text-xs text-gray-400">
+                          {school.school_type && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                              {school.school_type}
+                            </span>
+                          )}
                           {school.contact_email && (
                             <span>{school.contact_email}</span>
                           )}
