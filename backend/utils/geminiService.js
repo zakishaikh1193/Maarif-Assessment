@@ -565,7 +565,7 @@ export async function generateCompetencyRecommendations({ competencyScores, stud
       accuracy: score.questionsAttempted > 0 ? Math.round((score.questionsCorrect / score.questionsAttempted) * 100) : 0
     }));
 
-    const prompt = `You are an expert educational analyst. Analyze the following competency performance data and provide personalized recommendations for ${studentName || 'the student'}.
+    const prompt = `You are an expert educational analyst and learning coach. Analyze the following competency performance data and provide detailed, personalized recommendations for ${studentName || 'the student'}.
 
 **Student Name:** ${studentName || 'Student'}
 **Subject:** ${subjectName || 'General'}
@@ -574,34 +574,67 @@ export async function generateCompetencyRecommendations({ competencyScores, stud
 ${JSON.stringify(competencySummary, null, 2)}
 
 **Your Task:**
-Provide personalized competency recommendations in the following JSON format:
+Provide comprehensive, detailed personalized competency recommendations in the following JSON format:
 {
+  "overallAnalysis": [
+    "Point 1: Overall performance summary (e.g., 'You demonstrated strong understanding in 2 out of 4 competencies, showing particular strength in problem-solving areas')",
+    "Point 2: Key achievement highlight (e.g., 'Your highest score of 66.67% in Competency 4 shows solid foundational knowledge')",
+    "Point 3: Growth opportunity (e.g., 'Focusing on Competency 1 and Competency 3 will help you achieve more balanced performance across all skill areas')",
+    "Point 4: Encouragement and next steps (e.g., 'With continued practice, you can improve your scores in areas needing support')"
+  ],
   "strengths": [
-    "Competency name or skill area where student is excelling (e.g., 'Competency 3: Algebraic Problem-Solving')",
-    "Another strong competency",
+    "Competency name where student is excelling (e.g., 'Competency 4: Problem-Solving')",
     "Another strong competency"
   ],
-  "studyTips": [
-    "Study tip 1 specific to the competencies (e.g., 'Review questions you answered incorrectly to understand the concepts better')",
-    "Study tip 2 (e.g., 'Practice regularly with questions of varying difficulty levels')",
-    "Study tip 3 (e.g., 'Focus on understanding the underlying principles rather than memorizing')",
-    "Study tip 4 (e.g., 'Take advantage of adaptive learning - the system adjusts to your level')"
+  "detailedStrengths": [
+    {
+      "competency": "Competency 4",
+      "description": "Detailed explanation of why this is a strength and what it means (e.g., 'You scored 66.67% in Competency 4, demonstrating solid understanding of problem-solving concepts. You correctly answered 2 out of 3 questions, showing good grasp of the fundamental principles.')",
+      "score": 66.67
+    }
   ],
   "focusAreas": [
-    "Competency or area that needs more attention (be specific)",
-    "Another area for improvement",
+    "Competency name that needs attention (e.g., 'Competency 1: Basic Concepts')",
     "Another area for improvement"
+  ],
+  "detailedFocusAreas": [
+    {
+      "competency": "Competency 1",
+      "description": "Detailed explanation of why this needs focus (e.g., 'Competency 1 shows 0% score with 0 out of 2 questions answered correctly. This indicates a need to review fundamental concepts and build foundational understanding.')",
+      "score": 0,
+      "improvementTips": [
+        "Specific tip 1 for this competency (e.g., 'Start with basic concept review materials and practice foundational problems')",
+        "Specific tip 2 (e.g., 'Focus on understanding core principles before attempting advanced questions')",
+        "Specific tip 3 (e.g., 'Practice regularly with simpler questions to build confidence')"
+      ]
+    }
+  ],
+  "studyTips": [
+    "General study tip 1 (e.g., 'Review questions you answered incorrectly to understand the concepts better')",
+    "General study tip 2 (e.g., 'Practice regularly with questions of varying difficulty levels')",
+    "General study tip 3 (e.g., 'Focus on understanding the underlying principles rather than memorizing')",
+    "General study tip 4 (e.g., 'Take advantage of adaptive learning - the system adjusts to your level')"
   ]
 }
 
 **Guidelines:**
 - Use second person ("you", "your") to address ${studentName || 'the student'} directly
-- Identify strengths from competencies with high scores (finalScore >= 70) or feedbackType === 'strong'
-- Identify focus areas from competencies with low scores (finalScore < 70) or feedbackType === 'growth'
-- Provide 3-4 specific competency names in strengths (use the actual competency names from the data)
-- Provide 2-3 specific competency names in focusAreas (use the actual competency names from the data)
-- Study tips should be actionable and relevant to the competency performance
-- Be encouraging and constructive
+- Be specific: Reference actual competency names, scores, and question counts from the data
+- Be encouraging: Highlight achievements and frame improvements positively
+- Be actionable: Provide concrete, specific advice that the student can follow
+- Overall Analysis: 3-5 bullet points summarizing overall performance, achievements, and opportunities
+- Detailed Strengths: For each strong competency (finalScore >= 70 or feedbackType === 'strong'), provide:
+  - Competency name
+  - Detailed description explaining the achievement
+  - Actual score
+- Detailed Focus Areas: For each weak competency (finalScore < 70 or feedbackType === 'growth'), provide:
+  - Competency name
+  - Detailed description explaining why it needs focus
+  - Actual score
+  - 2-3 specific improvement tips for that competency
+- Study Tips: 4-5 general actionable tips relevant to overall performance
+- Use actual data: Reference specific scores, question counts, and competency names from the provided data
+- Keep descriptions concise but informative (2-3 sentences for detailed descriptions)
 
 **Response Format:**
 You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, just the JSON object.`;
@@ -660,7 +693,7 @@ You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, jus
     const parsed = JSON.parse(jsonText);
     
     // Validate structure
-    if (!Array.isArray(parsed.strengths) || parsed.strengths.length === 0) {
+    if (!Array.isArray(parsed.strengths)) {
       throw new Error('Invalid or missing "strengths" array');
     }
     
@@ -668,14 +701,17 @@ You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, jus
       throw new Error('Invalid or missing "studyTips" array');
     }
     
-    if (!Array.isArray(parsed.focusAreas) || parsed.focusAreas.length === 0) {
+    if (!Array.isArray(parsed.focusAreas)) {
       throw new Error('Invalid or missing "focusAreas" array');
     }
     
     return {
       strengths: parsed.strengths.map(item => item.trim()),
       studyTips: parsed.studyTips.map(item => item.trim()),
-      focusAreas: parsed.focusAreas.map(item => item.trim())
+      focusAreas: parsed.focusAreas.map(item => item.trim()),
+      overallAnalysis: parsed.overallAnalysis ? parsed.overallAnalysis.map(item => item.trim()) : [],
+      detailedStrengths: parsed.detailedStrengths || [],
+      detailedFocusAreas: parsed.detailedFocusAreas || []
     };
   } catch (error) {
     console.error('Error generating competency recommendations:', error);
@@ -698,5 +734,113 @@ You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, jus
         ? weakCompetencies.slice(0, 3).map(c => c.competencyName)
         : ['Continue practicing to maintain and improve your skills']
     };
+  }
+}
+
+/**
+ * Generate personalized feedback for a single competency
+ * @param {Object} params - Parameters for generating feedback
+ * @param {Object} params.competency - Competency data (name, code, score, etc.)
+ * @param {string} params.studentName - Student's name
+ * @param {string} params.subjectName - Subject name
+ * @returns {Promise<string>} - Personalized feedback text
+ */
+export async function generateCompetencyFeedback({ competency, studentName, subjectName }) {
+  try {
+    const accuracy = competency.questionsAttempted > 0 
+      ? Math.round((competency.questionsCorrect / competency.questionsAttempted) * 100) 
+      : 0;
+    
+    const prompt = `You are an educational assessment AI assistant. Generate personalized, encouraging feedback for a student's performance in a specific competency.
+
+**Student Information:**
+- Name: ${studentName}
+- Subject: ${subjectName}
+
+**Competency Performance:**
+- Competency Name: ${competency.competencyName}
+- Competency Code: ${competency.competencyCode}
+- Final Score: ${competency.finalScore}%
+- Questions Attempted: ${competency.questionsAttempted}
+- Questions Correct: ${competency.questionsCorrect}
+- Accuracy: ${accuracy}%
+- Performance Level: ${competency.feedbackType === 'strong' ? 'Strong' : competency.feedbackType === 'neutral' ? 'Developing' : 'Needs Support'}
+
+**Requirements:**
+- Generate a concise, personalized feedback message (2-3 sentences maximum)
+- Be encouraging and constructive
+- If score is low (< 50%), acknowledge the challenge and provide motivation
+- If score is moderate (50-70%), recognize progress and suggest next steps
+- If score is high (>= 70%), celebrate achievement and encourage continued growth
+- Use the student's name naturally in the feedback
+- Focus on actionable insights specific to this competency
+- Keep the tone positive and supportive
+
+**Response Format:**
+Respond with ONLY the feedback text. No markdown, no quotes, no JSON, just the plain feedback message.`;
+
+    // Try gemini-2.5-flash-lite first, then fallback to other models
+    let model;
+    let result;
+    let response;
+    let text;
+    
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (flashLiteError) {
+      if (flashLiteError.message?.includes('not found') || flashLiteError.message?.includes('404')) {
+        console.log('gemini-2.5-flash-lite not available, trying gemini-1.5-pro...');
+        try {
+          model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+          result = await model.generateContent(prompt);
+          response = await result.response;
+          text = response.text();
+        } catch (proError) {
+          if (proError.message?.includes('not found') || proError.message?.includes('404')) {
+            console.log('gemini-1.5-pro not available, trying gemini-1.5-flash...');
+            try {
+              model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              result = await model.generateContent(prompt);
+              response = await result.response;
+              text = response.text();
+            } catch (flashError) {
+              throw new Error('None of the Gemini models are available. Please check your API key and model access.');
+            }
+          } else {
+            throw proError;
+          }
+        }
+      } else {
+        throw flashLiteError;
+      }
+    }
+
+    // Clean up the response text
+    let feedback = text.trim();
+    
+    // Remove markdown formatting if present
+    feedback = feedback.replace(/```/g, '').replace(/\*\*/g, '').trim();
+    
+    // Remove quotes if the entire response is wrapped in quotes
+    if ((feedback.startsWith('"') && feedback.endsWith('"')) || 
+        (feedback.startsWith("'") && feedback.endsWith("'"))) {
+      feedback = feedback.slice(1, -1);
+    }
+    
+    return feedback;
+  } catch (error) {
+    console.error('Error generating competency feedback:', error);
+    
+    // Fallback feedback based on performance level
+    if (competency.feedbackType === 'strong') {
+      return `${competency.competencyName} is one of your strong areas! You're demonstrating solid understanding with a ${competency.finalScore}% score. Keep building on this foundation to maintain your excellent performance.`;
+    } else if (competency.feedbackType === 'neutral') {
+      return `You're making progress in ${competency.competencyName} with a ${competency.finalScore}% score. Continue practicing to strengthen your skills in this area and reach the next level.`;
+    } else {
+      return `${competency.competencyName} is an area where you can grow. With a ${competency.finalScore}% score, focus on reviewing the concepts and practicing more questions to improve your understanding.`;
+    }
   }
 }

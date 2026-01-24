@@ -1,5 +1,5 @@
 import { executeQuery } from '../config/database.js';
-import { gradeAnswerWithAI, generateQuestionDescription, generatePerformanceAnalysis, generateCompetencyRecommendations } from '../utils/geminiService.js';
+import { gradeAnswerWithAI, generateQuestionDescription, generatePerformanceAnalysis, generateCompetencyRecommendations, generateCompetencyFeedback } from '../utils/geminiService.js';
 
 // Seeded random number generator for deterministic shuffling
 function seededRandom(seed) {
@@ -2698,7 +2698,7 @@ export const generateCompetencyRecommendationsEndpoint = async (req, res) => {
     const assessmentData = assessmentCheck[0];
 
     // Get competency scores
-    const competencyScores = await executeQuery(`
+    let competencyScores = await executeQuery(`
       SELECT 
         scs.id,
         scs.competency_id as competencyId,
@@ -2717,6 +2717,42 @@ export const generateCompetencyRecommendationsEndpoint = async (req, res) => {
       WHERE scs.assessment_id = ?
       ORDER BY scs.final_score DESC
     `, [assessmentId]);
+
+    // If no data in student_competency_scores, try assessment_competency_breakdown
+    if (competencyScores.length === 0) {
+      console.log(`No competency scores found in student_competency_scores for assessment ${assessmentId}, checking assessment_competency_breakdown...`);
+      
+      const breakdownScores = await executeQuery(`
+        SELECT 
+          acb.id,
+          acb.competency_id as competencyId,
+          c.code as competencyCode,
+          c.name as competencyName,
+          acb.questions_attempted as questionsAttempted,
+          acb.questions_correct as questionsCorrect,
+          CASE WHEN acb.questions_attempted > 0 THEN (acb.questions_correct / acb.questions_attempted) * 100 ELSE 0 END as rawScore,
+          CASE WHEN acb.total_weight > 0 THEN (acb.weighted_correct / acb.total_weight) * 100 ELSE 0 END as weightedScore,
+          acb.competency_score as finalScore,
+          CASE 
+            WHEN acb.competency_score >= c.strong_threshold THEN 'strong'
+            WHEN acb.competency_score >= c.neutral_threshold THEN 'neutral'
+            ELSE 'growth'
+          END as feedbackType,
+          CASE 
+            WHEN acb.competency_score >= c.strong_threshold THEN c.strong_description
+            WHEN acb.competency_score >= c.neutral_threshold THEN c.neutral_description
+            ELSE c.growth_description
+          END as feedbackText,
+          acb.created_at as dateCalculated
+        FROM assessment_competency_breakdown acb
+        JOIN competencies c ON acb.competency_id = c.id
+        WHERE acb.assessment_id = ?
+        ORDER BY acb.competency_score DESC
+      `, [assessmentId]);
+
+      console.log(`Found ${breakdownScores.length} competency scores in assessment_competency_breakdown for assessment ${assessmentId}`);
+      competencyScores = breakdownScores;
+    }
 
     if (competencyScores.length === 0) {
       return res.status(404).json({
@@ -2743,6 +2779,123 @@ export const generateCompetencyRecommendationsEndpoint = async (req, res) => {
     res.status(500).json({
       error: 'Failed to generate competency recommendations',
       code: 'GENERATE_COMPETENCY_RECOMMENDATIONS_ERROR',
+      message: error.message
+    });
+  }
+};
+
+// Generate personalized feedback for a single competency
+export const generateCompetencyFeedbackEndpoint = async (req, res) => {
+  try {
+    const { assessmentId, competencyId } = req.params;
+    const studentId = req.user.id;
+
+    // Verify the assessment belongs to the student
+    const assessmentCheck = await executeQuery(`
+      SELECT 
+        a.id,
+        a.subject_id,
+        s.name as subject_name,
+        u.first_name,
+        u.last_name,
+        u.username
+      FROM assessments a
+      JOIN subjects s ON a.subject_id = s.id
+      JOIN users u ON a.student_id = u.id
+      WHERE a.id = ? AND a.student_id = ?
+    `, [assessmentId, studentId]);
+
+    if (assessmentCheck.length === 0) {
+      return res.status(404).json({
+        error: 'Assessment not found',
+        code: 'ASSESSMENT_NOT_FOUND'
+      });
+    }
+
+    const assessmentData = assessmentCheck[0];
+
+    // Get specific competency score
+    let competencyScore = await executeQuery(`
+      SELECT 
+        scs.id,
+        scs.competency_id as competencyId,
+        c.code as competencyCode,
+        c.name as competencyName,
+        scs.questions_attempted as questionsAttempted,
+        scs.questions_correct as questionsCorrect,
+        scs.raw_score as rawScore,
+        scs.weighted_score as weightedScore,
+        scs.final_score as finalScore,
+        scs.feedback_type as feedbackType,
+        scs.feedback_text as feedbackText,
+        scs.date_calculated as dateCalculated
+      FROM student_competency_scores scs
+      JOIN competencies c ON scs.competency_id = c.id
+      WHERE scs.assessment_id = ? AND scs.competency_id = ?
+    `, [assessmentId, competencyId]);
+
+    // If no data in student_competency_scores, try assessment_competency_breakdown
+    if (competencyScore.length === 0) {
+      console.log(`No competency score found in student_competency_scores for assessment ${assessmentId} and competency ${competencyId}, checking assessment_competency_breakdown...`);
+      
+      const breakdownScore = await executeQuery(`
+        SELECT 
+          acb.id,
+          acb.competency_id as competencyId,
+          c.code as competencyCode,
+          c.name as competencyName,
+          acb.questions_attempted as questionsAttempted,
+          acb.questions_correct as questionsCorrect,
+          CASE WHEN acb.questions_attempted > 0 THEN (acb.questions_correct / acb.questions_attempted) * 100 ELSE 0 END as rawScore,
+          CASE WHEN acb.total_weight > 0 THEN (acb.weighted_correct / acb.total_weight) * 100 ELSE 0 END as weightedScore,
+          acb.competency_score as finalScore,
+          CASE 
+            WHEN acb.competency_score >= c.strong_threshold THEN 'strong'
+            WHEN acb.competency_score >= c.neutral_threshold THEN 'neutral'
+            ELSE 'growth'
+          END as feedbackType,
+          CASE 
+            WHEN acb.competency_score >= c.strong_threshold THEN c.strong_description
+            WHEN acb.competency_score >= c.neutral_threshold THEN c.neutral_description
+            ELSE c.growth_description
+          END as feedbackText,
+          acb.created_at as dateCalculated
+        FROM assessment_competency_breakdown acb
+        JOIN competencies c ON acb.competency_id = c.id
+        WHERE acb.assessment_id = ? AND acb.competency_id = ?
+      `, [assessmentId, competencyId]);
+
+      console.log(`Found ${breakdownScore.length} competency score in assessment_competency_breakdown for assessment ${assessmentId} and competency ${competencyId}`);
+      competencyScore = breakdownScore;
+    }
+
+    if (competencyScore.length === 0) {
+      return res.status(404).json({
+        error: 'Competency score not found',
+        code: 'COMPETENCY_SCORE_NOT_FOUND'
+      });
+    }
+
+    const competency = competencyScore[0];
+
+    // Get student name
+    const studentName = assessmentData.first_name && assessmentData.last_name
+      ? `${assessmentData.first_name} ${assessmentData.last_name}`
+      : assessmentData.username || 'Student';
+
+    // Generate AI feedback
+    const feedback = await generateCompetencyFeedback({
+      competency: competency,
+      studentName: studentName,
+      subjectName: assessmentData.subject_name
+    });
+
+    res.json({ feedback });
+  } catch (error) {
+    console.error('Error generating competency feedback:', error);
+    res.status(500).json({
+      error: 'Failed to generate competency feedback',
+      code: 'GENERATE_COMPETENCY_FEEDBACK_ERROR',
       message: error.message
     });
   }

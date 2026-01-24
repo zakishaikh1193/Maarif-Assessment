@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Subject, DashboardData, AssessmentConfiguration } from '../types';
+import { Subject, DashboardData } from '../types';
 import { studentAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Navigation from '../components/Navigation';
@@ -25,18 +25,27 @@ import {
   X,
   Building,
   GraduationCap,
-  User as UserIcon
+  User as UserIcon,
+  Eye
 } from 'lucide-react';
 
 const StudentDashboard: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardData[]>([]);
-  const [assessmentConfigs, setAssessmentConfigs] = useState<Record<number, AssessmentConfiguration>>({});
+  // Assessment configurations - kept for potential future use
+  // const [assessmentConfigs, setAssessmentConfigs] = useState<Record<number, AssessmentConfiguration>>({});
   const [assignments, setAssignments] = useState<any[]>([]);
   const [completedAssignments, setCompletedAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileImageError, setProfileImageError] = useState(false);
+  const [recentCompetencies, setRecentCompetencies] = useState<Array<{
+    competencyName: string;
+    competencyCode: string;
+    finalScore: number;
+    dateCalculated: string;
+    subjectName: string;
+  }>>([]);
   const hasLoadedRef = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -76,7 +85,7 @@ const StudentDashboard: React.FC = () => {
       setAssignments(assignmentsData || []);
       
       // Sort completed assignments by completion date (most recent first)
-      const sortedCompleted = (completedAssignmentsData || []).sort((a, b) => {
+      const sortedCompleted = (completedAssignmentsData || []).sort((a: any, b: any) => {
         const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
         const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
         return dateB - dateA; // Descending order (most recent first)
@@ -92,24 +101,90 @@ const StudentDashboard: React.FC = () => {
         });
       }
 
-      // Load assessment configurations for each subject
-      const configs: Record<number, AssessmentConfiguration> = {};
-      for (const subject of subjectsData) {
-        try {
-          const config = await studentAPI.getAssessmentConfiguration(
-            user?.grade?.id || 1, 
-            subject.id
-          );
-          configs[subject.id] = config;
-        } catch (error) {
-          console.warn(`No config found for subject ${subject.id}:`, error);
-        }
-      }
-      setAssessmentConfigs(configs);
+      // Load assessment configurations for each subject - kept for potential future use
+      // const configs: Record<number, AssessmentConfiguration> = {};
+      // for (const subject of subjectsData) {
+      //   try {
+      //     const config = await studentAPI.getAssessmentConfiguration(
+      //       user?.grade?.id || 1, 
+      //       subject.id
+      //     );
+      //     configs[subject.id] = config;
+      //   } catch (error) {
+      //     console.warn(`No config found for subject ${subject.id}:`, error);
+      //   }
+      // }
+      //       setAssessmentConfigs(configs);
+
+      // Load recently achieved competencies after dashboard data is loaded
+      await loadRecentCompetencies(assessmentData);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRecentCompetencies = async (assessmentData?: any[]) => {
+    try {
+      const dataToUse = assessmentData || dashboardData;
+      
+      // Get all completed assessments from dashboard data
+      const allAssessments: any[] = [];
+      dataToUse.forEach((subjectData: any) => {
+        if (subjectData.assessments && subjectData.assessments.length > 0) {
+          subjectData.assessments.forEach((assessment: any) => {
+            allAssessments.push({
+              ...assessment,
+              subjectId: subjectData.subjectId,
+              subjectName: subjectData.subjectName
+            });
+          });
+        }
+      });
+
+      // Sort by date (most recent first) and get the latest assessment
+      const sortedAssessments = allAssessments.sort((a, b) => {
+        const dateA = a.dateTaken ? new Date(a.dateTaken).getTime() : 0;
+        const dateB = b.dateTaken ? new Date(b.dateTaken).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      if (sortedAssessments.length > 0) {
+        const latestAssessment = sortedAssessments[0];
+        
+        // Fetch competency scores for the latest assessment
+        try {
+          const competencyScores = await studentAPI.getCompetencyScores(latestAssessment.id);
+          
+          // Filter for "strong" competencies (achieved) and sort by date
+          const achievedCompetencies = competencyScores
+            .filter((score: any) => score.feedbackType === 'strong' && score.finalScore >= 70)
+            .map((score: any) => ({
+              competencyName: score.competencyName,
+              competencyCode: score.competencyCode,
+              finalScore: score.finalScore,
+              dateCalculated: score.dateCalculated || latestAssessment.dateTaken,
+              subjectName: latestAssessment.subjectName || 'Unknown Subject'
+            }))
+            .sort((a: any, b: any) => {
+              const dateA = a.dateCalculated ? new Date(a.dateCalculated).getTime() : 0;
+              const dateB = b.dateCalculated ? new Date(b.dateCalculated).getTime() : 0;
+              return dateB - dateA;
+            })
+            .slice(0, 4); // Get top 4 most recent
+
+          setRecentCompetencies(achievedCompetencies);
+        } catch (error) {
+          console.error('Failed to load competency scores:', error);
+          setRecentCompetencies([]);
+        }
+      } else {
+        setRecentCompetencies([]);
+      }
+    } catch (error) {
+      console.error('Failed to load recent competencies:', error);
+      setRecentCompetencies([]);
     }
   };
 
@@ -150,6 +225,8 @@ const StudentDashboard: React.FC = () => {
     return assignments.filter(assignment => !assignment.isCompleted);
   };
 
+  // Helper function - kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getAssignmentsForSubject = (subjectId: number) => {
     // Backend already filters by isActive and isPublished, so we only need to check subjectId and completion
     // Ensure both are numbers for comparison
@@ -188,6 +265,8 @@ const StudentDashboard: React.FC = () => {
     return filtered;
   };
 
+  // Helper function - kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const viewLatestReport = async (subjectId: number) => {
     try {
       const detailedResults = await studentAPI.getLatestAssessmentDetails(subjectId);
@@ -335,9 +414,6 @@ const StudentDashboard: React.FC = () => {
   }
 
   const overallStats = getOverallStats();
-  const growthRate = getGrowthRate();
-  const strengthsWeaknesses = getStrengthsAndWeaknesses();
-  const consistencyScore = getConsistencyScore();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -709,107 +785,162 @@ const StudentDashboard: React.FC = () => {
 
           {/* Sidebar - Right Side */}
           <div className="space-y-6">
-             {/* Academic Insights */}
+             {/* Academic Insights - Recently Achieved Competencies */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Academic Insights</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Lightbulb className="h-4 w-4 text-yellow-600" />
+                {recentCompetencies.length > 0 ? (
+                  recentCompetencies.map((competency, index) => {
+                    const colors = [
+                      { bg: 'bg-yellow-100', icon: 'text-yellow-600' },
+                      { bg: 'bg-pink-100', icon: 'text-pink-600' },
+                      { bg: 'bg-purple-100', icon: 'text-purple-600' },
+                      { bg: 'bg-teal-100', icon: 'text-teal-600' }
+                    ];
+                    const colorSet = colors[index % colors.length];
+                    const icons = [Lightbulb, TargetIcon, TrendingUp, Lightbulb];
+                    const Icon = icons[index % icons.length];
+                    
+                    return (
+                      <div key={competency.competencyCode} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <div className={`p-2 ${colorSet.bg} rounded-lg flex-shrink-0`}>
+                            <Icon className={`h-4 w-4 ${colorSet.icon}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-gray-700 block truncate">{competency.competencyName}</span>
+                            <span className="text-xs text-gray-500">{competency.competencyCode}</span>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <div className="text-sm font-bold text-gray-900">{competency.finalScore}%</div>
+                          <div className="text-xs text-gray-500">Achieved</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-yellow-100 rounded-lg">
+                          <Lightbulb className="h-4 w-4 text-yellow-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">No Achievements Yet</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-gray-900">N/A</div>
+                        <div className="text-xs text-gray-500">Complete assessments</div>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Strongest Subject</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-gray-900">
-                      {strengthsWeaknesses.strongestScore > 0 ? strengthsWeaknesses.strongest : 'N/A'}
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-pink-100 rounded-lg">
+                          <TargetIcon className="h-4 w-4 text-pink-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">Keep Learning</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-gray-900">N/A</div>
+                        <div className="text-xs text-gray-500">to see achievements</div>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {strengthsWeaknesses.strongestScore > 0 ? `${strengthsWeaknesses.strongestScore} Growth Metric` : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-pink-100 rounded-lg">
-                      <TargetIcon className="h-4 w-4 text-pink-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Needs Focus</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-gray-900">
-                      {strengthsWeaknesses.weakestScore > 0 ? strengthsWeaknesses.weakest : 'N/A'}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {strengthsWeaknesses.weakestScore > 0 ? `${strengthsWeaknesses.weakestScore} Growth Metric` : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <TrendingUp className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Growth Rate</span>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-sm font-bold ${growthRate > 0 ? 'text-green-600' : growthRate < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                      {growthRate > 0 ? '+' : ''}{growthRate}%
-                    </div>
-                    <div className="text-xs text-gray-500">from start</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-teal-100 rounded-lg">
-                      <Lightbulb className="h-4 w-4 text-teal-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Consistency</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-gray-900">{consistencyScore}%</div>
-                    <div className="text-xs text-gray-500">score stability</div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - Recent Assessments */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-2">
-                {subjects.length > 0 ? (
-                  subjects.map((subject) => {
-                  const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
-                  return (
-                    <div key={subject.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                          <h4 className="font-medium text-gray-900 text-sm">{subject.name}</h4>
-                          <p className="text-xs text-gray-600">{currentPeriod} Assessment</p>
-                      </div>
-                      {isCompleted ? (
-                          <div className="flex items-center space-x-1 text-green-600">
-                          <CheckCircle className="h-4 w-4" />
-                            <span className="text-xs font-medium">Completed</span>
+                {(() => {
+                  // Get recent assessments from completed assignments and dashboard data
+                  const recentAssessments: any[] = [];
+                  
+                  // Add completed assignments
+                  completedAssignments.slice(0, 3).forEach((assignment: any) => {
+                    if (assignment.assessmentId) {
+                      recentAssessments.push({
+                        id: assignment.assessmentId,
+                        name: assignment.name || assignment.assignmentName || 'Assessment',
+                        subjectName: assignment.subjectName || 'Unknown Subject',
+                        completedAt: assignment.completedAt,
+                        score: assignment.score,
+                        mode: assignment.mode
+                      });
+                    }
+                  });
+
+                  // Add assessments from dashboard data
+                  dashboardData.forEach((subjectData: any) => {
+                    if (subjectData.assessments && subjectData.assessments.length > 0) {
+                      subjectData.assessments.slice(0, 2).forEach((assessment: any) => {
+                        // Avoid duplicates
+                        if (!recentAssessments.find(a => a.id === assessment.id)) {
+                          recentAssessments.push({
+                            id: assessment.id,
+                            name: assessment.assignmentName || `${subjectData.subjectName} Assessment`,
+                            subjectName: subjectData.subjectName,
+                            dateTaken: assessment.dateTaken || assessment.date_taken,
+                            ritScore: assessment.ritScore || assessment.rit_score,
+                            assessmentPeriod: assessment.assessmentPeriod || assessment.assessment_period
+                          });
+                        }
+                      });
+                    }
+                  });
+
+                  // Sort by date (most recent first) and limit to 4
+                  const sortedAssessments = recentAssessments
+                    .sort((a, b) => {
+                      const dateA = a.completedAt || a.dateTaken ? new Date(a.completedAt || a.dateTaken).getTime() : 0;
+                      const dateB = b.completedAt || b.dateTaken ? new Date(b.completedAt || b.dateTaken).getTime() : 0;
+                      return dateB - dateA;
+                    })
+                    .slice(0, 4);
+
+                  if (sortedAssessments.length > 0) {
+                    return sortedAssessments.map((assessment) => (
+                      <div key={assessment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 text-sm truncate">{assessment.name}</h4>
+                          <p className="text-xs text-gray-600 truncate">
+                            {assessment.subjectName}
+                            {assessment.completedAt && (
+                              <> • {new Date(assessment.completedAt).toLocaleDateString()}</>
+                            )}
+                            {assessment.dateTaken && (
+                              <> • {new Date(assessment.dateTaken).toLocaleDateString()}</>
+                            )}
+                          </p>
                         </div>
-                      ) : (
                         <button
-                          onClick={() => startAssessment(subject.id, currentPeriod)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center space-x-1"
+                          onClick={async () => {
+                            try {
+                              // Fetch detailed results for this assessment
+                              const detailedResults = await studentAPI.getDetailedResults(assessment.id);
+                              navigate('/results', { 
+                                state: detailedResults 
+                              });
+                            } catch (error) {
+                              console.error('Failed to fetch assessment results:', error);
+                              alert('Failed to load assessment results');
+                            }
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center space-x-1 flex-shrink-0 ml-2"
                         >
-                          <Play className="h-3 w-3" />
-                          <span>Start</span>
+                          <Eye className="h-3 w-3" />
+                          <span>View Result</span>
                         </button>
-                      )}
-                    </div>
-                  );
-                  })
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No subjects available</p>
-                )}
+                      </div>
+                    ));
+                  } else {
+                    return (
+                      <p className="text-sm text-gray-500 text-center py-4">No recent assessments available</p>
+                    );
+                  }
+                })()}
               </div>
             </div>
           </div>
