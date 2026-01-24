@@ -274,12 +274,12 @@ export const schoolsAPI = {
     return response.data;
   },
 
-  create: async (schoolData: { name: string; address?: string; contact_email?: string; contact_phone?: string }) => {
+  create: async (schoolData: { name: string; address?: string; contact_email?: string; contact_phone?: string; school_type?: 'National & International' | 'National' | 'International' }) => {
     const response = await api.post('/schools', schoolData);
     return response.data;
   },
 
-  update: async (id: number, schoolData: { name: string; address?: string; contact_email?: string; contact_phone?: string }) => {
+  update: async (id: number, schoolData: { name: string; address?: string; contact_email?: string; contact_phone?: string; school_type?: 'National & International' | 'National' | 'International' }) => {
     const response = await api.put(`/schools/${id}`, schoolData);
     return response.data;
   },

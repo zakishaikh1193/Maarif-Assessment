@@ -14,7 +14,8 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSchoolCreate
     name: '',
     address: '',
     contact_email: '',
-    contact_phone: ''
+    contact_phone: '',
+    school_type: '' as 'National & International' | 'National' | 'International' | ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +28,8 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSchoolCreate
         name: school.name || '',
         address: school.address || '',
         contact_email: school.contact_email || '',
-        contact_phone: school.contact_phone || ''
+        contact_phone: school.contact_phone || '',
+        school_type: school.school_type || ''
       });
     }
   }, [school]);
@@ -53,7 +55,7 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSchoolCreate
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -108,6 +110,25 @@ const SchoolForm: React.FC<SchoolFormProps> = ({ school, onClose, onSchoolCreate
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter school address"
             />
+          </div>
+
+          <div>
+            <label htmlFor="school_type" className="block text-sm font-medium text-gray-700 mb-1">
+              School Type *
+            </label>
+            <select
+              id="school_type"
+              name="school_type"
+              value={formData.school_type}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select school type</option>
+              <option value="National & International">National & International</option>
+              <option value="National">National</option>
+              <option value="International">International</option>
+            </select>
           </div>
 
           <div>
