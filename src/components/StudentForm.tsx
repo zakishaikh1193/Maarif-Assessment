@@ -28,10 +28,12 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onClose, onStudentCr
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [schoolsData, gradesData] = await Promise.all([
-          schoolsAPI.getAll(),
+        const [schoolsResponse, gradesData] = await Promise.all([
+          schoolsAPI.getAll(1, 1000), // Get all schools with large limit
           gradesAPI.getActive()
         ]);
+        // Handle paginated response structure
+        const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
         setSchools(schoolsData);
         setGrades(gradesData);
       } catch (err: any) {

@@ -98,6 +98,123 @@ export async function gradeAnswerWithAI({ questionText, dokLevel, description, s
 }
 
 /**
+ * Generate a descriptive explanation of a question and its importance
+ * @param {Object} params - Question parameters
+ * @param {string} params.questionText - The question text
+ * @param {string} params.questionType - Type of question (MCQ, TrueFalse, etc.)
+ * @param {number} params.dokLevel - Depth of Knowledge level (1-4)
+ * @param {string} params.subject - Subject name (optional)
+ * @param {string} params.standard - Standard/competency (optional)
+ * @returns {Promise<string>} - A 2-line descriptive text about the question and its importance
+ */
+export async function generateQuestionDescription({ questionText, questionType, dokLevel, subject, standard }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured in environment variables');
+  }
+
+  if (!apiKey.trim()) {
+    throw new Error('GEMINI_API_KEY is empty. Please add your Gemini API key to the .env file');
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    const prompt = `You are an educational expert. Analyze the following question and provide a brief, informative description in exactly 2 lines.
+
+**Question:** ${questionText}
+
+**Question Type:** ${questionType || 'Multiple Choice'}
+**DOK Level:** ${dokLevel || 'Not specified'}
+${subject ? `**Subject:** ${subject}` : ''}
+${standard ? `**Standard:** ${standard}` : ''}
+
+**Your Task:**
+Provide exactly 2 lines of descriptive text that:
+1. First line: Briefly explains what this question is testing or asking about
+2. Second line: Explains why this question is important for learning and skill development
+
+**Requirements:**
+- Keep each line concise (maximum 80 characters per line)
+- Use clear, educational language
+- Focus on learning value and importance
+- Do not include the answer or hints
+- Format as two separate lines, no bullet points or numbering
+
+**Example Format:**
+This question tests your understanding of basic mathematical operations and number relationships.
+Mastering this concept is essential for solving more complex problems in algebra and real-world applications.
+
+Now provide your 2-line description:`;
+
+    // Try gemini-2.5-flash-lite first, then fallback to other models
+    let model;
+    let result;
+    let response;
+    let text;
+    
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (flashLiteError) {
+      if (flashLiteError.message?.includes('not found') || flashLiteError.message?.includes('404')) {
+        console.log('gemini-2.5-flash-lite not available, trying gemini-1.5-pro...');
+        try {
+          model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+          result = await model.generateContent(prompt);
+          response = await result.response;
+          text = response.text();
+        } catch (proError) {
+          if (proError.message?.includes('not found') || proError.message?.includes('404')) {
+            console.log('gemini-1.5-pro not available, trying gemini-1.5-flash...');
+            try {
+              model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              result = await model.generateContent(prompt);
+              response = await result.response;
+              text = response.text();
+            } catch (flashError) {
+              throw new Error('None of the Gemini models are available. Please check your API key and model access.');
+            }
+          } else {
+            throw proError;
+          }
+        }
+      } else {
+        throw flashLiteError;
+      }
+    }
+
+    // Clean up the response - remove markdown, extra whitespace, and ensure 2 lines
+    let cleanedText = text.trim();
+    
+    // Remove markdown code blocks if present
+    cleanedText = cleanedText.replace(/```[\s\S]*?```/g, '').trim();
+    
+    // Split into lines and take first 2 meaningful lines
+    const lines = cleanedText.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .slice(0, 2);
+    
+    // If we have less than 2 lines, pad with a generic message
+    while (lines.length < 2) {
+      lines.push('This question helps develop critical thinking and problem-solving skills.');
+    }
+    
+    // Join with line break
+    return lines.join('\n');
+  } catch (error) {
+    console.error('Error generating question description:', error);
+    
+    // Fallback description
+    return `This question tests your understanding of key concepts in this subject.\nMastering this topic is important for building a strong foundation in your studies.`;
+  }
+}
+
+/**
  * Create a grading prompt for Gemini AI
  * The prompt emphasizes DOK level requirements
  */
@@ -200,6 +317,386 @@ function parseAIResponse(text) {
     return {
       correct: isCorrect ? 1 : 0,
       reason: 'AI response parsing failed. Automatic fallback evaluation used. Original response: ' + text.substring(0, 200)
+    };
+  }
+}
+
+/**
+ * Generate comprehensive performance analysis for an assessment
+ * @param {Object} params - Analysis parameters
+ * @param {Array} params.responses - Array of question responses with details
+ * @param {Object} params.statistics - Overall statistics (accuracy, RIT score, etc.)
+ * @param {string} params.subjectName - Subject name
+ * @param {string} params.studentName - Student name
+ * @returns {Promise<{overallAnalysis: string[], strengths: string[], areasOfImprovement: string[], studyTips: string[]}>}
+ */
+export async function generatePerformanceAnalysis({ responses, statistics, subjectName, studentName }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured in environment variables');
+  }
+
+  if (!apiKey.trim()) {
+    throw new Error('GEMINI_API_KEY is empty. Please add your Gemini API key to the .env file');
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Prepare response data for analysis
+    const responseSummary = responses.map((r, idx) => ({
+      questionNumber: r.questionNumber || idx + 1,
+      isCorrect: r.isCorrect,
+      difficulty: r.difficulty,
+      questionType: r.questionType,
+      questionText: r.questionText?.substring(0, 100) || 'N/A', // Truncate for prompt
+      aiGradingFeedback: r.aiGradingResult?.reason || null
+    }));
+
+    const prompt = `You are an expert educational analyst. Analyze the following assessment performance data and provide a comprehensive, personalized analysis for ${studentName || 'the student'}.
+
+**Student Name:** ${studentName || 'Student'}
+**Subject:** ${subjectName || 'General'}
+
+**Overall Statistics:**
+- Total Questions: ${statistics.totalQuestions}
+- Correct Answers: ${statistics.correctAnswers}
+- Incorrect Answers: ${statistics.incorrectAnswers}
+- Accuracy: ${statistics.accuracy}%
+- Current Growth Metric (RIT) Score: ${statistics.currentRIT}
+- Previous Growth Metric (RIT) Score: ${statistics.previousRIT || 'N/A'}
+
+**Question-by-Question Performance:**
+${JSON.stringify(responseSummary, null, 2)}
+
+**Your Task:**
+Provide a comprehensive performance analysis in the following JSON format. Use ${studentName || 'you'} (second person) instead of "the student" or "the student's":
+{
+  "overallAnalysis": [
+    "Key point 1 about performance (e.g., 'You achieved an accuracy of ${statistics.accuracy}%, demonstrating strong understanding of core concepts')",
+    "Key point 2 about performance (e.g., 'Your RIT score is ${statistics.currentRIT}, ${statistics.previousRIT ? (statistics.currentRIT > statistics.previousRIT ? 'showing improvement' : 'indicating areas for growth') : ''}')",
+    "Key point 3 about specific patterns or observations (e.g., 'You excelled in questions involving [specific topic]')",
+    "Key point 4 about areas needing attention (e.g., 'Questions requiring higher-order thinking (DOK Level 3+) need more practice')"
+  ],
+  "strengths": [
+    "Specific strength 1 (e.g., 'Strong in algebraic problem-solving')",
+    "Specific strength 2 (e.g., 'Excellent understanding of geometric concepts')",
+    "Specific strength 3 (e.g., 'Good grasp of basic arithmetic operations')"
+  ],
+  "areasOfImprovement": [
+    "Specific area 1 that needs improvement (be specific and actionable)",
+    "Specific area 2 that needs improvement",
+    "Specific area 3 that needs improvement"
+  ],
+  "studyTips": [
+    "Study tip 1 (e.g., 'Review questions you answered incorrectly to understand the concepts better')",
+    "Study tip 2 (e.g., 'Practice regularly with questions of varying difficulty levels')",
+    "Study tip 3 (e.g., 'Focus on understanding the underlying principles rather than memorizing')",
+    "Study tip 4 (e.g., 'Take advantage of adaptive learning - the system adjusts to your level')"
+  ]
+}
+
+**Guidelines:**
+- Use second person ("you", "your") to address ${studentName || 'the student'} directly
+- Format overallAnalysis as an array of key points (not paragraphs)
+- Each point should be concise, specific, and highlight important information
+- Identify patterns in incorrect answers (e.g., specific question types, difficulty levels, topics)
+- Identify strengths based on questions answered correctly, especially at higher difficulty levels
+- Consider the difficulty progression and how performance changed over time
+- Look for common mistakes or misconceptions
+- Provide concrete, actionable study tips
+- Focus on learning and improvement opportunities
+- Be encouraging but honest about areas needing work
+- Highlight important metrics (accuracy, RIT scores, trends) in the analysis points
+
+**Response Format:**
+You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, just the JSON object.`;
+
+    // Try gemini-2.5-flash-lite first, then fallback to other models
+    let model;
+    let result;
+    let response;
+    let text;
+    
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (flashLiteError) {
+      if (flashLiteError.message?.includes('not found') || flashLiteError.message?.includes('404')) {
+        console.log('gemini-2.5-flash-lite not available, trying gemini-1.5-pro...');
+        try {
+          model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+          result = await model.generateContent(prompt);
+          response = await result.response;
+          text = response.text();
+        } catch (proError) {
+          if (proError.message?.includes('not found') || proError.message?.includes('404')) {
+            console.log('gemini-1.5-pro not available, trying gemini-1.5-flash...');
+            try {
+              model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              result = await model.generateContent(prompt);
+              response = await result.response;
+              text = response.text();
+            } catch (flashError) {
+              throw new Error('None of the Gemini models are available. Please check your API key and model access.');
+            }
+          } else {
+            throw proError;
+          }
+        }
+      } else {
+        throw flashLiteError;
+      }
+    }
+
+    // Parse the JSON response
+    let jsonText = text.trim();
+    
+    // Remove markdown code blocks if present
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    // Try to extract JSON object if there's extra text
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[0];
+    }
+    
+    const parsed = JSON.parse(jsonText);
+    
+    // Validate structure
+    if (!Array.isArray(parsed.overallAnalysis) || parsed.overallAnalysis.length === 0) {
+      throw new Error('Invalid or missing "overallAnalysis" array');
+    }
+    
+    if (!Array.isArray(parsed.strengths) || parsed.strengths.length === 0) {
+      throw new Error('Invalid or missing "strengths" array');
+    }
+    
+    if (!Array.isArray(parsed.areasOfImprovement) || parsed.areasOfImprovement.length === 0) {
+      throw new Error('Invalid or missing "areasOfImprovement" array');
+    }
+    
+    if (!Array.isArray(parsed.studyTips) || parsed.studyTips.length === 0) {
+      throw new Error('Invalid or missing "studyTips" array');
+    }
+    
+    return {
+      overallAnalysis: parsed.overallAnalysis.map(item => item.trim()),
+      strengths: parsed.strengths.map(item => item.trim()),
+      areasOfImprovement: parsed.areasOfImprovement.map(item => item.trim()),
+      studyTips: parsed.studyTips.map(item => item.trim())
+    };
+  } catch (error) {
+    console.error('Error generating performance analysis:', error);
+    
+    // Fallback analysis
+    const accuracy = statistics.accuracy || 0;
+    const improvementAreas = [];
+    const recommendations = [];
+    
+    if (accuracy < 50) {
+      improvementAreas.push('Fundamental concepts need reinforcement');
+      recommendations.push('Review basic concepts and practice foundational problems');
+    } else if (accuracy < 75) {
+      improvementAreas.push('Some concepts need more practice');
+      recommendations.push('Focus on areas where mistakes were made and practice similar problems');
+    }
+    
+    const strengths = accuracy >= 75 
+      ? ['Strong overall performance', 'Good understanding of core concepts', 'Effective problem-solving skills']
+      : accuracy >= 50
+      ? ['Some areas of strength identified', 'Basic concepts understood']
+      : ['Keep working hard - improvement is possible'];
+    
+    const analysisPoints = [
+      `You completed ${statistics.totalQuestions} questions with an accuracy of ${accuracy}%`,
+      accuracy >= 75 
+        ? 'Great job! You\'re showing strong understanding of the material.'
+        : accuracy >= 50
+        ? 'Good effort! There are areas where you can improve.'
+        : 'Keep practicing! Focus on understanding the concepts better.',
+      statistics.previousRIT 
+        ? `Your RIT score is ${statistics.currentRIT}${statistics.currentRIT > statistics.previousRIT ? ', showing improvement from your previous score of ' + statistics.previousRIT : ', compared to your previous score of ' + statistics.previousRIT}`
+        : `Your current RIT score is ${statistics.currentRIT}`
+    ];
+    
+    return {
+      overallAnalysis: analysisPoints,
+      strengths: strengths,
+      areasOfImprovement: improvementAreas.length > 0 ? improvementAreas : ['Continue practicing to maintain and improve your skills'],
+      studyTips: recommendations.length > 0 ? recommendations : ['Review questions you answered incorrectly', 'Practice regularly with questions of varying difficulty levels', 'Focus on understanding the underlying principles', 'Take advantage of adaptive learning']
+    };
+  }
+}
+
+/**
+ * Generate AI-powered competency recommendations based on competency scores
+ * @param {Object} params - Analysis parameters
+ * @param {Array} params.competencyScores - Array of competency scores with details
+ * @param {string} params.studentName - Student name
+ * @param {string} params.subjectName - Subject name
+ * @returns {Promise<{strengths: string[], studyTips: string[], focusAreas: string[]}>}
+ */
+export async function generateCompetencyRecommendations({ competencyScores, studentName, subjectName }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured in environment variables');
+  }
+
+  if (!apiKey.trim()) {
+    throw new Error('GEMINI_API_KEY is empty. Please add your Gemini API key to the .env file');
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Prepare competency data for analysis
+    const competencySummary = competencyScores.map(score => ({
+      competencyName: score.competencyName,
+      competencyCode: score.competencyCode,
+      finalScore: score.finalScore,
+      questionsAttempted: score.questionsAttempted,
+      questionsCorrect: score.questionsCorrect,
+      feedbackType: score.feedbackType,
+      accuracy: score.questionsAttempted > 0 ? Math.round((score.questionsCorrect / score.questionsAttempted) * 100) : 0
+    }));
+
+    const prompt = `You are an expert educational analyst. Analyze the following competency performance data and provide personalized recommendations for ${studentName || 'the student'}.
+
+**Student Name:** ${studentName || 'Student'}
+**Subject:** ${subjectName || 'General'}
+
+**Competency Performance Data:**
+${JSON.stringify(competencySummary, null, 2)}
+
+**Your Task:**
+Provide personalized competency recommendations in the following JSON format:
+{
+  "strengths": [
+    "Competency name or skill area where student is excelling (e.g., 'Competency 3: Algebraic Problem-Solving')",
+    "Another strong competency",
+    "Another strong competency"
+  ],
+  "studyTips": [
+    "Study tip 1 specific to the competencies (e.g., 'Review questions you answered incorrectly to understand the concepts better')",
+    "Study tip 2 (e.g., 'Practice regularly with questions of varying difficulty levels')",
+    "Study tip 3 (e.g., 'Focus on understanding the underlying principles rather than memorizing')",
+    "Study tip 4 (e.g., 'Take advantage of adaptive learning - the system adjusts to your level')"
+  ],
+  "focusAreas": [
+    "Competency or area that needs more attention (be specific)",
+    "Another area for improvement",
+    "Another area for improvement"
+  ]
+}
+
+**Guidelines:**
+- Use second person ("you", "your") to address ${studentName || 'the student'} directly
+- Identify strengths from competencies with high scores (finalScore >= 70) or feedbackType === 'strong'
+- Identify focus areas from competencies with low scores (finalScore < 70) or feedbackType === 'growth'
+- Provide 3-4 specific competency names in strengths (use the actual competency names from the data)
+- Provide 2-3 specific competency names in focusAreas (use the actual competency names from the data)
+- Study tips should be actionable and relevant to the competency performance
+- Be encouraging and constructive
+
+**Response Format:**
+You MUST respond with ONLY a valid JSON object. No markdown, no code blocks, just the JSON object.`;
+
+    // Try gemini-2.5-flash-lite first, then fallback to other models
+    let model;
+    let result;
+    let response;
+    let text;
+    
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (flashLiteError) {
+      if (flashLiteError.message?.includes('not found') || flashLiteError.message?.includes('404')) {
+        console.log('gemini-2.5-flash-lite not available, trying gemini-1.5-pro...');
+        try {
+          model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+          result = await model.generateContent(prompt);
+          response = await result.response;
+          text = response.text();
+        } catch (proError) {
+          if (proError.message?.includes('not found') || proError.message?.includes('404')) {
+            console.log('gemini-1.5-pro not available, trying gemini-1.5-flash...');
+            try {
+              model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              result = await model.generateContent(prompt);
+              response = await result.response;
+              text = response.text();
+            } catch (flashError) {
+              throw new Error('None of the Gemini models are available. Please check your API key and model access.');
+            }
+          } else {
+            throw proError;
+          }
+        }
+      } else {
+        throw flashLiteError;
+      }
+    }
+
+    // Parse the JSON response
+    let jsonText = text.trim();
+    
+    // Remove markdown code blocks if present
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    // Try to extract JSON object if there's extra text
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[0];
+    }
+    
+    const parsed = JSON.parse(jsonText);
+    
+    // Validate structure
+    if (!Array.isArray(parsed.strengths) || parsed.strengths.length === 0) {
+      throw new Error('Invalid or missing "strengths" array');
+    }
+    
+    if (!Array.isArray(parsed.studyTips) || parsed.studyTips.length === 0) {
+      throw new Error('Invalid or missing "studyTips" array');
+    }
+    
+    if (!Array.isArray(parsed.focusAreas) || parsed.focusAreas.length === 0) {
+      throw new Error('Invalid or missing "focusAreas" array');
+    }
+    
+    return {
+      strengths: parsed.strengths.map(item => item.trim()),
+      studyTips: parsed.studyTips.map(item => item.trim()),
+      focusAreas: parsed.focusAreas.map(item => item.trim())
+    };
+  } catch (error) {
+    console.error('Error generating competency recommendations:', error);
+    
+    // Fallback recommendations based on competency scores
+    const strongCompetencies = competencyScores.filter(s => s.feedbackType === 'strong' || s.finalScore >= 70);
+    const weakCompetencies = competencyScores.filter(s => s.feedbackType === 'growth' || s.finalScore < 70);
+    
+    return {
+      strengths: strongCompetencies.length > 0 
+        ? strongCompetencies.slice(0, 4).map(c => c.competencyName)
+        : ['Continue building on your current skills'],
+      studyTips: [
+        'Review questions you answered incorrectly to understand the concepts better',
+        'Practice regularly with questions of varying difficulty levels',
+        'Focus on understanding the underlying principles rather than memorizing',
+        'Take advantage of adaptive learning - the system adjusts to your level'
+      ],
+      focusAreas: weakCompetencies.length > 0
+        ? weakCompetencies.slice(0, 3).map(c => c.competencyName)
+        : ['Continue practicing to maintain and improve your skills']
     };
   }
 }

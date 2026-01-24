@@ -45,8 +45,10 @@ export interface Grade {
 export interface PaginationInfo {
   currentPage: number;
   totalPages: number;
-  totalQuestions: number;
-  questionsPerPage: number;
+  total?: number; // For competencies
+  totalQuestions?: number; // For questions (backward compatibility)
+  limit?: number; // For competencies
+  questionsPerPage?: number; // For questions (backward compatibility)
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 }
@@ -200,6 +202,7 @@ export interface DetailedAssessmentResults {
     year: number;
     dateTaken: string;
     duration: number;
+    mode?: 'Standard' | 'Adaptive';
   };
   statistics: {
     totalQuestions: number;

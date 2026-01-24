@@ -10,7 +10,10 @@ import {
   getAvailableSubjects,
   getCompetencyScores,
   getCompetencyGrowth,
-  getAssessmentConfiguration
+  getAssessmentConfiguration,
+  generateQuestionDescriptionEndpoint,
+  generatePerformanceAnalysisEndpoint,
+  generateCompetencyRecommendationsEndpoint
 } from '../controllers/studentController.js';
 import {
   getStudentAssignments,
@@ -47,6 +50,15 @@ router.get('/assessment-config/:gradeId/:subjectId', validateAssessmentConfig, g
 // Competency Analytics
 router.get('/assessments/:assessmentId/competencies', validateAssessmentId, getCompetencyScores);
 router.get('/assessments/competency-growth/:subjectId', validateSubjectId, getCompetencyGrowth);
+
+// Question Description (AI-generated)
+router.get('/questions/:questionId/description', validateId, generateQuestionDescriptionEndpoint);
+
+// Performance Analysis (AI-generated)
+router.get('/assessments/:assessmentId/performance-analysis', validateAssessmentId, generatePerformanceAnalysisEndpoint);
+
+// Competency Recommendations (AI-generated)
+router.get('/assessments/:assessmentId/competency-recommendations', validateAssessmentId, generateCompetencyRecommendationsEndpoint);
 
 // Assignments
 router.get('/assignments', getStudentAssignments);
