@@ -199,12 +199,34 @@ export const adminAPI = {
     return response.data;
   },
   
-  getGrowthData: async (filters?: { schoolId?: number; gradeId?: number; studentId?: number; subjectId?: number }) => {
+  getGrowthData: async (filters?: { 
+    schoolId?: number; 
+    gradeId?: number; 
+    studentId?: number; 
+    subjectId?: number;
+    schoolIds?: number[];
+    gradeIds?: number[];
+    studentIds?: number[];
+    subjectIds?: number[];
+  }) => {
     const params = new URLSearchParams();
+    // Support both single and multiple IDs
     if (filters?.subjectId) params.append('subjectId', filters.subjectId.toString());
+    if (filters?.subjectIds && filters.subjectIds.length > 0) {
+      filters.subjectIds.forEach(id => params.append('subjectIds', id.toString()));
+    }
     if (filters?.schoolId) params.append('schoolId', filters.schoolId.toString());
+    if (filters?.schoolIds && filters.schoolIds.length > 0) {
+      filters.schoolIds.forEach(id => params.append('schoolIds', id.toString()));
+    }
     if (filters?.gradeId) params.append('gradeId', filters.gradeId.toString());
+    if (filters?.gradeIds && filters.gradeIds.length > 0) {
+      filters.gradeIds.forEach(id => params.append('gradeIds', id.toString()));
+    }
     if (filters?.studentId) params.append('studentId', filters.studentId.toString());
+    if (filters?.studentIds && filters.studentIds.length > 0) {
+      filters.studentIds.forEach(id => params.append('studentIds', id.toString()));
+    }
     const response = await api.get(`/admin/analytics/growth-data?${params}`);
     return response.data;
   },
