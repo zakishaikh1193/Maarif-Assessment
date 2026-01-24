@@ -1054,7 +1054,7 @@ const CreateAssessmentPage: React.FC = () => {
                                 onClick={() => {
                                   setFilterQuestionType([]);
                                   setFilterDokLevel('all');
-                                  setFilterDifficulty([]);
+                                  setFilterDifficulty('all');
                                 }}
                                 className="text-blue-600 hover:text-blue-700 underline"
                               >
