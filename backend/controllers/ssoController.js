@@ -484,3 +484,93 @@ export const updateSSOSettings = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get PowerSchool SSO settings (admin only)
+ */
+export const getPowerSchoolSettings = async (req, res) => {
+  try {
+    const settings = await executeQuery(
+      'SELECT power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret FROM settings WHERE id = 1'
+    );
+
+    if (settings.length === 0) {
+      // Initialize default settings
+      await executeQuery(
+        'INSERT INTO settings (id, power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret) VALUES (1, 0, NULL, NULL, NULL)'
+      );
+      return res.json({
+        power_school_enabled: false,
+        power_school_url: '',
+        power_school_client_id: '',
+        power_school_client_secret: ''
+      });
+    }
+
+    const setting = settings[0];
+    res.json({
+      power_school_enabled: Boolean(setting.power_school_enabled),
+      power_school_url: setting.power_school_url || '',
+      power_school_client_id: setting.power_school_client_id || '',
+      power_school_client_secret: setting.power_school_client_secret ? '***hidden***' : ''
+    });
+
+  } catch (error) {
+    console.error('Error fetching PowerSchool settings:', error);
+    res.status(500).json({
+      error: 'Failed to fetch PowerSchool settings',
+      code: 'FETCH_POWERSCHOOL_SETTINGS_ERROR'
+    });
+  }
+};
+
+/**
+ * Update PowerSchool SSO settings (admin only)
+ */
+export const updatePowerSchoolSettings = async (req, res) => {
+  try {
+    const { power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret } = req.body;
+
+    // Validate inputs
+    if (power_school_enabled === undefined) {
+      return res.status(400).json({
+        error: 'power_school_enabled is required',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Check if settings exist
+    const existing = await executeQuery('SELECT id FROM settings WHERE id = 1');
+    
+    if (existing.length === 0) {
+      // Create new settings
+      await executeQuery(
+        'INSERT INTO settings (id, power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret) VALUES (1, ?, ?, ?, ?)',
+        [power_school_enabled ? 1 : 0, power_school_url || null, power_school_client_id || null, power_school_client_secret || null]
+      );
+    } else {
+      // Update existing settings
+      await executeQuery(
+        'UPDATE settings SET power_school_enabled = ?, power_school_url = ?, power_school_client_id = ?, power_school_client_secret = ? WHERE id = 1',
+        [power_school_enabled ? 1 : 0, power_school_url || null, power_school_client_id || null, power_school_client_secret || null]
+      );
+    }
+
+    res.json({
+      message: 'PowerSchool settings updated successfully',
+      settings: {
+        power_school_enabled: Boolean(power_school_enabled),
+        power_school_url: power_school_url || '',
+        power_school_client_id: power_school_client_id || '',
+        power_school_client_secret: power_school_client_secret ? '***hidden***' : ''
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating PowerSchool settings:', error);
+    res.status(500).json({
+      error: 'Failed to update PowerSchool settings',
+      code: 'UPDATE_POWERSCHOOL_SETTINGS_ERROR'
+    });
+  }
+};
