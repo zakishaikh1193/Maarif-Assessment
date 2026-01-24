@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle, AlertTriangle, X, Download, FileQuestion } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertTriangle, X, Download, FileQuestion, Image as ImageIcon, Package } from 'lucide-react';
 import { adminAPI } from '../services/api';
+import JSZip from 'jszip';
 
 interface CSVRow {
   subject: string;
@@ -58,12 +59,174 @@ interface QuestionCSVImportModalProps {
 }
 
 const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen, onClose, onImportComplete }) => {
-  const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'results'>('upload');
+  const [step, setStep] = useState<'upload' | 'uploadImages' | 'preview' | 'importing' | 'results'>('upload');
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [importResults, setImportResults] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string>('');
   const [detectedQuestionType, setDetectedQuestionType] = useState<'MCQ' | 'MultipleSelect' | 'ShortAnswer' | 'Essay' | 'FillInBlank' | 'mixed' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const zipInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  
+  // Image upload state
+  const [imageFiles, setImageFiles] = useState<Map<string, File>>(new Map());
+  const [imageUploadStatus, setImageUploadStatus] = useState<{
+    uploading: boolean;
+    uploaded: number;
+    total: number;
+    errors: string[];
+  }>({
+    uploading: false,
+    uploaded: 0,
+    total: 0,
+    errors: []
+  });
+
+  // Extract image filenames from CSV data
+  const extractImageFilenames = (csvData: CSVRow[]): string[] => {
+    const imageSet = new Set<string>();
+    const placeholderRegex = /\{([a-zA-Z0-9._-]+\.(png|jpg|jpeg|gif|webp|svg))\}/gi;
+    
+    csvData.forEach(row => {
+      let match;
+      const text = row.questionText || '';
+      while ((match = placeholderRegex.exec(text)) !== null) {
+        imageSet.add(match[1]); // match[1] is the filename
+      }
+    });
+    
+    return Array.from(imageSet);
+  };
+
+  // Get base name without extension for flexible matching
+  const getBaseName = (filename: string): string => {
+    const lastDot = filename.lastIndexOf('.');
+    return lastDot > 0 ? filename.substring(0, lastDot) : filename;
+  };
+
+  // Check if an image file matches a required filename (flexible extension matching)
+  const imageMatches = (requiredFilename: string, uploadedFilename: string): boolean => {
+    // Exact match
+    if (requiredFilename === uploadedFilename) return true;
+    
+    // Match by base name (ignore extension)
+    const requiredBase = getBaseName(requiredFilename);
+    const uploadedBase = getBaseName(uploadedFilename);
+    return requiredBase === uploadedBase;
+  };
+
+  // Find matching uploaded image for a required filename
+  const findMatchingImage = (requiredFilename: string, imageFiles: Map<string, File>): string | null => {
+    // Check exact match first
+    if (imageFiles.has(requiredFilename)) {
+      return requiredFilename;
+    }
+    
+    // Check for base name match
+    const requiredBase = getBaseName(requiredFilename);
+    for (const uploadedFilename of imageFiles.keys()) {
+      const uploadedBase = getBaseName(uploadedFilename);
+      if (requiredBase === uploadedBase) {
+        return uploadedFilename;
+      }
+    }
+    
+    return null;
+  };
+
+  // Handle ZIP file upload (images only, no CSV)
+  const handleZipUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.zip')) {
+      setError('Please select a ZIP file');
+      return;
+    }
+
+    try {
+      setError('');
+      const zip = await JSZip.loadAsync(file);
+      const images = new Map<string, File>();
+
+      // Extract only image files from ZIP
+      for (const [filename, zipEntry] of Object.entries(zip.files)) {
+        // Skip directories
+        if (zipEntry.dir) continue;
+
+        // Only extract image files
+        if (filename.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i)) {
+          const blob = await zipEntry.async('blob');
+          const imageName = filename.split('/').pop() || filename;
+          
+          // Determine MIME type from file extension
+          let mimeType = blob.type;
+          if (!mimeType || mimeType === 'application/octet-stream') {
+            const ext = imageName.toLowerCase().split('.').pop();
+            const mimeTypes: { [key: string]: string } = {
+              'png': 'image/png',
+              'jpg': 'image/jpeg',
+              'jpeg': 'image/jpeg',
+              'gif': 'image/gif',
+              'webp': 'image/webp',
+              'svg': 'image/svg+xml'
+            };
+            mimeType = mimeTypes[ext || ''] || 'image/png';
+          }
+          
+          const imageFile = new File([blob], imageName, { type: mimeType });
+          // Store with just the filename (not path)
+          images.set(imageName, imageFile);
+        }
+      }
+
+      if (images.size === 0) {
+        setError('No image files found in ZIP. Please ensure your ZIP contains image files (PNG, JPG, GIF, WebP, or SVG).');
+        return;
+      }
+
+      // Add images to existing imageFiles map
+      setImageFiles(prev => {
+        const combined = new Map(prev);
+        images.forEach((file, name) => {
+          combined.set(name, file);
+        });
+        return combined;
+      });
+      
+      setError('');
+    } catch (err: any) {
+      setError(`Error processing ZIP file: ${err.message || 'Invalid ZIP file'}`);
+    }
+  };
+
+  // Handle multiple image files upload
+  const handleImageFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter(file => 
+      file.type.startsWith('image/') || 
+      /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(file.name)
+    );
+    
+    if (imageFiles.length === 0) {
+      setError('Please select valid image files');
+      return;
+    }
+    
+    const imageMap = new Map<string, File>();
+    imageFiles.forEach(file => {
+      imageMap.set(file.name, file);
+    });
+    
+    setImageFiles(prev => {
+      const combined = new Map(prev);
+      imageMap.forEach((file, name) => {
+        combined.set(name, file);
+      });
+      return combined;
+    });
+    setError('');
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -296,7 +459,16 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
 
         setCsvData(data);
         setError('');
-        setStep('preview');
+        
+        // Check if images are needed
+        const requiredImages = extractImageFilenames(data);
+        if (requiredImages.length > 0) {
+          // Images are needed, go to image upload step
+          setStep('uploadImages');
+        } else {
+          // No images needed, go directly to preview
+          setStep('preview');
+        }
       } catch (err) {
         setError('Error parsing CSV file. Please check the file format.');
       }
@@ -304,13 +476,149 @@ const QuestionCSVImportModal: React.FC<QuestionCSVImportModalProps> = ({ isOpen,
     reader.readAsText(file);
   };
 
+  // Upload images before importing CSV
+  const uploadImages = async (): Promise<Map<string, string>> => {
+    const uploadedMap = new Map<string, string>(); // original filename (from CSV) -> uploaded filename
+    
+    // Get required images from CSV
+    const requiredImages = extractImageFilenames(csvData);
+    
+    setImageUploadStatus({
+      uploading: true,
+      uploaded: 0,
+      total: requiredImages.length,
+      errors: []
+    });
+
+    const errors: string[] = [];
+
+    // Upload images and map them to required filenames
+    for (const requiredFilename of requiredImages) {
+      // Find matching uploaded file
+      const matchingUploadedFile = findMatchingImage(requiredFilename, imageFiles);
+      
+      if (!matchingUploadedFile) {
+        const errorMsg = `No matching file found for ${requiredFilename}`;
+        errors.push(errorMsg);
+        setImageUploadStatus(prev => ({
+          ...prev,
+          errors: [...prev.errors, errorMsg]
+        }));
+        continue;
+      }
+
+      const file = imageFiles.get(matchingUploadedFile);
+      if (!file) continue;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await adminAPI.uploadFile(formData);
+        
+        if (!response || !response.file || !response.file.filename) {
+          throw new Error('Invalid response from server');
+        }
+        
+        const uploadedFilename = response.file.filename;
+        // Map required filename to uploaded filename
+        uploadedMap.set(requiredFilename, uploadedFilename);
+        
+        setImageUploadStatus(prev => ({
+          ...prev,
+          uploaded: prev.uploaded + 1
+        }));
+      } catch (err: any) {
+        const errorMsg = `Failed to upload ${matchingUploadedFile}: ${err.response?.data?.error || err.message || 'Unknown error'}`;
+        errors.push(errorMsg);
+        console.error(`Image upload error for ${matchingUploadedFile}:`, err);
+        setImageUploadStatus(prev => ({
+          ...prev,
+          errors: [...prev.errors, errorMsg]
+        }));
+      }
+    }
+
+    setImageUploadStatus(prev => ({ ...prev, uploading: false }));
+    return uploadedMap;
+  };
+
   const handleImport = async () => {
     setStep('importing');
     setError('');
 
     try {
-      const result = await adminAPI.importQuestionsFromCSV(csvData);
-      setImportResults(result.results);
+      // Step 1: Check if images are needed
+      const requiredImages = extractImageFilenames(csvData);
+      
+      if (requiredImages.length > 0) {
+        // Step 2: Check if all required images are available
+        const missingImages = requiredImages.filter(img => !findMatchingImage(img, imageFiles));
+        
+        if (missingImages.length > 0) {
+          setError(`Missing images: ${missingImages.join(', ')}. Please upload all required images before importing.`);
+          setStep('preview');
+          return;
+        }
+
+        // Step 3: Upload all images
+        const uploadedImages = await uploadImages();
+        
+        // Check if we got any successful uploads
+        if (uploadedImages.size === 0 && requiredImages.length > 0) {
+          const errorDetails = imageUploadStatus.errors.length > 0 
+            ? ` Errors: ${imageUploadStatus.errors.join('; ')}`
+            : '';
+          setError(`Failed to upload images. Please check your connection and try again.${errorDetails}`);
+          setStep('preview');
+          return;
+        }
+        
+        // If some images failed but we have some successful, warn but continue
+        if (uploadedImages.size < requiredImages.length) {
+          const failedCount = requiredImages.length - uploadedImages.size;
+          console.warn(`${failedCount} image(s) failed to upload, but proceeding with ${uploadedImages.size} successful upload(s)`);
+          // Don't set error, just log - we'll proceed with what we have
+        }
+
+        // Step 4: Update CSV data with uploaded filenames
+        const updatedCsvData = csvData.map(row => {
+          let updatedText = row.questionText;
+          const placeholderRegex = /\{([a-zA-Z0-9._-]+\.(png|jpg|jpeg|gif|webp|svg))\}/gi;
+          
+          updatedText = updatedText.replace(placeholderRegex, (match, originalFilename) => {
+            // Try exact match first
+            let uploadedFilename = uploadedImages.get(originalFilename);
+            
+            // If no exact match, try base name match
+            if (!uploadedFilename) {
+              const originalBase = getBaseName(originalFilename);
+              for (const [uploaded, original] of uploadedImages.entries()) {
+                if (getBaseName(original) === originalBase) {
+                  uploadedFilename = uploaded;
+                  break;
+                }
+              }
+            }
+            
+            if (uploadedFilename) {
+              return `{${uploadedFilename}}`;
+            }
+            return match; // Keep original if upload failed
+          });
+          
+          return { ...row, questionText: updatedText };
+        });
+
+        // Step 5: Import with updated CSV data
+        const result = await adminAPI.importQuestionsFromCSV(updatedCsvData);
+        setImportResults(result.results);
+      } else {
+        // No images, proceed with normal import
+        const result = await adminAPI.importQuestionsFromCSV(csvData);
+        setImportResults(result.results);
+      }
+      
       setStep('results');
       onImportComplete();
     } catch (err: any) {
@@ -382,8 +690,21 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
     setImportResults(null);
     setError('');
     setDetectedQuestionType(null);
+    setImageFiles(new Map());
+    setImageUploadStatus({
+      uploading: false,
+      uploaded: 0,
+      total: 0,
+      errors: []
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    if (zipInputRef.current) {
+      zipInputRef.current.value = '';
+    }
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -407,6 +728,7 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
               <h2 className="text-xl font-semibold text-gray-900">Import Questions from CSV</h2>
               <p className="text-sm text-gray-600">
                 {step === 'upload' && 'Upload a CSV file with question information'}
+                {step === 'uploadImages' && 'Upload images referenced in your CSV file'}
                 {step === 'preview' && `Preview ${csvData.length} questions to be imported`}
                 {step === 'importing' && 'Importing questions...'}
                 {step === 'results' && 'Import completed'}
@@ -432,7 +754,7 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
             </div>
           )}
 
-          {/* Upload Step */}
+          {/* CSV Upload Step */}
           {step === 'upload' && (
             <div className="space-y-6">
               <div className="text-center">
@@ -495,7 +817,8 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                 </p>
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              {/* CSV Upload Section */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
                 <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-lg font-medium text-gray-900 mb-2">
                   Upload CSV File
@@ -528,7 +851,164 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
                 >
-                  Choose File
+                  Choose CSV File
+                </button>
+              </div>
+
+              {/* Image Upload Section */}
+            </div>
+          )}
+
+          {/* Image Upload Step */}
+          {step === 'uploadImages' && (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <ImageIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Upload Question Images
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Your CSV file references {extractImageFilenames(csvData).length} image(s). 
+                  Please upload all required images before proceeding.
+                </p>
+              </div>
+
+              {/* Required Images List */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-yellow-800 mb-2">
+                  Required Images ({extractImageFilenames(csvData).length}):
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {extractImageFilenames(csvData).map((filename, idx) => {
+                    const isUploaded = !!findMatchingImage(filename, imageFiles);
+                    return (
+                      <span
+                        key={idx}
+                        className={`inline-flex items-center px-3 py-1 rounded text-sm ${
+                          isUploaded
+                            ? 'bg-green-100 text-green-800 border border-green-300'
+                            : 'bg-red-100 text-red-800 border border-red-300'
+                        }`}
+                      >
+                        {isUploaded && <CheckCircle className="h-4 w-4 mr-1" />}
+                        {!isUploaded && <AlertTriangle className="h-4 w-4 mr-1" />}
+                        {filename}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Image Upload Options */}
+              <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 bg-blue-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* ZIP Upload Option */}
+                  <div className="border border-blue-200 rounded-lg p-4 bg-white">
+                    <div className="flex items-center mb-2">
+                      <Package className="h-5 w-5 text-blue-600 mr-2" />
+                      <p className="font-medium text-gray-900">ZIP File</p>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Upload a ZIP file containing image files only
+                    </p>
+                    <input
+                      ref={zipInputRef}
+                      type="file"
+                      accept=".zip"
+                      onChange={handleZipUpload}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => zipInputRef.current?.click()}
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Upload ZIP File
+                    </button>
+                  </div>
+
+                  {/* Multiple Images Upload Option */}
+                  <div className="border border-green-200 rounded-lg p-4 bg-white">
+                    <div className="flex items-center mb-2">
+                      <ImageIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <p className="font-medium text-gray-900">Image Files</p>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Select single or multiple image files
+                    </p>
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageFiles}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Select Images
+                    </button>
+                  </div>
+                </div>
+
+                {/* Show selected images */}
+                {imageFiles.size > 0 && (
+                  <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Uploaded Images ({imageFiles.size}):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.from(imageFiles.keys()).map((filename, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-800 text-xs"
+                        >
+                          {filename}
+                          <button
+                            onClick={() => {
+                              const newMap = new Map(imageFiles);
+                              newMap.delete(filename);
+                              setImageFiles(newMap);
+                            }}
+                            className="ml-2 text-green-600 hover:text-green-800"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between space-x-3">
+                <button
+                  onClick={() => {
+                    setStep('upload');
+                    setImageFiles(new Map());
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Back to CSV Upload
+                </button>
+                <button
+                  onClick={() => {
+                    const requiredImages = extractImageFilenames(csvData);
+                    const missingImages = requiredImages.filter(img => !findMatchingImage(img, imageFiles));
+                    
+                    if (missingImages.length > 0) {
+                      setError(`Please upload all required images. Missing: ${missingImages.join(', ')}`);
+                    } else {
+                      setError('');
+                      setStep('preview');
+                    }
+                  }}
+                  disabled={extractImageFilenames(csvData).some(img => !findMatchingImage(img, imageFiles))}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Continue to Preview
                 </button>
               </div>
             </div>
@@ -647,16 +1127,66 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
                 </table>
               </div>
 
+              {/* Show image status if CSV has image placeholders */}
+              {extractImageFilenames(csvData).length > 0 && (
+                <div className={`mb-4 p-4 rounded-lg border ${
+                  extractImageFilenames(csvData).every(img => findMatchingImage(img, imageFiles))
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-yellow-50 border-yellow-200'
+                }`}>
+                  <div className="flex items-start space-x-2">
+                    {extractImageFilenames(csvData).every(img => findMatchingImage(img, imageFiles)) ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    )}
+                    <div>
+                      <p className={`text-sm font-medium mb-1 ${
+                        extractImageFilenames(csvData).every(img => findMatchingImage(img, imageFiles))
+                          ? 'text-green-800'
+                          : 'text-yellow-800'
+                      }`}>
+                        {extractImageFilenames(csvData).every(img => findMatchingImage(img, imageFiles))
+                          ? 'All Images Uploaded'
+                          : 'Images Status'
+                        }
+                      </p>
+                      <p className={`text-xs ${
+                        extractImageFilenames(csvData).every(img => findMatchingImage(img, imageFiles))
+                          ? 'text-green-700'
+                          : 'text-yellow-700'
+                      }`}>
+                        Your CSV references {extractImageFilenames(csvData).length} image(s): {extractImageFilenames(csvData).join(', ')}
+                      </p>
+                      {extractImageFilenames(csvData).some(img => !findMatchingImage(img, imageFiles)) && (
+                        <p className="text-xs text-red-600 mt-1">
+                          Missing: {extractImageFilenames(csvData).filter(img => !findMatchingImage(img, imageFiles)).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3">
+                {extractImageFilenames(csvData).length > 0 && (
+                  <button
+                    onClick={() => setStep('uploadImages')}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Back to Images
+                  </button>
+                )}
                 <button
                   onClick={() => setStep('upload')}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 >
-                  Back
+                  Back to CSV
                 </button>
                 <button
                   onClick={handleImport}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                  disabled={extractImageFilenames(csvData).length > 0 && extractImageFilenames(csvData).some(img => !findMatchingImage(img, imageFiles))}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <FileQuestion className="h-4 w-4" />
                   <span>Import {csvData.length} Questions</span>
@@ -669,8 +1199,36 @@ Science,Grade 6,Water boils at 100 degrees Celsius at sea level. {truefalse3.png
           {step === 'importing' && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-lg font-medium text-gray-900">Importing Questions...</p>
+              <p className="text-lg font-medium text-gray-900">
+                {imageUploadStatus.uploading ? 'Uploading Images...' : 'Importing Questions...'}
+              </p>
               <p className="text-sm text-gray-600">Please wait while we process your data</p>
+              
+              {/* Image Upload Progress */}
+              {imageUploadStatus.uploading && imageUploadStatus.total > 0 && (
+                <div className="mt-6 max-w-md mx-auto">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Uploading images...</span>
+                    <span>{imageUploadStatus.uploaded} / {imageUploadStatus.total}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(imageUploadStatus.uploaded / imageUploadStatus.total) * 100}%` }}
+                    />
+                  </div>
+                  {imageUploadStatus.errors.length > 0 && (
+                    <div className="mt-4 text-left">
+                      <p className="text-sm font-medium text-red-600 mb-2">Upload Errors:</p>
+                      <ul className="list-disc list-inside text-xs text-red-600 space-y-1">
+                        {imageUploadStatus.errors.map((err, idx) => (
+                          <li key={idx}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

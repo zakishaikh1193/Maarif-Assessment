@@ -13,6 +13,9 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log(`[API] Request to ${config.url} - Token included: ${token.substring(0, 20)}...`);
+  } else {
+    console.warn(`[API] Request to ${config.url} - NO TOKEN FOUND in localStorage`);
   }
   return config;
 });
@@ -185,7 +188,15 @@ export const adminAPI = {
     if (filters?.gradeId) params.append('gradeId', filters.gradeId.toString());
     if (filters?.subjectId) params.append('subjectId', filters.subjectId.toString());
     if (filters?.year) params.append('year', filters.year.toString());
-    const response = await api.get(`/admin/analytics/competency-mastery?${params}`);
+    // Add timestamp to prevent caching for analytics data
+    params.append('_t', Date.now().toString());
+    const response = await api.get(`/admin/analytics/competency-mastery?${params}`, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     return response.data;
   },
   
@@ -452,6 +463,21 @@ export const studentAPI = {
   startAdaptiveAssignment: async (assignmentId: number) => {
     const response = await api.post('/student/assignments/start-adaptive', { assignmentId });
     return response.data;
+  },
+
+  getQuestionDescription: async (questionId: number) => {
+    const response = await api.get(`/student/questions/${questionId}/description`);
+    return response.data;
+  },
+
+  getPerformanceAnalysis: async (assessmentId: number) => {
+    const response = await api.get(`/student/assessments/${assessmentId}/performance-analysis`);
+    return response.data;
+  },
+
+  getCompetencyRecommendations: async (assessmentId: number) => {
+    const response = await api.get(`/student/assessments/${assessmentId}/competency-recommendations`);
+    return response.data;
   }
 };
 
@@ -508,7 +534,16 @@ export const studentsAPI = {
 
 // Competencies API
 export const competenciesAPI = {
-  getAll: () => api.get<Competency[]>('/admin/competencies').then(res => res.data),
+  getAll: (page?: number, limit?: number, search?: string) => {
+    const params = new URLSearchParams();
+    if (page) params.append('page', page.toString());
+    if (limit) params.append('limit', limit.toString());
+    if (search) params.append('search', search);
+    const queryString = params.toString();
+    return api.get<{ competencies: Competency[]; pagination: PaginationInfo }>(
+      `/admin/competencies${queryString ? `?${queryString}` : ''}`
+    ).then(res => res.data);
+  },
   getActive: () => api.get<Competency[]>('/admin/competencies/active').then(res => res.data),
   getById: (id: number) => api.get<Competency>(`/admin/competencies/${id}`).then(res => res.data),
   create: (data: Omit<Competency, 'id' | 'created_at' | 'updated_at'>) => 

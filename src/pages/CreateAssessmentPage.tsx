@@ -87,13 +87,15 @@ const CreateAssessmentPage: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [gradesData, subjectsData, schoolsData] = await Promise.all([
+      const [gradesData, subjectsData, schoolsResponse] = await Promise.all([
         gradesAPI.getActive(),
         subjectsAPI.getAll(),
-        schoolsAPI.getAll()
+        schoolsAPI.getAll(1, 1000) // Get all schools with large limit
       ]);
       setGrades(gradesData);
       setSubjects(subjectsData);
+      // Handle paginated response structure
+      const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
       setSchools(schoolsData);
     } catch (error) {
       console.error('Error loading data:', error);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { 
   Brain, 
@@ -9,10 +9,10 @@ import {
   AlertTriangle, 
   Star,
   Award,
-  Lightbulb,
-  BookOpen
+  Lightbulb
 } from 'lucide-react';
 import { CompetencyScore, CompetencyGrowthData } from '../types';
+import { studentAPI } from '../services/api';
 
 interface CompetencyAnalyticsProps {
   currentScores: CompetencyScore[];
@@ -20,11 +20,61 @@ interface CompetencyAnalyticsProps {
   assessmentId?: number;
 }
 
+interface CompetencyRecommendations {
+  strengths: string[];
+  studyTips: string[];
+  focusAreas: string[];
+}
+
 const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({ 
   currentScores, 
   growthData, 
   assessmentId 
 }) => {
+  const [recommendations, setRecommendations] = useState<CompetencyRecommendations | null>(null);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+
+  useEffect(() => {
+    // Only fetch once when assessmentId is available and we have scores
+    if (assessmentId && currentScores.length > 0 && !hasFetched && !recommendationsLoading) {
+      fetchCompetencyRecommendations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assessmentId, currentScores.length]);
+
+  const fetchCompetencyRecommendations = async () => {
+    if (!assessmentId || hasFetched || currentScores.length === 0) {
+      console.log('Skipping fetch - assessmentId:', assessmentId, 'hasFetched:', hasFetched, 'scores:', currentScores.length);
+      return;
+    }
+    
+    console.log('Starting to fetch competency recommendations for assessment:', assessmentId);
+    setRecommendationsLoading(true);
+    setHasFetched(true);
+    
+    try {
+      const data = await studentAPI.getCompetencyRecommendations(assessmentId);
+      console.log('Successfully received competency recommendations:', data);
+      
+      // Validate the response structure
+      if (data && Array.isArray(data.strengths) && Array.isArray(data.studyTips) && Array.isArray(data.focusAreas)) {
+        setRecommendations(data);
+        console.log('Recommendations set successfully');
+      } else {
+        console.error('Invalid recommendations data structure:', data);
+        setHasFetched(false); // Allow retry
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch competency recommendations:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error message:', error.message);
+      // Reset hasFetched to allow retry on next render if needed
+      setHasFetched(false);
+    } finally {
+      setRecommendationsLoading(false);
+    }
+  };
   const getFeedbackIcon = (feedbackType: string) => {
     switch (feedbackType) {
       case 'strong':
@@ -317,49 +367,70 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
           <span>Personalized Recommendations</span>
         </h4>
         
-        <div className="space-y-4">
-          {/* Strong Areas */}
-          {currentScores.filter(s => s.feedbackType === 'strong').length > 0 && (
-            <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-medium text-green-800">Your Strengths</span>
-              </div>
-              <p className="text-sm text-gray-700">
-                You're excelling in: {currentScores.filter(s => s.feedbackType === 'strong').map(s => s.competencyName).join(', ')}. 
-                Continue building on these strong foundations!
-              </p>
-            </div>
-          )}
-
-          {/* Areas for Growth */}
-          {currentScores.filter(s => s.feedbackType === 'growth').length > 0 && (
-            <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-red-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <span className="font-medium text-red-800">Focus Areas</span>
-              </div>
-              <p className="text-sm text-gray-700">
-                Consider spending more time on: {currentScores.filter(s => s.feedbackType === 'growth').map(s => s.competencyName).join(', ')}. 
-                These areas offer great opportunities for improvement.
-              </p>
-            </div>
-          )}
-
-          {/* General Advice */}
-          <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center space-x-2 mb-2">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-              <span className="font-medium text-blue-800">Study Tips</span>
-            </div>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• Review questions you answered incorrectly to understand the concepts better</li>
-              <li>• Practice regularly with questions of varying difficulty levels</li>
-              <li>• Focus on understanding the underlying principles rather than memorizing</li>
-              <li>• Take advantage of adaptive learning - the system adjusts to your level</li>
-            </ul>
+        {recommendationsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Generating AI-powered recommendations...</span>
           </div>
-        </div>
+        ) : recommendations ? (
+          <div className="space-y-4">
+            {/* Your Strengths */}
+            {recommendations.strengths.length > 0 && (
+              <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="font-medium text-green-800">Your Strengths</span>
+                </div>
+                <p className="text-sm text-gray-700">
+                  You're excelling in: {recommendations.strengths.join(', ')}. Continue building on these strong foundations!
+                </p>
+              </div>
+            )}
+
+            {/* Focus Areas */}
+            {recommendations.focusAreas.length > 0 && (
+              <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-amber-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Target className="h-5 w-5 text-amber-600" />
+                  <span className="font-medium text-amber-800">Focus Areas</span>
+                </div>
+                <p className="text-sm text-gray-700">
+                  Consider spending more time on: {recommendations.focusAreas.join(', ')}. These areas offer great opportunities for improvement.
+                </p>
+              </div>
+            )}
+
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Fallback - use existing logic */}
+            {currentScores.filter(s => s.feedbackType === 'strong').length > 0 && (
+              <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="font-medium text-green-800">Your Strengths</span>
+                </div>
+                <p className="text-sm text-gray-700">
+                  You're excelling in: {currentScores.filter(s => s.feedbackType === 'strong').map(s => s.competencyName).join(', ')}. 
+                  Continue building on these strong foundations!
+                </p>
+              </div>
+            )}
+
+            {currentScores.filter(s => s.feedbackType === 'growth').length > 0 && (
+              <div className="bg-white bg-opacity-70 p-4 rounded-lg border border-red-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <span className="font-medium text-red-800">Focus Areas</span>
+                </div>
+                <p className="text-sm text-gray-700">
+                  Consider spending more time on: {currentScores.filter(s => s.feedbackType === 'growth').map(s => s.competencyName).join(', ')}. 
+                  These areas offer great opportunities for improvement.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

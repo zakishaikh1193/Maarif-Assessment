@@ -25,13 +25,52 @@ const checkCircularReference = async (competencyId, parentId) => {
   return false;
 };
 
-// Get all competencies
+// Get all competencies with pagination
 export const getAllCompetencies = async (req, res) => {
   try {
-    const competencies = await executeQuery(
-      'SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at FROM competencies ORDER BY code ASC'
-    );
-    res.json(competencies);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const searchTerm = req.query.search || '';
+
+    // Build WHERE clause for search
+    let whereClause = '';
+    let queryParams = [];
+    
+    if (searchTerm) {
+      whereClause = 'WHERE code LIKE ? OR name LIKE ? OR description LIKE ?';
+      const searchPattern = `%${searchTerm}%`;
+      queryParams = [searchPattern, searchPattern, searchPattern];
+    }
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM competencies ${whereClause}`;
+    const countResult = await executeQuery(countQuery, queryParams);
+    const total = countResult[0]?.total || 0;
+
+    // Get paginated competencies
+    const competenciesQuery = `
+      SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at 
+      FROM competencies 
+      ${whereClause}
+      ORDER BY code ASC 
+      LIMIT ? OFFSET ?
+    `;
+    const competencies = await executeQuery(competenciesQuery, [...queryParams, limit, offset]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      competencies,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        total,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      }
+    });
   } catch (error) {
     console.error('Error fetching competencies:', error);
     res.status(500).json({ error: 'Failed to fetch competencies', code: 'FETCH_COMPETENCIES_ERROR' });

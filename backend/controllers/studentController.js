@@ -1,5 +1,5 @@
 import { executeQuery } from '../config/database.js';
-import { gradeAnswerWithAI } from '../utils/geminiService.js';
+import { gradeAnswerWithAI, generateQuestionDescription, generatePerformanceAnalysis, generateCompetencyRecommendations } from '../utils/geminiService.js';
 
 // Seeded random number generator for deterministic shuffling
 function seededRandom(seed) {
@@ -1019,7 +1019,7 @@ export const getAssessmentResults = async (req, res) => {
     const { assessmentId } = req.params;
     const studentId = req.user.id;
 
-    // Get current assessment details
+    // Get current assessment details with student name
     const currentAssessment = await executeQuery(`
       SELECT 
         a.id,
@@ -1032,9 +1032,14 @@ export const getAssessmentResults = async (req, res) => {
         a.date_taken,
         a.duration_minutes,
         a.year,
-        s.name as subject_name
+        a.assessment_mode,
+        s.name as subject_name,
+        u.first_name,
+        u.last_name,
+        u.username
       FROM assessments a
       JOIN subjects s ON a.subject_id = s.id
+      JOIN users u ON a.student_id = u.id
       WHERE a.id = ? AND a.student_id = ? AND a.rit_score IS NOT NULL
     `, [assessmentId, studentId]);
 
@@ -1315,6 +1320,19 @@ export const getAssessmentResults = async (req, res) => {
             formattedCorrectAnswer = options[Number(response.correct_option_index)] || 'N/A';
           }
         }
+      } else if (response.question_type === 'ShortAnswer' || response.question_type === 'Essay') {
+        // For ShortAnswer and Essay: selected_option_index contains the text answer directly
+        if (response.selected_option_index && typeof response.selected_option_index === 'string') {
+          formattedSelectedAnswer = response.selected_option_index.trim();
+        } else if (parsedSelectedAnswer && typeof parsedSelectedAnswer === 'string') {
+          formattedSelectedAnswer = parsedSelectedAnswer.trim();
+        } else {
+          formattedSelectedAnswer = 'N/A';
+        }
+        
+        // For ShortAnswer/Essay, there's typically no "correct answer" to display
+        // The correctness is determined by AI grading
+        formattedCorrectAnswer = 'N/A';
       } else {
         // For MCQ and other types: use options array
         // If Standard mode with random options, re-shuffle to get the same order for display
@@ -1374,7 +1392,8 @@ export const getAssessmentResults = async (req, res) => {
         period: assessment.assessment_period,
         year: assessment.year,
         dateTaken: assessment.date_taken,
-        duration: assessment.duration_minutes
+        duration: assessment.duration_minutes,
+        mode: assessment.assessment_mode || 'Adaptive'
       },
       statistics: {
         totalQuestions,
@@ -1448,6 +1467,7 @@ export const getLatestAssessmentDetails = async (req, res) => {
         a.date_taken,
         a.duration_minutes,
         a.year,
+        a.assessment_mode,
         s.name as subject_name
       FROM assessments a
       JOIN subjects s ON a.subject_id = s.id
@@ -1724,6 +1744,19 @@ export const getLatestAssessmentDetails = async (req, res) => {
             formattedCorrectAnswer = options[Number(response.correct_option_index)] || 'N/A';
           }
         }
+      } else if (response.question_type === 'ShortAnswer' || response.question_type === 'Essay') {
+        // For ShortAnswer and Essay: selected_option_index contains the text answer directly
+        if (response.selected_option_index && typeof response.selected_option_index === 'string') {
+          formattedSelectedAnswer = response.selected_option_index.trim();
+        } else if (parsedSelectedAnswer && typeof parsedSelectedAnswer === 'string') {
+          formattedSelectedAnswer = parsedSelectedAnswer.trim();
+        } else {
+          formattedSelectedAnswer = 'N/A';
+        }
+        
+        // For ShortAnswer/Essay, there's typically no "correct answer" to display
+        // The correctness is determined by AI grading
+        formattedCorrectAnswer = 'N/A';
       } else {
         // For MCQ and other types: use options array
         let displayOptions = options;
@@ -1778,7 +1811,8 @@ export const getLatestAssessmentDetails = async (req, res) => {
         period: assessment.assessment_period,
         year: assessment.year,
         dateTaken: assessment.date_taken,
-        duration: assessment.duration_minutes
+        duration: assessment.duration_minutes,
+        mode: assessment.assessment_mode || 'Adaptive'
       },
       statistics: {
         totalQuestions,
@@ -2320,6 +2354,270 @@ export const getAssessmentConfiguration = async (req, res) => {
     res.status(500).json({
       error: 'Failed to fetch assessment configuration',
       code: 'FETCH_CONFIG_ERROR'
+    });
+  }
+};
+
+// Generate question description using AI
+export const generateQuestionDescriptionEndpoint = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const studentId = req.user.id;
+
+    // Get question details
+    const questionResult = await executeQuery(`
+      SELECT 
+        q.id,
+        q.question_text,
+        q.question_type,
+        q.dok_level,
+        q.standard,
+        q.content_focus,
+        s.name as subject_name
+      FROM questions q
+      LEFT JOIN subjects s ON q.subject_id = s.id
+      WHERE q.id = ?
+    `, [questionId]);
+
+    if (questionResult.length === 0) {
+      return res.status(404).json({
+        error: 'Question not found',
+        code: 'QUESTION_NOT_FOUND'
+      });
+    }
+
+    const question = questionResult[0];
+
+    // Generate description using Gemini AI
+    const description = await generateQuestionDescription({
+      questionText: question.question_text,
+      questionType: question.question_type,
+      dokLevel: question.dok_level,
+      subject: question.subject_name,
+      standard: question.standard || question.content_focus
+    });
+
+    res.json({
+      description: description,
+      questionId: question.id
+    });
+  } catch (error) {
+    console.error('Error generating question description:', error);
+    res.status(500).json({
+      error: 'Failed to generate question description',
+      code: 'GENERATE_DESCRIPTION_ERROR',
+      message: error.message
+    });
+  }
+};
+
+// Generate AI-powered performance analysis for an assessment
+export const generatePerformanceAnalysisEndpoint = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const studentId = req.user.id;
+
+    // Get assessment results
+    const assessment = await executeQuery(`
+      SELECT 
+        a.id,
+        a.student_id,
+        a.subject_id,
+        a.assessment_period,
+        a.rit_score,
+        a.correct_answers,
+        a.total_questions,
+        a.date_taken,
+        a.duration_minutes,
+        a.year,
+        s.name as subject_name
+      FROM assessments a
+      JOIN subjects s ON a.subject_id = s.id
+      WHERE a.id = ? AND a.student_id = ? AND a.rit_score IS NOT NULL
+    `, [assessmentId, studentId]);
+
+    if (assessment.length === 0) {
+      return res.status(404).json({
+        error: 'Assessment not found',
+        code: 'ASSESSMENT_NOT_FOUND'
+      });
+    }
+
+    const assessmentData = assessment[0];
+
+    // Get previous RIT score
+    const previousAssessment = await executeQuery(`
+      SELECT rit_score
+      FROM assessments 
+      WHERE student_id = ? 
+      AND subject_id = ? 
+      AND id != ? 
+      AND rit_score IS NOT NULL
+      ORDER BY year DESC, 
+        CASE assessment_period 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
+        END DESC,
+        date_taken DESC 
+      LIMIT 1
+    `, [studentId, assessmentData.subject_id, assessmentId]);
+
+    // Get all responses
+    const responses = await executeQuery(`
+      SELECT 
+        ar.question_order,
+        ar.is_correct,
+        ar.question_difficulty,
+        q.question_text,
+        q.question_type,
+        ar.ai_grading_result
+      FROM assessment_responses ar
+      JOIN questions q ON ar.question_id = q.id
+      WHERE ar.assessment_id = ?
+      ORDER BY ar.question_order
+    `, [assessmentId]);
+
+    // Format responses for AI analysis
+    const formattedResponses = responses.map(response => {
+      let aiGradingResult = null;
+      if (response.ai_grading_result) {
+        try {
+          aiGradingResult = typeof response.ai_grading_result === 'string' 
+            ? JSON.parse(response.ai_grading_result) 
+            : response.ai_grading_result;
+        } catch (e) {
+          console.error('Error parsing AI grading result:', e);
+        }
+      }
+
+      return {
+        questionNumber: response.question_order,
+        isCorrect: response.is_correct === 1,
+        difficulty: response.question_difficulty,
+        questionType: response.question_type,
+        questionText: response.question_text,
+        aiGradingResult: aiGradingResult
+      };
+    });
+
+    // Calculate statistics
+    const totalQuestions = assessmentData.total_questions;
+    const correctAnswers = assessmentData.correct_answers;
+    const incorrectAnswers = totalQuestions - correctAnswers;
+    const previousRIT = previousAssessment.length > 0 ? previousAssessment[0].rit_score : null;
+    const currentRIT = assessmentData.rit_score;
+    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+
+    const statistics = {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      previousRIT,
+      currentRIT,
+      accuracy
+    };
+
+    // Get student name
+    const studentName = assessmentData.first_name && assessmentData.last_name
+      ? `${assessmentData.first_name} ${assessmentData.last_name}`
+      : assessmentData.username || 'Student';
+
+    // Generate AI analysis
+    const analysis = await generatePerformanceAnalysis({
+      responses: formattedResponses,
+      statistics,
+      subjectName: assessmentData.subject_name,
+      studentName: studentName
+    });
+
+    res.json(analysis);
+  } catch (error) {
+    console.error('Error generating performance analysis:', error);
+    res.status(500).json({
+      error: 'Failed to generate performance analysis',
+      code: 'GENERATE_ANALYSIS_ERROR',
+      message: error.message
+    });
+  }
+};
+
+// Generate AI-powered competency recommendations
+export const generateCompetencyRecommendationsEndpoint = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const studentId = req.user.id;
+
+    // Verify the assessment belongs to the student
+    const assessmentCheck = await executeQuery(`
+      SELECT 
+        a.id,
+        a.subject_id,
+        s.name as subject_name,
+        u.first_name,
+        u.last_name,
+        u.username
+      FROM assessments a
+      JOIN subjects s ON a.subject_id = s.id
+      JOIN users u ON a.student_id = u.id
+      WHERE a.id = ? AND a.student_id = ?
+    `, [assessmentId, studentId]);
+
+    if (assessmentCheck.length === 0) {
+      return res.status(404).json({
+        error: 'Assessment not found',
+        code: 'ASSESSMENT_NOT_FOUND'
+      });
+    }
+
+    const assessmentData = assessmentCheck[0];
+
+    // Get competency scores
+    const competencyScores = await executeQuery(`
+      SELECT 
+        scs.id,
+        scs.competency_id as competencyId,
+        c.code as competencyCode,
+        c.name as competencyName,
+        scs.questions_attempted as questionsAttempted,
+        scs.questions_correct as questionsCorrect,
+        scs.raw_score as rawScore,
+        scs.weighted_score as weightedScore,
+        scs.final_score as finalScore,
+        scs.feedback_type as feedbackType,
+        scs.feedback_text as feedbackText,
+        scs.date_calculated as dateCalculated
+      FROM student_competency_scores scs
+      JOIN competencies c ON scs.competency_id = c.id
+      WHERE scs.assessment_id = ?
+      ORDER BY scs.final_score DESC
+    `, [assessmentId]);
+
+    if (competencyScores.length === 0) {
+      return res.status(404).json({
+        error: 'No competency scores found for this assessment',
+        code: 'NO_COMPETENCY_SCORES'
+      });
+    }
+
+    // Get student name
+    const studentName = assessmentData.first_name && assessmentData.last_name
+      ? `${assessmentData.first_name} ${assessmentData.last_name}`
+      : assessmentData.username || 'Student';
+
+    // Generate AI recommendations
+    const recommendations = await generateCompetencyRecommendations({
+      competencyScores: competencyScores,
+      studentName: studentName,
+      subjectName: assessmentData.subject_name
+    });
+
+    res.json(recommendations);
+  } catch (error) {
+    console.error('Error generating competency recommendations:', error);
+    res.status(500).json({
+      error: 'Failed to generate competency recommendations',
+      code: 'GENERATE_COMPETENCY_RECOMMENDATIONS_ERROR',
+      message: error.message
     });
   }
 };
