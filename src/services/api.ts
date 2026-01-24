@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { User, Subject, Question, Assessment, AssessmentResponse, DashboardData, AdminStats, School, Grade, AssessmentConfiguration, Competency, CompetencyStats, PaginationInfo, StartAssessmentResponse } from '../types';
 
-const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
-// const API_BASE_URL = 'http://localhost:5000/api';
+//const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -364,6 +364,19 @@ export const assignmentsAPI = {
     return response.data;
   },
 
+  reassign: async (assignmentId: number, reassignData: {
+    selectedSchools?: number[];
+    selectedGrades?: number[];
+    selectedStudents?: number[];
+    startDate?: string;
+    endDate?: string;
+    startTime?: string;
+    endTime?: string;
+  }) => {
+    const response = await api.post(`/admin/assignments/${assignmentId}/reassign`, reassignData);
+    return response.data;
+  },
+
   getById: async (id: number) => {
     const response = await api.get(`/admin/assignments/${id}`);
     return response.data;
@@ -381,6 +394,11 @@ export const assignmentsAPI = {
 
   delete: async (id: number) => {
     const response = await api.delete(`/admin/assignments/${id}`);
+    return response.data;
+  },
+
+  getStudentResponses: async (assessmentId: number) => {
+    const response = await api.get(`/admin/assessments/${assessmentId}/responses`);
     return response.data;
   }
 };

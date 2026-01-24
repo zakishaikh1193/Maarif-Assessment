@@ -29,18 +29,15 @@ export const createAssignment = async (req, res) => {
       });
     }
 
-    // Validate assign data
-    if (!assign.selectedSchools || assign.selectedSchools.length === 0) {
-      return res.status(400).json({
-        error: 'At least one school must be selected',
-        code: 'NO_SCHOOLS'
-      });
-    }
+    // Validate assign data - at least one selection method must be provided
+    const hasSchools = assign.selectedSchools && assign.selectedSchools.length > 0;
+    const hasGrades = assign.selectedGrades && assign.selectedGrades.length > 0;
+    const hasStudents = assign.selectedStudents && assign.selectedStudents.length > 0;
 
-    if (!assign.selectedGrades || assign.selectedGrades.length === 0) {
+    if (!hasSchools && !hasGrades && !hasStudents) {
       return res.status(400).json({
-        error: 'At least one grade must be selected',
-        code: 'NO_GRADES'
+        error: 'At least one school, grade, or specific student must be selected',
+        code: 'NO_SELECTIONS'
       });
     }
 
@@ -115,20 +112,50 @@ export const createAssignment = async (req, res) => {
         }
       }
 
-      // Create assignment_students records for each school-grade combination
-      // First, get all students for selected schools and grades
-      const placeholders = assign.selectedGrades.map(() => '?').join(',');
-      const [students] = await connection.execute(`
-        SELECT id FROM users 
-        WHERE role = 'student' 
-        AND school_id IN (${assign.selectedSchools.map(() => '?').join(',')})
-        AND grade_id IN (${placeholders})
-      `, [...assign.selectedSchools, ...assign.selectedGrades]);
+      // Create assignment_students records
+      // Prepare due date
+      const dueDate = assign.endDate ? `${assign.endDate} ${endTime}:00` : null;
+      
+      let studentsToAssign = [];
+
+      // If specific students are selected, use them
+      if (hasStudents) {
+        const [students] = await connection.execute(`
+          SELECT id FROM users 
+          WHERE id IN (${assign.selectedStudents.map(() => '?').join(',')})
+          AND role = 'student'
+        `, assign.selectedStudents);
+        studentsToAssign = students;
+      } 
+      // Otherwise, get students from selected schools and grades
+      else if (hasSchools || hasGrades) {
+        let query = 'SELECT id FROM users WHERE role = \'student\'';
+        const params = [];
+
+        if (hasSchools) {
+          query += ` AND school_id IN (${assign.selectedSchools.map(() => '?').join(',')})`;
+          params.push(...assign.selectedSchools);
+        }
+
+        if (hasGrades) {
+          query += ` AND grade_id IN (${assign.selectedGrades.map(() => '?').join(',')})`;
+          params.push(...assign.selectedGrades);
+        }
+
+        const [students] = await connection.execute(query, params);
+        studentsToAssign = students;
+      }
+
+      if (studentsToAssign.length === 0) {
+        await connection.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'No students found matching the selected criteria',
+          code: 'NO_STUDENTS_FOUND'
+        });
+      }
 
       // Create assignment_students records
-      // due_date: if endDate is provided, use it with 23:59:59; if not, set to NULL (unlimited)
-      const dueDate = assign.endDate ? `${assign.endDate} ${endTime}:00` : null;
-      for (const student of students) {
+      for (const student of studentsToAssign) {
         await connection.execute(`
           INSERT INTO assignment_students 
           (assignment_id, student_id, assigned_by, due_date)
@@ -439,6 +466,136 @@ export const deleteAssignment = async (req, res) => {
     res.status(500).json({
       error: 'Failed to delete assignment',
       code: 'DELETE_ASSIGNMENT_ERROR'
+    });
+  }
+};
+
+// Reassign assignment to schools, grades, or specific students
+export const reassignAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { selectedSchools, selectedGrades, selectedStudents, startDate, endDate, startTime, endTime } = req.body;
+    const assignedBy = req.user.id;
+
+    // Check if assignment exists
+    const assignment = await executeQuery('SELECT id FROM assignments WHERE id = ?', [id]);
+    if (assignment.length === 0) {
+      return res.status(404).json({
+        error: 'Assignment not found',
+        code: 'ASSIGNMENT_NOT_FOUND'
+      });
+    }
+
+    // Validate that at least one selection method is provided
+    if ((!selectedSchools || selectedSchools.length === 0) && 
+        (!selectedGrades || selectedGrades.length === 0) && 
+        (!selectedStudents || selectedStudents.length === 0)) {
+      return res.status(400).json({
+        error: 'At least one school, grade, or student must be selected',
+        code: 'NO_SELECTIONS'
+      });
+    }
+
+    const connection = await getConnection();
+
+    try {
+      await connection.query('START TRANSACTION');
+
+      // Prepare due date
+      const endTimeValue = endTime || '23:59';
+      const dueDate = endDate ? `${endDate} ${endTimeValue}:00` : null;
+
+      let studentsToAssign = [];
+
+      // If specific students are selected, use them
+      if (selectedStudents && selectedStudents.length > 0) {
+        const [students] = await connection.execute(`
+          SELECT id FROM users 
+          WHERE id IN (${selectedStudents.map(() => '?').join(',')})
+          AND role = 'student'
+        `, selectedStudents);
+        studentsToAssign = students;
+      } 
+      // Otherwise, get students from selected schools and grades
+      else if ((selectedSchools && selectedSchools.length > 0) || (selectedGrades && selectedGrades.length > 0)) {
+        let query = 'SELECT id FROM users WHERE role = \'student\'';
+        const params = [];
+
+        if (selectedSchools && selectedSchools.length > 0) {
+          query += ` AND school_id IN (${selectedSchools.map(() => '?').join(',')})`;
+          params.push(...selectedSchools);
+        }
+
+        if (selectedGrades && selectedGrades.length > 0) {
+          query += ` AND grade_id IN (${selectedGrades.map(() => '?').join(',')})`;
+          params.push(...selectedGrades);
+        }
+
+        const [students] = await connection.execute(query, params);
+        studentsToAssign = students;
+      }
+
+      if (studentsToAssign.length === 0) {
+        await connection.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'No students found matching the selected criteria',
+          code: 'NO_STUDENTS_FOUND'
+        });
+      }
+
+      // Remove existing assignments for these students (if they haven't completed)
+      const studentIds = studentsToAssign.map(s => s.id);
+      await connection.execute(`
+        DELETE FROM assignment_students 
+        WHERE assignment_id = ? 
+        AND student_id IN (${studentIds.map(() => '?').join(',')})
+        AND is_completed = 0
+      `, [id, ...studentIds]);
+
+      // Create new assignment_students records
+      for (const student of studentsToAssign) {
+        // Check if student already has this assignment (completed)
+        const existing = await connection.execute(`
+          SELECT id FROM assignment_students 
+          WHERE assignment_id = ? AND student_id = ?
+        `, [id, student.id]);
+
+        // Only add if not already assigned (or if we want to update due date)
+        if (existing[0].length === 0) {
+          await connection.execute(`
+            INSERT INTO assignment_students 
+            (assignment_id, student_id, assigned_by, due_date)
+            VALUES (?, ?, ?, ?)
+          `, [id, student.id, assignedBy, dueDate]);
+        } else if (dueDate) {
+          // Update due date for existing assignment
+          await connection.execute(`
+            UPDATE assignment_students 
+            SET due_date = ?, assigned_by = ?
+            WHERE assignment_id = ? AND student_id = ?
+          `, [dueDate, assignedBy, id, student.id]);
+        }
+      }
+
+      await connection.query('COMMIT');
+
+      res.json({
+        success: true,
+        message: `Assignment reassigned to ${studentsToAssign.length} student(s)`,
+        studentsAssigned: studentsToAssign.length
+      });
+    } catch (error) {
+      await connection.query('ROLLBACK');
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error reassigning assignment:', error);
+    res.status(500).json({
+      error: 'Failed to reassign assignment',
+      code: 'REASSIGN_ASSIGNMENT_ERROR',
+      details: error.message
     });
   }
 };

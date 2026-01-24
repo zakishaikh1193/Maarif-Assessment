@@ -23,7 +23,8 @@ import {
   getStudentCompetencyGrowth,
   importStudentsFromCSV,
   importQuestionsFromCSV,
-  getTopPerformers
+  getTopPerformers,
+  getStudentAssessmentResponses
 } from '../controllers/adminController.js';
 import { authenticateToken, adminOnly } from '../middleware/auth.js';
 import { validateId, validateSubjectId, validateQuestion, validateBulkQuestions, validateStudent } from '../middleware/validation.js';
@@ -62,6 +63,9 @@ router.get('/analytics/growth-data', getGrowthData);
 // Student Competency Analytics
 router.get('/student-competency-scores', getStudentCompetencyScores);
 router.get('/student-competency-growth', getStudentCompetencyGrowth);
+
+// Student Assessment Responses (Admin can view any student's responses)
+router.get('/assessments/:assessmentId/responses', getStudentAssessmentResponses);
 
 // Questions
 router.post('/questions', validateQuestion, createQuestion);

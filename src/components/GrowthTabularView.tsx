@@ -333,7 +333,7 @@ const GrowthTabularView: React.FC<GrowthTabularViewProps> = ({ data, userRole = 
       </div>
 
       {/* Summary Stats */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="flex items-center space-x-2 mb-2">
             <Target className="h-4 w-4 text-blue-600" />
@@ -357,18 +357,6 @@ const GrowthTabularView: React.FC<GrowthTabularViewProps> = ({ data, userRole = 
                 ? "📈 Improving"
                 : "📉 Declining"
             ) : "📊 Insufficient data"}
-          </div>
-        </div>
-        
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <Users className="h-4 w-4 text-purple-600" />
-            <span className="text-sm font-medium text-purple-900">Max Class Size</span>
-          </div>
-          <div className="text-2xl font-bold text-purple-900">
-            {Math.max(...(data.classAverages?.map(avg => avg.studentCount) || 
-                         data.schoolAverages?.map(avg => avg.studentCount) || 
-                         data.districtAverages?.map(avg => avg.studentCount) || [0]))}
           </div>
         </div>
       </div>

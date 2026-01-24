@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grade, Subject, School, Question } from '../types';
-import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI } from '../services/api';
+import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI, studentsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
 import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown, Filter, CheckCircle2, Type, FileText, ArrowLeftRight, Droplets } from 'lucide-react';
 import { exportAssessmentToPDF } from '../utils/pdfExport';
@@ -27,6 +27,7 @@ interface GeneralFormData {
 interface AssignFormData {
   selectedSchools: number[];
   selectedGrades: number[];
+  selectedStudents: number[];
   startDate: string;
   endDate: string;
 }
@@ -67,9 +68,14 @@ const CreateAssessmentPage: React.FC = () => {
   const [assignData, setAssignData] = useState<AssignFormData>({
     selectedSchools: [],
     selectedGrades: [],
+    selectedStudents: [],
     startDate: '',
     endDate: ''
   });
+  
+  const [students, setStudents] = useState<any[]>([]);
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -84,19 +90,53 @@ const CreateAssessmentPage: React.FC = () => {
     }
   }, [mode, currentStep, generalData.subjectId, generalData.gradeId]);
 
+  // Filter students based on search query and selected schools/grades
+  useEffect(() => {
+    let filtered = students;
+
+    // Filter by selected schools
+    if (assignData.selectedSchools.length > 0) {
+      filtered = filtered.filter(s => assignData.selectedSchools.includes(s.school_id || s.schoolId));
+    }
+
+    // Filter by selected grades
+    if (assignData.selectedGrades.length > 0) {
+      filtered = filtered.filter(s => assignData.selectedGrades.includes(s.grade_id || s.gradeId));
+    }
+
+    // Apply search query
+    if (studentSearchQuery.trim()) {
+      const query = studentSearchQuery.toLowerCase();
+      filtered = filtered.filter(s => 
+        s.username.toLowerCase().includes(query) ||
+        (s.first_name && s.first_name.toLowerCase().includes(query)) ||
+        (s.last_name && s.last_name.toLowerCase().includes(query)) ||
+        (s.school_name && s.school_name.toLowerCase().includes(query))
+      );
+    }
+
+    setFilteredStudents(filtered);
+  }, [studentSearchQuery, assignData.selectedSchools, assignData.selectedGrades, students]);
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const [gradesData, subjectsData, schoolsResponse] = await Promise.all([
+      const [gradesData, subjectsData, schoolsResponse, studentsData] = await Promise.all([
         gradesAPI.getActive(),
         subjectsAPI.getAll(),
-        schoolsAPI.getAll(1, 1000) // Get all schools with large limit
+        schoolsAPI.getAll(1, 1000), // Get all schools with large limit
+        studentsAPI.getAll(1, 10000) // Get all students with large limit
       ]);
       setGrades(gradesData);
       setSubjects(subjectsData);
       // Handle paginated response structure
       const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
       setSchools(schoolsData);
+      
+      // Handle students data
+      const studentsList = studentsData.students || [];
+      setStudents(studentsList);
+      setFilteredStudents(studentsList);
     } catch (error) {
       console.error('Error loading data:', error);
       alert('Failed to load data');
@@ -201,6 +241,7 @@ const CreateAssessmentPage: React.FC = () => {
     const hasStartedAssignment = 
       assignData.selectedSchools.length > 0 || 
       assignData.selectedGrades.length > 0 ||
+      assignData.selectedStudents.length > 0 ||
       assignData.startDate || 
       assignData.endDate;
 
@@ -212,10 +253,12 @@ const CreateAssessmentPage: React.FC = () => {
     let isValid = true;
     const newErrors: Record<string, string> = {};
 
-    if (assignData.selectedSchools.length === 0 && assignData.selectedGrades.length === 0) {
+    if (assignData.selectedSchools.length === 0 && 
+        assignData.selectedGrades.length === 0 && 
+        assignData.selectedStudents.length === 0) {
       // If they started filling but didn't complete, show error
       if (assignData.startDate || assignData.endDate) {
-        newErrors.schools = 'Please select at least one school or grade';
+        newErrors.schools = 'Please select at least one school, grade, or specific students';
         isValid = false;
       }
     }
@@ -309,6 +352,7 @@ const CreateAssessmentPage: React.FC = () => {
       const hasAssignmentData = 
         assignData.selectedSchools.length > 0 || 
         assignData.selectedGrades.length > 0 ||
+        assignData.selectedStudents.length > 0 ||
         assignData.startDate || 
         assignData.endDate;
 
@@ -323,6 +367,7 @@ const CreateAssessmentPage: React.FC = () => {
         } : {
           selectedSchools: [],
           selectedGrades: [],
+          selectedStudents: [],
           startDate: '',
           endDate: '',
           startTime: '',
@@ -1236,6 +1281,67 @@ const CreateAssessmentPage: React.FC = () => {
                         </label>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Specific Students Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Or Select Specific Students (Optional)
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Select individual students instead of schools/grades. Students will be filtered by selected schools/grades if any are chosen.
+                    </p>
+                    <div className="border border-gray-200 rounded-md p-4">
+                      {/* Search */}
+                      <input
+                        type="text"
+                        placeholder="Search students by name or username..."
+                        value={studentSearchQuery}
+                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+
+                      {/* Student List */}
+                      <div className="max-h-64 overflow-y-auto space-y-2">
+                        {filteredStudents.length === 0 ? (
+                          <p className="text-sm text-gray-500 text-center py-4">
+                            {studentSearchQuery ? 'No students found matching your search' : 'No students available'}
+                          </p>
+                        ) : (
+                          filteredStudents.map((student) => (
+                            <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={assignData.selectedStudents.includes(student.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    handleAssignChange('selectedStudents', [...assignData.selectedStudents, student.id]);
+                                  } else {
+                                    handleAssignChange('selectedStudents', assignData.selectedStudents.filter(id => id !== student.id));
+                                  }
+                                }}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {student.first_name && student.last_name
+                                    ? `${student.first_name} ${student.last_name}`
+                                    : student.username}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  @{student.username} • {student.school_name || 'N/A'} • {student.grade_name || 'N/A'}
+                                </div>
+                              </div>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                    {assignData.selectedStudents.length > 0 && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        {assignData.selectedStudents.length} student(s) selected
+                      </p>
+                    )}
                   </div>
 
                   {/* Date Selection */}

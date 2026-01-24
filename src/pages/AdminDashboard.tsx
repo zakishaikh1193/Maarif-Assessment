@@ -771,7 +771,7 @@ const AdminDashboard: React.FC = () => {
                                     {stats.subjectDistribution && stats.subjectDistribution.length > 0 && (() => {
                                       const total = stats.subjectDistribution.reduce((sum: number, s: any) => sum + (s.question_count || 0), 0);
                                       let currentAngle = 0;
-                                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7'];
+                                      const colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
                                       return stats.subjectDistribution.slice(0, 5).map((subject: any, idx: number) => {
                                         const percentage = total > 0 ? (subject.question_count / total) * 100 : 0;
                                         const angle = (percentage / 100) * 360;
@@ -797,10 +797,15 @@ const AdminDashboard: React.FC = () => {
                               </div>
                               <div className="flex-1 space-y-4">
                                 {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
-                                  const colors = ['bg-red-100 text-red-700', 'bg-orange-100 text-orange-700', 'bg-yellow-100 text-yellow-700', 'bg-green-100 text-green-700'];
+                                  const chartColors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
+                                  const bgColors = ['bg-purple-50', 'bg-cyan-50', 'bg-amber-50', 'bg-emerald-50', 'bg-red-50', 'bg-pink-50'];
+                                  const textColors = ['text-purple-700', 'text-cyan-700', 'text-amber-700', 'text-emerald-700', 'text-red-700', 'text-pink-700'];
+                                  const color = chartColors[idx % chartColors.length];
+                                  const bgColor = bgColors[idx % bgColors.length];
+                                  const textColor = textColors[idx % textColors.length];
                                   return (
-                                    <div key={idx} className={`flex items-center gap-3 p-4 rounded-lg ${colors[idx % colors.length]}`}>
-                                      <div className={`h-4 w-4 rounded-full ${colors[idx % colors.length].split(' ')[0]}`}></div>
+                                    <div key={idx} className={`flex items-center gap-3 p-4 rounded-lg ${bgColor} ${textColor}`}>
+                                      <div className="h-4 w-4 rounded-full" style={{ backgroundColor: color }}></div>
                                       <span className="text-base font-semibold">{subject.name}</span>
                                       <span className="text-base font-bold ml-auto">{subject.question_count || 0}</span>
                                     </div>
@@ -890,45 +895,6 @@ const AdminDashboard: React.FC = () => {
 
                     {/* Right Sidebar */}
                     <div className="space-y-6">
-                      {/* Subject Distribution List */}
-                      <div className="relative bg-gradient-to-br from-white to-cyan-50/30 rounded-xl shadow-lg border-2 border-cyan-100 p-5 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-200/20 rounded-full blur-2xl"></div>
-                        <div className="relative">
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <BookOpen className="h-5 w-5 text-cyan-600" />
-                            Subject Distribution
-                          </h3>
-                          <div className="space-y-3">
-                            {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
-                              const icons = [Users, Building, AlertTriangle, Target];
-                              const Icon = icons[idx % icons.length];
-                              const colors = [
-                                'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                              ];
-                              return (
-                                <div
-                                  key={idx}
-                                  className={`flex items-center justify-between p-3 rounded-xl ${colors[idx]} cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300 group`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg ${idx === 0 ? 'bg-white/20' : 'bg-gray-200'} group-hover:scale-110 transition-transform duration-300`}>
-                                      <Icon className={`h-5 w-5 ${idx === 0 ? 'text-white' : 'text-gray-600'}`} />
-                                    </div>
-                                    <span className={`text-sm font-semibold ${idx === 0 ? 'text-white' : 'text-gray-700'}`}>
-                                      {subject.question_count || 0} {subject.name}
-                                    </span>
-                                  </div>
-                                  {idx === 0 && <ArrowDownRight className="h-4 w-4 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
                       {/* Best Performance Section */}
                       <div className="relative bg-gradient-to-br from-white via-pink-50/40 to-purple-50/40 rounded-xl shadow-lg border-2 border-pink-100 p-5 overflow-hidden">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-pink-200/20 rounded-full blur-3xl"></div>

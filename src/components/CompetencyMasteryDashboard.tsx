@@ -301,18 +301,52 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                              {data.competencyMastery.map((competency: any) => {
                  const proficientCount = competency.proficient_count || 0;
+                 const developingCount = competency.developing_count || 0;
                  const strugglingCount = competency.struggling_count || 0;
                  const studentCount = competency.student_count || 1;
                  
+                 // Use actual developing_count from backend, or calculate if not available
+                 const actualDevelopingCount = developingCount > 0 
+                   ? developingCount 
+                   : Math.max(0, studentCount - proficientCount - strugglingCount);
+                 
                  const proficientPercent = (proficientCount / studentCount) * 100;
-                 const developingPercent = ((studentCount - proficientCount - strugglingCount) / studentCount) * 100;
+                 const developingPercent = (actualDevelopingCount / studentCount) * 100;
                  const strugglingPercent = (strugglingCount / studentCount) * 100;
 
-                const pieData = [
-                  { name: 'Proficient', value: proficientPercent, color: '#10B981' },
-                  { name: 'Developing', value: developingPercent, color: '#F59E0B' },
-                  { name: 'Needs Support', value: strugglingPercent, color: '#EF4444' }
+                // Round percentages to avoid floating point issues
+                let roundedProficient = Math.round(proficientPercent * 10) / 10;
+                let roundedDeveloping = Math.round(developingPercent * 10) / 10;
+                let roundedStruggling = Math.round(strugglingPercent * 10) / 10;
+                
+                // Ensure they add up to exactly 100% by adjusting the largest value
+                const total = roundedProficient + roundedDeveloping + roundedStruggling;
+                if (Math.abs(total - 100) > 0.1) {
+                  const diff = 100 - total;
+                  if (roundedProficient >= roundedDeveloping && roundedProficient >= roundedStruggling) {
+                    roundedProficient += diff;
+                  } else if (roundedDeveloping >= roundedStruggling) {
+                    roundedDeveloping += diff;
+                  } else {
+                    roundedStruggling += diff;
+                  }
+                }
+
+                // Create pie data and filter out zero values
+                let pieData = [
+                  { name: 'Proficient', value: roundedProficient, color: '#10B981' },
+                  { name: 'Developing', value: roundedDeveloping, color: '#F59E0B' },
+                  { name: 'Needs Support', value: roundedStruggling, color: '#EF4444' }
                 ].filter(item => item.value > 0);
+                
+                // Final normalization to ensure exactly 100%
+                const filteredTotal = pieData.reduce((sum, item) => sum + item.value, 0);
+                if (filteredTotal > 0 && Math.abs(filteredTotal - 100) > 0.01) {
+                  pieData = pieData.map(item => ({
+                    ...item,
+                    value: Math.round((item.value / filteredTotal) * 100 * 10) / 10
+                  }));
+                }
 
                 return (
                   <div key={competency.competency_id} className="text-center">
@@ -326,8 +360,10 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
                             cy="50%"
                             innerRadius={30}
                             outerRadius={80}
-                            paddingAngle={5}
+                            paddingAngle={0}
                             dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
                           >
                             {pieData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -340,15 +376,15 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
                     <div className="mt-3 space-y-1 text-sm">
                       <div className="flex justify-between">
                         <span className="text-green-600">Proficient:</span>
-                        <span>{proficientPercent.toFixed(1)}%</span>
+                        <span>{roundedProficient.toFixed(1)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-yellow-600">Developing:</span>
-                        <span>{developingPercent.toFixed(1)}%</span>
+                        <span>{roundedDeveloping.toFixed(1)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-red-600">Needs Support:</span>
-                        <span>{strugglingPercent.toFixed(1)}%</span>
+                        <span>{roundedStruggling.toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>

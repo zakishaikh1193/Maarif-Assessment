@@ -11,7 +11,7 @@ import React from 'react';
     Area
   } from 'recharts';
 import { GrowthOverTimeData } from '../types';
-import { TrendingUp, Users, Target, Download } from 'lucide-react';
+import { TrendingUp, Target, Download } from 'lucide-react';
 import { exportGrowthGraphicalToPDF } from '../utils/growthReportExport';
 import { exportCompletePerformanceReportToPDF } from '../utils/performanceReportExport';
 
@@ -661,7 +661,7 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
 
 
         {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="flex items-center space-x-2 mb-2">
               <Target className="h-4 w-4 text-blue-600" />
@@ -681,16 +681,6 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
                   ? "📈 Improving" 
                   : "📉 Declining"
               ) : "📊 Insufficient data"}
-            </div>
-          </div>
-          
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <div className="flex items-center space-x-2 mb-2">
-              <Users className="h-4 w-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-900">Class Size</span>
-            </div>
-            <div className="text-2xl font-bold text-purple-900">
-              {Math.max(...data.classAverages.map(avg => avg.studentCount))}
             </div>
           </div>
         </div>

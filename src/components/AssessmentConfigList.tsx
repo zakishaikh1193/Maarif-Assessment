@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AssessmentConfiguration, Grade, Subject } from '../types';
 import { assessmentConfigAPI, gradesAPI, subjectsAPI, assignmentsAPI } from '../services/api';
-import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye } from 'lucide-react';
+import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye, UserPlus } from 'lucide-react';
 import AssessmentConfigForm from './AssessmentConfigForm';
 import AssignmentViewModal from './AssignmentViewModal';
 import AssessmentQuestionsModal from './AssessmentQuestionsModal';
+import ReassignAssignmentModal from './ReassignAssignmentModal';
 
 interface Assignment {
   id: number;
@@ -47,6 +48,8 @@ const AssessmentConfigList: React.FC = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingQuestionsAssignmentId, setViewingQuestionsAssignmentId] = useState<number | null>(null);
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  const [reassigningAssignmentId, setReassigningAssignmentId] = useState<number | null>(null);
+  const [showReassignModal, setShowReassignModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -390,6 +393,16 @@ const AssessmentConfigList: React.FC = () => {
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
+                            onClick={() => {
+                              setReassigningAssignmentId(assignment.id);
+                              setShowReassignModal(true);
+                            }}
+                            className="text-green-600 hover:text-green-900 transition-colors"
+                            title="Reassign"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </button>
+                          <button
                             onClick={() => handleDeleteAssignment(assignment.id)}
                             className="text-red-600 hover:text-red-900 transition-colors"
                             title="Delete"
@@ -569,6 +582,22 @@ const AssessmentConfigList: React.FC = () => {
             setViewingQuestionsAssignmentId(null);
           }}
           assignmentId={viewingQuestionsAssignmentId}
+        />
+      )}
+
+      {/* Reassign Assignment Modal */}
+      {showReassignModal && reassigningAssignmentId && (
+        <ReassignAssignmentModal
+          isOpen={showReassignModal}
+          onClose={() => {
+            setShowReassignModal(false);
+            setReassigningAssignmentId(null);
+          }}
+          assignmentId={reassigningAssignmentId}
+          assignmentName={assignments.find(a => a.id === reassigningAssignmentId)?.name || ''}
+          onReassignComplete={() => {
+            fetchData(); // Refresh the assignments list
+          }}
         />
       )}
     </div>
