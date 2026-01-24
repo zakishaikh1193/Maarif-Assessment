@@ -415,7 +415,7 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
                     if (value > 0) {
                       // Format percentage to show 2 decimal places if needed, otherwise whole number
                       const displayValue = value % 1 === 0 ? value : value.toFixed(2);
-                      return `${displayValue}%`;
+                      return `${displayValue}%`;   
                     }
                     return '';
                   }}
