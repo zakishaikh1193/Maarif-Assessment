@@ -27,7 +27,11 @@ import {
   LayoutDashboard,
   Menu,
   X,
-  Play
+  Play,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const ResultsPage: React.FC = () => {
@@ -54,6 +58,13 @@ const ResultsPage: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const competencyDataFetched = useRef(false);
   const { user } = useAuth();
+  
+  // Search and filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [selectedAssessment, setSelectedAssessment] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     // Check if we have detailed results or basic results
@@ -459,36 +470,129 @@ const ResultsPage: React.FC = () => {
               </div>
             </div>
           ) : allAssessments.length > 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Assessment Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Subject
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Period
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Growth Metric
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Score
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date Completed
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {allAssessments.map((assessment: any) => {
+            <>
+              {/* Search and Filter Bar - Centered and Compact */}
+              <div className="flex justify-center mb-4">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 inline-flex flex-col md:flex-row gap-3 items-center">
+                  {/* Search Bar */}
+                  <div className="w-full md:w-64">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by assessment name..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setCurrentPage(1); // Reset to first page on search
+                        }}
+                        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Subject Filter */}
+                  <div className="w-full md:w-40">
+                    <div className="relative">
+                      <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <select
+                        value={selectedSubject}
+                        onChange={(e) => {
+                          setSelectedSubject(e.target.value);
+                          setCurrentPage(1); // Reset to first page on filter
+                        }}
+                        className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      >
+                        <option value="all">All Subjects</option>
+                        {Array.from(new Set(allAssessments.map((a: any) => a.subjectName || a.subject_name).filter(Boolean))).map((subject: string) => (
+                          <option key={subject} value={subject}>{subject}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Assessment Name Filter */}
+                  <div className="w-full md:w-40">
+                    <div className="relative">
+                      <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <select
+                        value={selectedAssessment}
+                        onChange={(e) => {
+                          setSelectedAssessment(e.target.value);
+                          setCurrentPage(1); // Reset to first page on filter
+                        }}
+                        className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      >
+                        <option value="all">All Assessments</option>
+                        {Array.from(new Set(allAssessments.map((a: any) => a.assignment_name || a.assignmentName || a.subjectName || a.subject_name).filter(Boolean))).map((name: string) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtered and Paginated Assessments Table */}
+              {(() => {
+                // Filter assessments
+                const filteredAssessments = allAssessments.filter((assessment: any) => {
+                  const assignmentName = assessment.assignment_name || assessment.assignmentName || '';
+                  const subjectName = assessment.subjectName || assessment.subject_name || '';
+                  const searchLower = searchQuery.toLowerCase();
+                  
+                  const matchesSearch = !searchQuery || 
+                    assignmentName.toLowerCase().includes(searchLower) ||
+                    subjectName.toLowerCase().includes(searchLower);
+                  
+                  const matchesSubject = selectedSubject === 'all' || 
+                    (assessment.subjectName || assessment.subject_name) === selectedSubject;
+                  
+                  const matchesAssessment = selectedAssessment === 'all' ||
+                    (assignmentName || subjectName) === selectedAssessment;
+                  
+                  return matchesSearch && matchesSubject && matchesAssessment;
+                });
+
+                // Calculate pagination
+                const totalPages = Math.ceil(filteredAssessments.length / itemsPerPage);
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedAssessments = filteredAssessments.slice(startIndex, endIndex);
+
+                return (
+                  <>
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Assessment Name
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Subject
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Period
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Growth Metric
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Score
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date Completed
+                              </th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {paginatedAssessments.length > 0 ? (
+                              paginatedAssessments.map((assessment: any) => {
                       const ritScore = assessment.rit_score || assessment.ritScore || 0;
                       const dateTaken = assessment.date_taken || assessment.dateTaken;
                       const assessmentPeriod = assessment.assessment_period || assessment.assessmentPeriod || '';
@@ -572,11 +676,82 @@ const ResultsPage: React.FC = () => {
                           </td>
                         </tr>
                       );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                            })
+                            ) : (
+                              <tr>
+                                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                                  No assessments found matching your search criteria.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-gray-700">
+                            Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                            <span className="font-medium">{Math.min(endIndex, filteredAssessments.length)}</span> of{' '}
+                            <span className="font-medium">{filteredAssessments.length}</span> assessments
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                              disabled={currentPage === 1}
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                              <span>Previous</span>
+                            </button>
+                            
+                            <div className="flex items-center space-x-1">
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                // Show first page, last page, current page, and pages around current
+                                if (
+                                  page === 1 ||
+                                  page === totalPages ||
+                                  (page >= currentPage - 1 && page <= currentPage + 1)
+                                ) {
+                                  return (
+                                    <button
+                                      key={page}
+                                      onClick={() => setCurrentPage(page)}
+                                      className={`px-3 py-2 border rounded-lg text-sm font-medium ${
+                                        currentPage === page
+                                          ? 'bg-blue-600 text-white border-blue-600'
+                                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                      }`}
+                                    >
+                                      {page}
+                                    </button>
+                                  );
+                                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                                  return <span key={page} className="px-2 text-gray-500">...</span>;
+                                }
+                                return null;
+                              })}
+                            </div>
+                            
+                            <button
+                              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                              disabled={currentPage === totalPages}
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            >
+                              <span>Next</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </>
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
               <div className="text-6xl mb-4">📊</div>

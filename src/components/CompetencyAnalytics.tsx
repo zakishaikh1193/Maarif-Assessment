@@ -165,6 +165,30 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
     }
   };
 
+  // Get earned competencies (strong performance - typically >= 80% or feedbackType === 'strong')
+  const getEarnedCompetencies = () => {
+    return currentScores.filter(score => {
+      const finalScore = Number(score.finalScore) || 0;
+      // Consider competency earned if score >= 80% or feedbackType is 'strong'
+      return finalScore >= 80 || score.feedbackType === 'strong';
+    });
+  };
+
+  // Format competency name to achievement message
+  const formatAchievementMessage = (competencyName: string): string => {
+    // Convert competency name to achievement format
+    // Examples: "Empowered Learner" -> "You are an Empowered Learner"
+    // "Digital Citizen" -> "You are a Digital Citizen"
+    // "Knowledge Constructor" -> "You are a Knowledge Constructor"
+    
+    // Check if it starts with a vowel sound for proper article
+    const vowels = ['a', 'e', 'i', 'o', 'u'];
+    const firstLetter = competencyName.charAt(0).toLowerCase();
+    const article = vowels.includes(firstLetter) ? 'an' : 'a';
+    
+    return `You are ${article} ${competencyName}`;
+  };
+
   const chartData = currentScores.map(score => ({
     name: score.competencyName,
     score: Number(score.finalScore) || 0,
@@ -239,45 +263,142 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
               <span className="text-sm font-medium text-blue-700">Average Score</span>
             </div>
             <div className="text-2xl font-bold text-blue-900 mt-1">
-              {Math.round(currentScores.reduce((sum, s) => sum + s.finalScore, 0) / currentScores.length)}%
+              {currentScores.length > 0 
+                ? `${Math.round(currentScores.reduce((sum, s) => sum + (Number(s.finalScore) || 0), 0) / currentScores.length)}%`
+                : '0%'}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Achievement Badges - Earned Competencies */}
+      {getEarnedCompetencies().length > 0 && (
+        <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-orange-50 rounded-xl shadow-sm border-2 border-purple-200 p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Award className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Competency Achievements</h3>
+              <p className="text-sm text-gray-600">
+                Congratulations! You've earned these competency badges
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {getEarnedCompetencies().map((score) => (
+              <div
+                key={score.id}
+                className="bg-white rounded-lg shadow-md border-2 border-purple-300 p-4 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex-shrink-0">
+                    <Award className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        {formatAchievementMessage(score.competencyName)}
+                      </h4>
+                      <span className="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded">
+                        {score.finalScore}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600">{score.competencyCode}</p>
+                    <div className="mt-2 flex items-center space-x-1">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-xs text-green-700 font-medium">Competency Mastered</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {getEarnedCompetencies().length > 0 && (
+            <div className="mt-4 p-3 bg-white bg-opacity-70 rounded-lg border border-purple-200">
+              <p className="text-sm text-gray-700 text-center">
+                <span className="font-semibold text-purple-700">
+                  {getEarnedCompetencies().length}
+                </span>
+                {' '}
+                {getEarnedCompetencies().length === 1 ? 'competency' : 'competencies'} earned! 
+                Keep up the excellent work! 🎉
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Competency Performance Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-          <BarChart className="h-5 w-5 text-blue-600" />
-          <span>Competency Performance Overview</span>
-        </h4>
-        <div className="h-80">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+            <BarChart className="h-5 w-5 text-purple-600" />
+            <span>Competency Performance Overview</span>
+          </h4>
+          <p className="text-sm text-gray-600">Performance scores across different competencies</p>
+        </div>
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-              <YAxis domain={[0, 100]} />
+            <BarChart 
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45} 
+                textAnchor="end" 
+                height={100}
+                tick={{ fontSize: 12, fill: '#6B7280' }}
+                interval={0}
+              />
+              <YAxis 
+                domain={[0, 100]}
+                tick={{ fontSize: 12, fill: '#6B7280' }}
+                tickCount={5}
+                label={{ value: 'Score (%)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#6B7280' } }}
+              />
               <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  padding: '12px'
+                }}
                 formatter={(value: any, name: string) => [
                   `${value}%`, 
                   name === 'score' ? 'Final Score' : 
                   name === 'accuracy' ? 'Accuracy' : name
                 ]}
+                labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#111827' }}
               />
-              <Legend />
-              <Bar dataKey="score" fill="#8B5CF6" name="Final Score" />
+              <Bar 
+                dataKey="score" 
+                fill="#8B5CF6" 
+                name="Final Score"
+                radius={[8, 8, 0, 0]}
+                stroke="#7C3AED"
+                strokeWidth={1}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Competency Distribution Pie Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-          <PieChart className="h-5 w-5 text-green-600" />
-          <span>Performance Distribution</span>
-        </h4>
-        <div className="h-80">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+            <PieChart className="h-5 w-5 text-purple-600" />
+            <span>Performance Distribution</span>
+          </h4>
+          <p className="text-sm text-gray-600">Distribution of performance across competency categories</p>
+        </div>
+        <div className="h-[400px] flex items-center justify-center">
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -285,18 +406,103 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={100}
-                  paddingAngle={2}
+                  innerRadius={60}
+                  outerRadius={120}
+                  paddingAngle={3}
                   dataKey="value"
-                  minAngle={3}
+                  label={({ name, value, percent }) => {
+                    // Show label if value is greater than 0
+                    if (value > 0) {
+                      // Format percentage to show 2 decimal places if needed, otherwise whole number
+                      const displayValue = value % 1 === 0 ? value : value.toFixed(2);
+                      return `${displayValue}%`;
+                    }
+                    return '';
+                  }}
+                  labelLine={{
+                    stroke: '#6B7280',
+                    strokeWidth: 1.5,
+                    length: 15,
+                    lengthType: 'straight'
+                  }}
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
+                  {pieData.map((entry, index) => {
+                    // Use vibrant color palette similar to examples (light blue, red, purple, dark blue, pink)
+                    const colors = [
+                      '#60A5FA', // Light Blue
+                      '#EF4444', // Red
+                      '#A78BFA', // Purple
+                      '#3B82F6', // Dark Blue
+                      '#EC4899', // Pink/Magenta
+                      '#10B981', // Green
+                      '#F59E0B', // Amber
+                      '#6366F1'  // Indigo
+                    ];
+                    // Use light gray for zero values, otherwise use color from entry or palette
+                    const fillColor = entry.value > 0 
+                      ? (entry.color || colors[index % colors.length]) 
+                      : '#E5E7EB';
+                    return (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={fillColor}
+                        stroke="#FFFFFF"
+                        strokeWidth={3}
+                      />
+                    );
+                  })}
                 </Pie>
-                <Tooltip formatter={(value: any) => [`${value}%`, 'Score']} />
-                <Legend />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    padding: '12px'
+                  }}
+                  formatter={(value: any, name: string, props: any) => {
+                    const total = pieData.reduce((sum, item) => sum + item.value, 0);
+                    const percent = total > 0 ? ((value / total) * 100).toFixed(2) : '0';
+                    const displayValue = value % 1 === 0 ? value : parseFloat(value).toFixed(2);
+                    return [
+                      `${displayValue}% (${percent}% of total)`, 
+                      props.payload.name || 'Competency'
+                    ];
+                  }}
+                  labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#111827' }}
+                />
+                <Legend 
+                  verticalAlign="bottom"
+                  height={60}
+                  iconType="square"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  content={(props) => {
+                    const { payload } = props;
+                    if (!payload || payload.length === 0) return null;
+                    
+                    return (
+                      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4">
+                        {payload.map((entry: any, index: number) => {
+                          const data = entry.payload;
+                          const displayValue = data.value > 0 
+                            ? (data.value % 1 === 0 ? data.value : parseFloat(data.value).toFixed(2))
+                            : '0';
+                          return (
+                            <div key={index} className="flex items-center space-x-2">
+                              <div 
+                                className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                                style={{ backgroundColor: entry.color || '#E5E7EB' }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                {data.name}: {displayValue}%
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (

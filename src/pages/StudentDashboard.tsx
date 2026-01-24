@@ -225,58 +225,6 @@ const StudentDashboard: React.FC = () => {
     return assignments.filter(assignment => !assignment.isCompleted);
   };
 
-  // Helper function - kept for potential future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getAssignmentsForSubject = (subjectId: number) => {
-    // Backend already filters by isActive and isPublished, so we only need to check subjectId and completion
-    // Ensure both are numbers for comparison
-    const filtered = assignments.filter(assignment => {
-      const assignmentSubjectId = Number(assignment.subjectId);
-      const targetSubjectId = Number(subjectId);
-      const isCompleted = Boolean(assignment.isCompleted);
-      const matches = assignmentSubjectId === targetSubjectId && !isCompleted;
-      
-      if (matches) {
-        console.log(`✅ Assignment "${assignment.name}" matches subject ${subjectId}`, {
-          assignmentSubjectId,
-          targetSubjectId,
-          isCompleted: assignment.isCompleted,
-          matches
-        });
-      }
-      return matches;
-    });
-    
-    if (filtered.length === 0 && assignments.length > 0) {
-      // Debug: Check why no assignments match
-      const subjectAssignments = assignments.filter(a => Number(a.subjectId) === Number(subjectId));
-      if (subjectAssignments.length > 0) {
-        console.log(`⚠️ Found ${subjectAssignments.length} assignment(s) for subject ${subjectId}, but all are completed`);
-        subjectAssignments.forEach(a => {
-          console.log(`  - "${a.name}": isCompleted=${a.isCompleted} (type: ${typeof a.isCompleted})`);
-        });
-      } else {
-        console.log(`⚠️ No assignments found for subject ${subjectId} (looking for: ${subjectId}, type: ${typeof subjectId})`);
-        console.log(`   Available assignment subject IDs:`, 
-          [...new Set(assignments.map(a => ({ id: a.subjectId, type: typeof a.subjectId })))]);
-      }
-    }
-    
-    return filtered;
-  };
-
-  // Helper function - kept for potential future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const viewLatestReport = async (subjectId: number) => {
-    try {
-      const detailedResults = await studentAPI.getLatestAssessmentDetails(subjectId);
-      navigate('/results', { 
-        state: detailedResults 
-      });
-    } catch (error) {
-      console.error('Failed to fetch latest assessment details:', error);
-    }
-  };
 
   const getCompletedAssessments = (subjectId: number) => {
     const subjectData = dashboardData.find(data => data.subjectId === subjectId);
@@ -704,12 +652,12 @@ const StudentDashboard: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Completed Assessments</h2>
                   <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                    {completedAssignments.length} Completed
+                    {Math.min(completedAssignments.length, 5)} Completed
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  {completedAssignments.map((assignment) => (
+                  {completedAssignments.slice(0, 5).map((assignment) => (
                     <div key={assignment.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
