@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { User, Subject, Question, Assessment, AssessmentResponse, DashboardData, AdminStats, School, Grade, AssessmentConfiguration, Competency, CompetencyStats, PaginationInfo, StartAssessmentResponse } from '../types';
 
-const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
-// const API_BASE_URL = 'http://localhost:5000/api';
+//const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
+ const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,11 +11,22 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  
+  // Public endpoints that don't require authentication
+  const publicEndpoints = ['/auth/login', '/auth/register', '/sso/validate'];
+  const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log(`[API] Request to ${config.url} - Token included: ${token.substring(0, 20)}...`);
-  } else {
-    console.warn(`[API] Request to ${config.url} - NO TOKEN FOUND in localStorage`);
+    // Only log token info in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[API] Request to ${config.url} - Token included`);
+    }
+  } else if (!isPublicEndpoint) {
+    // Only warn for protected endpoints that should have a token
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[API] Request to ${config.url} - NO TOKEN FOUND in localStorage`);
+    }
   }
   return config;
 });
