@@ -198,6 +198,16 @@ export const adminAPI = {
     const response = await api.get(`/admin/analytics/competency-growth?${params}`);
     return response.data;
   },
+  
+  getGrowthData: async (filters?: { schoolId?: number; gradeId?: number; studentId?: number; subjectId?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.subjectId) params.append('subjectId', filters.subjectId.toString());
+    if (filters?.schoolId) params.append('schoolId', filters.schoolId.toString());
+    if (filters?.gradeId) params.append('gradeId', filters.gradeId.toString());
+    if (filters?.studentId) params.append('studentId', filters.studentId.toString());
+    const response = await api.get(`/admin/analytics/growth-data?${params}`);
+    return response.data;
+  },
 
   uploadFile: async (formData: FormData) => {
     const response = await api.post('/uploads/file', formData, {

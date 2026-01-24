@@ -568,18 +568,6 @@ const AdminDashboard: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => setActiveTab('performance')}
-                    className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-all ${
-                      activeTab === 'performance'
-                        ? 'bg-blue-50 text-blue-700 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span className="text-sm font-medium">PERFORMANCE</span>
-                  </button>
-
-                  <button
                     onClick={() => setActiveTab('competency-analytics')}
                     className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-all ${
                       activeTab === 'competency-analytics'
@@ -588,7 +576,7 @@ const AdminDashboard: React.FC = () => {
                     }`}
                   >
                     <Brain className="h-4 w-4" />
-                    <span className="text-sm font-medium">COMPETENCY ANALYTICS</span>
+                    <span className="text-sm font-medium">COMPETENCIES</span>
                   </button>
                 </div>
               )}
@@ -1207,7 +1195,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Student Growth Tab Content */}
+        {/* Student Growth Tab Content - Redirected to Performance (Consolidated) */}
         {activeTab === 'growth' && (
           <div className="space-y-6">
             {/* Filter Controls - Horizontal Layout */}
@@ -1503,7 +1491,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Performance Analytics Tab Content */}
+        {/* Performance Analytics Tab Content - Consolidated Growth & Performance */}
         {activeTab === 'performance' && (
           <div className="space-y-6">
             <SubjectPerformanceDashboard 

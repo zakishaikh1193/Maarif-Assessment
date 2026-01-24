@@ -54,6 +54,297 @@ export const getStudents = async (req, res) => {
   }
 };
 
+// Get flexible growth data at different levels (district, school, class, student)
+export const getGrowthData = async (req, res) => {
+  try {
+    const { schoolId, gradeId, studentId, subjectId } = req.query;
+    
+    // If no subject provided, get the first available subject or use a default
+    let actualSubjectId = subjectId;
+    if (!actualSubjectId) {
+      const defaultSubject = await executeQuery('SELECT id, name FROM subjects ORDER BY id ASC LIMIT 1', []);
+      if (defaultSubject.length === 0) {
+        return res.status(404).json({
+          error: 'No subjects available',
+          code: 'NO_SUBJECTS'
+        });
+      }
+      actualSubjectId = defaultSubject[0].id;
+    }
+
+    // Get subject name
+    const subjectResult = await executeQuery('SELECT name FROM subjects WHERE id = ?', [actualSubjectId]);
+    if (subjectResult.length === 0) {
+      return res.status(404).json({
+        error: 'Subject not found',
+        code: 'SUBJECT_NOT_FOUND'
+      });
+    }
+    const subjectName = subjectResult[0].name;
+
+    // Get all periods to ensure consistent data structure
+    const allPeriods = await executeQuery(`
+      SELECT DISTINCT 
+        CONCAT(assessment_period, ' ', year) as period,
+        year,
+        assessment_period
+      FROM assessments
+      WHERE subject_id = ? AND rit_score IS NOT NULL
+      ORDER BY year ASC, 
+        CASE assessment_period 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
+        END ASC
+    `, [actualSubjectId]);
+
+    // 1. District averages (always included - across all schools for the grade if gradeId provided, otherwise all)
+    let districtQuery = `
+      SELECT 
+        CONCAT(a.assessment_period, ' ', a.year) as period,
+        a.year,
+        a.assessment_period,
+        AVG(a.rit_score) as averageRITScore,
+        COUNT(DISTINCT a.student_id) as studentCount
+      FROM assessments a
+      JOIN users u ON a.student_id = u.id
+      WHERE a.subject_id = ? 
+      AND a.rit_score IS NOT NULL
+    `;
+    const districtParams = [actualSubjectId];
+    
+    if (gradeId) {
+      districtQuery += ' AND u.grade_id = ?';
+      districtParams.push(gradeId);
+    }
+    
+    districtQuery += `
+      GROUP BY a.assessment_period, a.year
+      ORDER BY a.year ASC, 
+        CASE a.assessment_period 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
+        END ASC
+    `;
+    
+    const districtAverages = await executeQuery(districtQuery, districtParams);
+
+    // 2. School averages (if schoolId provided)
+    let schoolAverages = [];
+    if (schoolId) {
+      let schoolQuery = `
+        SELECT 
+          CONCAT(a.assessment_period, ' ', a.year) as period,
+          a.year,
+          a.assessment_period,
+          AVG(a.rit_score) as averageRITScore,
+          COUNT(DISTINCT a.student_id) as studentCount
+        FROM assessments a
+        JOIN users u ON a.student_id = u.id
+        WHERE a.subject_id = ? 
+        AND a.rit_score IS NOT NULL
+        AND u.school_id = ?
+      `;
+      const schoolParams = [actualSubjectId, schoolId];
+      
+      if (gradeId) {
+        schoolQuery += ' AND u.grade_id = ?';
+        schoolParams.push(gradeId);
+      }
+      
+      schoolQuery += `
+        GROUP BY a.assessment_period, a.year
+        ORDER BY a.year ASC, 
+          CASE a.assessment_period 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
+          END ASC
+      `;
+      
+      schoolAverages = await executeQuery(schoolQuery, schoolParams);
+    }
+
+    // 3. Class averages (if gradeId and schoolId provided)
+    let classAverages = [];
+    if (gradeId && schoolId) {
+      const classQuery = `
+        SELECT 
+          CONCAT(a.assessment_period, ' ', a.year) as period,
+          a.year,
+          a.assessment_period,
+          AVG(a.rit_score) as averageRITScore,
+          COUNT(DISTINCT a.student_id) as studentCount
+        FROM assessments a
+        JOIN users u ON a.student_id = u.id
+        WHERE a.subject_id = ? 
+        AND a.rit_score IS NOT NULL
+        AND u.school_id = ?
+        AND u.grade_id = ?
+        GROUP BY a.assessment_period, a.year
+        ORDER BY a.year ASC, 
+          CASE a.assessment_period 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
+          END ASC
+      `;
+      
+      classAverages = await executeQuery(classQuery, [actualSubjectId, schoolId, gradeId]);
+    }
+
+    // 4. Student scores (if studentId provided)
+    let studentScores = [];
+    if (studentId) {
+      const studentQuery = `
+        SELECT 
+          CONCAT(assessment_period, ' ', year) as period,
+          year,
+          assessment_period,
+          rit_score,
+          date_taken
+        FROM (
+          SELECT 
+            assessment_period,
+            year,
+            rit_score,
+            date_taken,
+            ROW_NUMBER() OVER (
+              PARTITION BY year, assessment_period 
+              ORDER BY date_taken DESC, id DESC
+            ) as rn
+          FROM assessments 
+          WHERE student_id = ? 
+          AND subject_id = ? 
+          AND rit_score IS NOT NULL
+        ) ranked
+        WHERE rn = 1
+        ORDER BY year ASC, 
+          CASE assessment_period 
+            WHEN 'BOY' THEN 1 
+            WHEN 'EOY' THEN 2 
+          END ASC
+      `;
+      
+      studentScores = await executeQuery(studentQuery, [studentId, actualSubjectId]);
+    }
+
+    // 5. Period distributions (for background areas) - use class level if available, otherwise school, otherwise district
+    let periodDistributions = [];
+    const distributionLevel = (gradeId && schoolId) ? 'class' : schoolId ? 'school' : 'district';
+    
+    let distQuery = `
+      SELECT 
+        a.assessment_period,
+        a.year,
+        COUNT(*) as total_students,
+        SUM(CASE WHEN rit_score BETWEEN 100 AND 150 THEN 1 ELSE 0 END) as red_count,
+        SUM(CASE WHEN rit_score BETWEEN 151 AND 200 THEN 1 ELSE 0 END) as orange_count,
+        SUM(CASE WHEN rit_score BETWEEN 201 AND 250 THEN 1 ELSE 0 END) as yellow_count,
+        SUM(CASE WHEN rit_score BETWEEN 251 AND 300 THEN 1 ELSE 0 END) as green_count,
+        SUM(CASE WHEN rit_score BETWEEN 301 AND 350 THEN 1 ELSE 0 END) as blue_count
+      FROM assessments a
+      JOIN users u ON a.student_id = u.id
+      WHERE a.subject_id = ? 
+      AND a.rit_score IS NOT NULL
+    `;
+    const distParams = [actualSubjectId];
+    
+    if (distributionLevel === 'class' && schoolId && gradeId) {
+      distQuery += ' AND u.school_id = ? AND u.grade_id = ?';
+      distParams.push(schoolId, gradeId);
+    } else if (distributionLevel === 'school' && schoolId) {
+      distQuery += ' AND u.school_id = ?';
+      distParams.push(schoolId);
+      if (gradeId) {
+        distQuery += ' AND u.grade_id = ?';
+        distParams.push(gradeId);
+      }
+    } else if (gradeId) {
+      distQuery += ' AND u.grade_id = ?';
+      distParams.push(gradeId);
+    }
+    
+    distQuery += `
+      GROUP BY a.assessment_period, a.year
+      ORDER BY a.year ASC, 
+        CASE a.assessment_period 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
+        END ASC
+    `;
+    
+    const rawDistributions = await executeQuery(distQuery, distParams);
+    
+    // Calculate percentages
+    periodDistributions = rawDistributions.map(period => ({
+      period: `${period.assessment_period} ${period.year}`,
+      year: period.year,
+      assessmentPeriod: period.assessment_period,
+      totalStudents: period.total_students,
+      distributions: {
+        red: period.total_students > 0 ? Math.round((period.red_count / period.total_students) * 100) : 0,
+        orange: period.total_students > 0 ? Math.round((period.orange_count / period.total_students) * 100) : 0,
+        yellow: period.total_students > 0 ? Math.round((period.yellow_count / period.total_students) * 100) : 0,
+        green: period.total_students > 0 ? Math.round((period.green_count / period.total_students) * 100) : 0,
+        blue: period.total_students > 0 ? Math.round((period.blue_count / period.total_students) * 100) : 0
+      }
+    }));
+
+    // Get school and grade names if applicable
+    let schoolName = null;
+    let gradeName = null;
+    if (schoolId) {
+      const schoolResult = await executeQuery('SELECT name FROM schools WHERE id = ?', [schoolId]);
+      schoolName = schoolResult.length > 0 ? schoolResult[0].name : null;
+    }
+    if (gradeId) {
+      const gradeResult = await executeQuery('SELECT display_name FROM grades WHERE id = ?', [gradeId]);
+      gradeName = gradeResult.length > 0 ? gradeResult[0].display_name : null;
+    }
+
+    res.json({
+      subjectName,
+      schoolName: schoolName || null,
+      gradeName: gradeName || null,
+      studentScores: studentScores.map(score => ({
+        period: score.period,
+        year: score.year,
+        assessmentPeriod: score.assessment_period,
+        ritScore: score.rit_score,
+        dateTaken: score.date_taken
+      })),
+      classAverages: classAverages.map(avg => ({
+        period: avg.period,
+        year: avg.year,
+        assessmentPeriod: avg.assessment_period,
+        averageRITScore: Math.round(avg.averageRITScore),
+        studentCount: avg.studentCount
+      })),
+      schoolAverages: schoolAverages.map(avg => ({
+        period: avg.period,
+        year: avg.year,
+        assessmentPeriod: avg.assessment_period,
+        averageRITScore: Math.round(avg.averageRITScore),
+        studentCount: avg.studentCount
+      })),
+      districtAverages: districtAverages.map(avg => ({
+        period: avg.period,
+        year: avg.year,
+        assessmentPeriod: avg.assessment_period,
+        averageRITScore: Math.round(avg.averageRITScore),
+        studentCount: avg.studentCount
+      })),
+      periodDistributions: periodDistributions || [],
+      totalAssessments: studentScores.length
+    });
+
+  } catch (error) {
+    console.error('Error fetching growth data:', error);
+    res.status(500).json({
+      error: 'Failed to fetch growth data',
+      code: 'FETCH_GROWTH_ERROR'
+    });
+  }
+};
+
 // Get student growth data
 export const getStudentGrowth = async (req, res) => {
   try {
@@ -350,43 +641,59 @@ export const getAdminStats = async (req, res) => {
 // Get top performing students
 export const getTopPerformers = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit, 10) || 5;
+    
+    if (isNaN(limit) || limit < 1 || limit > 100) {
+      return res.status(400).json({
+        error: 'Invalid limit parameter',
+        code: 'INVALID_LIMIT'
+      });
+    }
 
-    // Get top performing students with their highest scores and school names
-    // First get the highest score per student
-    const topPerformers = await executeQuery(`
+    // Get top performing students - simplified approach
+    // First get students with their max scores, then get assessment details separately
+    // Embed limit directly in query (safe after validation - it's a validated integer)
+    const studentsWithMaxScores = await executeQuery(`
       SELECT 
         u.id as student_id,
         u.username,
         u.first_name,
         u.last_name,
         s.name as school_name,
-        MAX(a.rit_score) as highest_score,
-        (
-          SELECT sub.name 
-          FROM assessments a2
-          JOIN subjects sub ON a2.subject_id = sub.id
-          WHERE a2.student_id = u.id 
-          AND a2.rit_score = MAX(a.rit_score)
-          LIMIT 1
-        ) as subject_name,
-        (
-          SELECT a2.date_taken
-          FROM assessments a2
-          WHERE a2.student_id = u.id 
-          AND a2.rit_score = MAX(a.rit_score)
-          ORDER BY a2.date_taken DESC
-          LIMIT 1
-        ) as date_taken
+        MAX(a.rit_score) as highest_score
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       LEFT JOIN schools s ON u.school_id = s.id
       WHERE a.rit_score IS NOT NULL
       AND u.role = 'student'
       GROUP BY u.id, u.username, u.first_name, u.last_name, s.name
-      ORDER BY highest_score DESC, date_taken DESC
-      LIMIT ?
-    `, [limit]);
+      ORDER BY MAX(a.rit_score) DESC
+      LIMIT ${limit}
+    `);
+
+    // For each student, get their best assessment details
+    const topPerformers = await Promise.all(
+      studentsWithMaxScores.map(async (student) => {
+        const assessmentDetails = await executeQuery(`
+          SELECT 
+            sub.name as subject_name,
+            a.date_taken
+          FROM assessments a
+          LEFT JOIN subjects sub ON a.subject_id = sub.id
+          WHERE a.student_id = ?
+          AND a.rit_score = ?
+          ORDER BY a.date_taken DESC
+          LIMIT 1
+        `, [student.student_id, student.highest_score]);
+
+        const details = assessmentDetails[0] || {};
+        return {
+          ...student,
+          subject_name: details.subject_name || 'Unknown Subject',
+          date_taken: details.date_taken
+        };
+      })
+    );
 
     // Format the response
     const formatted = topPerformers.map((performer) => ({
@@ -395,7 +702,7 @@ export const getTopPerformers = async (req, res) => {
       schoolName: performer.school_name || 'Unknown School',
       highestScore: performer.highest_score,
       subjectName: performer.subject_name || 'Unknown Subject',
-      dateTaken: performer.date_taken
+      dateTaken: performer.date_taken || null
     }));
 
     res.json(formatted);

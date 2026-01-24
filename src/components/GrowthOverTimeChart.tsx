@@ -11,29 +11,93 @@ import React from 'react';
     Area
   } from 'recharts';
 import { GrowthOverTimeData } from '../types';
-import { TrendingUp, Users, Target } from 'lucide-react';
+import { TrendingUp, Users, Target, Download } from 'lucide-react';
+import { exportGrowthGraphicalToPDF } from '../utils/growthReportExport';
+import { exportCompletePerformanceReportToPDF } from '../utils/performanceReportExport';
 
 interface GrowthOverTimeChartProps {
   data: GrowthOverTimeData;
   userRole?: 'student' | 'admin';
+  filters?: {
+    schoolName?: string | null;
+    gradeName?: string | null;
+    studentName?: string | null;
+    subjectName?: string | null;
+  };
+  performanceData?: {
+    subjectPerformance?: Array<{
+      subject_id: number;
+      subject_name: string;
+      average_rit_score: number;
+      student_count: number;
+      min_score: number;
+      max_score: number;
+      standard_deviation: number;
+    }>;
+    growthRates?: Array<{
+      subject_id: number;
+      subject_name: string;
+      boy_avg: number;
+      eoy_avg: number;
+    }>;
+    yearTrends?: Array<{
+      year: number;
+      subject_id: number;
+      subject_name: string;
+      average_rit_score: number;
+    }>;
+  };
 }
 
-const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRole = 'student' }) => {
+const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRole = 'student', filters = {}, performanceData }) => {
+  // Get all unique periods from all data sources
+  const allPeriods = new Set<string>();
+  if (data.classAverages && data.classAverages.length > 0) {
+    data.classAverages.forEach(avg => allPeriods.add(avg.period));
+  }
+  if (data.schoolAverages && data.schoolAverages.length > 0) {
+    data.schoolAverages.forEach(avg => allPeriods.add(avg.period));
+  }
+  if (data.districtAverages && data.districtAverages.length > 0) {
+    data.districtAverages.forEach(avg => allPeriods.add(avg.period));
+  }
+  if (data.studentScores && data.studentScores.length > 0) {
+    data.studentScores.forEach(score => allPeriods.add(score.period));
+  }
+  
+  // If no periods found, return empty chart
+  if (allPeriods.size === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="text-center py-8">
+          <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No growth data available</p>
+        </div>
+      </div>
+    );
+  }
+  
   // Merge scores and averages into chart data
-  const chartData = data.classAverages.map(classAvg => {
-    const studentScore = data.studentScores.find(s => s.period === classAvg.period);
-    const distribution = data.periodDistributions.find(d => d.period === classAvg.period);
-    const districtAvg = data.districtAverages?.find(d => d.period === classAvg.period);
+  const chartData = Array.from(allPeriods).map(period => {
+    const classAvg = data.classAverages?.find(a => a.period === period);
+    const schoolAvg = data.schoolAverages?.find(a => a.period === period);
+    const studentScore = data.studentScores?.find(s => s.period === period);
+    const distribution = data.periodDistributions?.find(d => d.period === period);
+    const districtAvg = data.districtAverages?.find(d => d.period === period);
 
+    // Determine year and assessmentPeriod from any available source
+    const source = classAvg || schoolAvg || districtAvg || studentScore;
+    
     return {
-      period: classAvg.period,
-      year: classAvg.year,
-      assessmentPeriod: classAvg.assessmentPeriod,
+      period,
+      year: source?.year || 0,
+      assessmentPeriod: source?.assessmentPeriod || 'BOY',
       ritScore: studentScore?.ritScore ?? null,
       dateTaken: studentScore?.dateTaken ?? '',
-      classAverage: classAvg.averageRITScore,
+      classAverage: classAvg?.averageRITScore ?? null,
+      schoolAverage: schoolAvg?.averageRITScore ?? null,
       districtAverage: districtAvg?.averageRITScore ?? null,
-      studentCount: classAvg.studentCount,
+      studentCount: classAvg?.studentCount || schoolAvg?.studentCount || districtAvg?.studentCount || 0,
       // distribution values for stacked bars (percent of total students)
       red: distribution ? distribution.distributions.red : 0,
       orange: distribution ? distribution.distributions.orange : 0,
@@ -67,18 +131,23 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
       return (
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
-          {dataPoint?.ritScore && (
+          {dataPoint?.ritScore !== null && dataPoint?.ritScore !== undefined && (
             <p className="text-gray-600">
-              Your Growth Metric Score: <span className="font-medium text-blue-600">{dataPoint.ritScore}</span>
+              Student Growth Metric Score: <span className="font-medium text-gray-900">{dataPoint.ritScore}</span>
             </p>
           )}
-          {dataPoint?.classAverage && (
+          {dataPoint?.classAverage !== null && dataPoint?.classAverage !== undefined && (
             <p className="text-gray-600">
               Class Average: <span className="font-medium text-gray-600">{dataPoint.classAverage}</span>
               <span className="text-xs text-gray-500 ml-1">({dataPoint.studentCount} students)</span>
             </p>
           )}
-          {dataPoint?.districtAverage && userRole === 'admin' && (
+          {dataPoint?.schoolAverage !== null && dataPoint?.schoolAverage !== undefined && userRole === 'admin' && (
+            <p className="text-gray-600">
+              School Average: <span className="font-medium text-blue-600">{dataPoint.schoolAverage}</span>
+            </p>
+          )}
+          {dataPoint?.districtAverage !== null && dataPoint?.districtAverage !== undefined && userRole === 'admin' && (
             <p className="text-gray-600">
               District Average: <span className="font-medium text-red-600">{dataPoint.districtAverage}</span>
             </p>
@@ -89,19 +158,51 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
     return null;
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      // If performance data is provided, export complete report, otherwise just growth chart
+      if (performanceData) {
+        await exportCompletePerformanceReportToPDF(
+          data,
+          performanceData,
+          filters,
+          {
+            performanceOverview: 'performance-overview-chart',
+            growthOverTime: 'growth-chart-container',
+            yearTrends: 'year-trends-chart'
+          }
+        );
+      } else {
+        await exportGrowthGraphicalToPDF(data, filters, 'growth-chart-container');
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
-          <TrendingUp className="h-5 w-5 text-blue-600" />
-          <span>Growth Over Time</span>
-        </h3>
-        <p className="text-gray-600 text-sm">
-          {data.subjectName} - Growth Metric Score progression across assessment periods
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
+            <span>Growth Over Time</span>
+          </h3>
+          <p className="text-gray-600 text-sm">
+            {data.subjectName || 'All Subjects'} - Growth Metric Score progression across assessment periods
+          </p>
+        </div>
+        <button
+          onClick={handleDownloadPDF}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Download className="h-4 w-4" />
+          <span>Download PDF</span>
+        </button>
       </div>
 
-      <div className="h-96">
+      <div id="growth-chart-container" className="h-96">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={chartData}
@@ -182,26 +283,45 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
               dot={{ r: 5, fill: "#1f2937", stroke: "white", strokeWidth: 2 }}
               connectNulls={false}
             />
-            <Line
-              type="monotone"
-              dataKey="classAverage"
-              yAxisId={1}
-              stroke="#6b7280"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={{ r: 4, fill: "#6b7280", stroke: "white", strokeWidth: 1 }}
-              connectNulls={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="districtAverage"
-              yAxisId={1}
-              stroke="#dc2626"
-              strokeWidth={2}
-              strokeDasharray="3 3"
-              dot={{ r: 4, fill: "#dc2626", stroke: "white", strokeWidth: 1 }}
-              connectNulls={false}
-            />
+            {data.schoolAverages && data.schoolAverages.length > 0 && (
+              <Line
+                type="monotone"
+                dataKey="schoolAverage"
+                yAxisId={1}
+                stroke="#3b82f6"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ r: 4, fill: "#3b82f6", stroke: "white", strokeWidth: 1 }}
+                connectNulls={false}
+                name="School Average"
+              />
+            )}
+            {data.classAverages && data.classAverages.length > 0 && (
+              <Line
+                type="monotone"
+                dataKey="classAverage"
+                yAxisId={1}
+                stroke="#6b7280"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ r: 4, fill: "#6b7280", stroke: "white", strokeWidth: 1 }}
+                connectNulls={false}
+                name="Class Average"
+              />
+            )}
+            {data.districtAverages && data.districtAverages.length > 0 && (
+              <Line
+                type="monotone"
+                dataKey="districtAverage"
+                yAxisId={1}
+                stroke="#dc2626"
+                strokeWidth={2}
+                strokeDasharray="3 3"
+                dot={{ r: 4, fill: "#dc2626", stroke: "white", strokeWidth: 1 }}
+                connectNulls={false}
+                name="District Average"
+              />
+            )}
 
             {/* Second Y axis for Growth Metric scores */}
             <YAxis
@@ -222,15 +342,25 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
 
         {/* Legend */}
         <div className="mt-6 flex flex-wrap gap-6 justify-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-1 bg-gray-900"></div>
-            <span className="text-sm text-gray-600">Your Growth Metric Score</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-1 bg-gray-500 border-dashed border border-gray-500"></div>
-            <span className="text-sm text-gray-600">Class Average</span>
-          </div>
-          {userRole === 'admin' && (
+          {data.studentScores && data.studentScores.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-1 bg-gray-900"></div>
+              <span className="text-sm text-gray-600">Student Growth Metric Score</span>
+            </div>
+          )}
+          {data.classAverages && data.classAverages.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-1 bg-gray-500 border-dashed border border-gray-500"></div>
+              <span className="text-sm text-gray-600">Class Average</span>
+            </div>
+          )}
+          {data.schoolAverages && data.schoolAverages.length > 0 && userRole === 'admin' && (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-1 bg-blue-600 border border-blue-600" style={{ borderStyle: 'dashed' }}></div>
+              <span className="text-sm text-gray-600">School Average</span>
+            </div>
+          )}
+          {data.districtAverages && data.districtAverages.length > 0 && userRole === 'admin' && (
             <div className="flex items-center space-x-2">
               <div className="w-4 h-1 bg-red-600 border border-red-600" style={{ borderStyle: 'dashed' }}></div>
               <span className="text-sm text-gray-600">District Average</span>
