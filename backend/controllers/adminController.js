@@ -5,6 +5,19 @@ import { convertImagePlaceholders } from '../utils/imagePlaceholder.js';
 // Get all students
 export const getStudents = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countResult = await executeQuery(`
+      SELECT COUNT(*) as total
+      FROM users u
+      WHERE u.role = 'student'
+    `);
+    const total = countResult[0]?.total || 0;
+
+    // Get paginated students
     const students = await executeQuery(`
       SELECT 
         u.id, 
@@ -20,9 +33,18 @@ export const getStudents = async (req, res) => {
       LEFT JOIN grades g ON u.grade_id = g.id
       WHERE u.role = 'student'
       ORDER BY u.first_name, u.last_name, u.username
-    `);
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
     
-    res.json(students);
+    res.json({
+      students,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalStudents: total,
+        limit
+      }
+    });
   } catch (error) {
     console.error('Error fetching students:', error);
     res.status(500).json({

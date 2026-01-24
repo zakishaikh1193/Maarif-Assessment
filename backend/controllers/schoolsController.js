@@ -3,11 +3,31 @@ import { executeQuery } from '../config/database.js';
 // Get all schools
 export const getAllSchools = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countResult = await executeQuery(
+      'SELECT COUNT(*) as total FROM schools'
+    );
+    const total = countResult[0]?.total || 0;
+
+    // Get paginated schools
     const schools = await executeQuery(
-      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools ORDER BY name'
+      'SELECT id, name, address, contact_email, contact_phone, created_at FROM schools ORDER BY name LIMIT ? OFFSET ?',
+      [limit, offset]
     );
 
-    res.json(schools);
+    res.json({
+      schools,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalSchools: total,
+        limit
+      }
+    });
   } catch (error) {
     console.error('Error fetching schools:', error);
     res.status(500).json({

@@ -490,6 +490,44 @@ export const updateSSOSettings = async (req, res) => {
  */
 export const getPowerSchoolSettings = async (req, res) => {
   try {
+    // First, check if PowerSchool columns exist, if not add them
+    try {
+      await executeQuery(
+        'SELECT power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret FROM settings WHERE id = 1 LIMIT 1'
+      );
+    } catch (columnError) {
+      // If columns don't exist, add them
+      if (columnError.code === 'ER_BAD_FIELD_ERROR' || columnError.message.includes("Unknown column")) {
+        console.log('PowerSchool columns not found, adding them...');
+        try {
+          // Try to add each column, ignore if it already exists
+          const alterQueries = [
+            'ALTER TABLE settings ADD COLUMN power_school_enabled TINYINT(1) DEFAULT 0',
+            'ALTER TABLE settings ADD COLUMN power_school_url VARCHAR(500) NULL',
+            'ALTER TABLE settings ADD COLUMN power_school_client_id VARCHAR(255) NULL',
+            'ALTER TABLE settings ADD COLUMN power_school_client_secret VARCHAR(255) NULL'
+          ];
+          
+          for (const query of alterQueries) {
+            try {
+              await executeQuery(query);
+            } catch (alterError) {
+              // Ignore "Duplicate column name" errors (column already exists)
+              if (alterError.code === 'ER_DUP_FIELDNAME' || alterError.message.includes('Duplicate column name')) {
+                console.log('Column already exists, skipping...');
+              } else {
+                console.error('Error adding PowerSchool column:', alterError.message);
+              }
+            }
+          }
+        } catch (alterError) {
+          console.error('Error adding PowerSchool columns:', alterError.message);
+        }
+      } else {
+        throw columnError;
+      }
+    }
+
     const settings = await executeQuery(
       'SELECT power_school_enabled, power_school_url, power_school_client_id, power_school_client_secret FROM settings WHERE id = 1'
     );
@@ -509,7 +547,7 @@ export const getPowerSchoolSettings = async (req, res) => {
 
     const setting = settings[0];
     res.json({
-      power_school_enabled: Boolean(setting.power_school_enabled),
+      power_school_enabled: Boolean(setting.power_school_enabled || 0),
       power_school_url: setting.power_school_url || '',
       power_school_client_id: setting.power_school_client_id || '',
       power_school_client_secret: setting.power_school_client_secret ? '***hidden***' : ''
@@ -519,7 +557,8 @@ export const getPowerSchoolSettings = async (req, res) => {
     console.error('Error fetching PowerSchool settings:', error);
     res.status(500).json({
       error: 'Failed to fetch PowerSchool settings',
-      code: 'FETCH_POWERSCHOOL_SETTINGS_ERROR'
+      code: 'FETCH_POWERSCHOOL_SETTINGS_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

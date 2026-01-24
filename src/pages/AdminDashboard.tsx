@@ -66,6 +66,9 @@ const AdminDashboard: React.FC = () => {
 
   // Cascading filter states for growth analysis
   const [schools, setSchools] = useState<School[]>([]);
+  
+  // Ensure schools is always an array
+  const safeSchools = Array.isArray(schools) ? schools : [];
   const [grades, setGrades] = useState<Grade[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Array<{id: number, username: string, firstName?: string, lastName?: string, schoolName?: string, gradeName?: string}>>([]);
   const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
@@ -235,16 +238,18 @@ const AdminDashboard: React.FC = () => {
 
   const loadInitialData = async () => {
     try {
-      const [subjectsData, statsData, studentsData, schoolsData, gradesData] = await Promise.all([
+      const [subjectsData, statsData, studentsData, schoolsResponse, gradesData] = await Promise.all([
         subjectsAPI.getAll(),
         adminAPI.getStats(),
         adminAPI.getStudents(),
-        schoolsAPI.getAll(),
+        schoolsAPI.getAll(1, 1000), // Get all schools for dropdown (large limit)
         gradesAPI.getActive()
       ]);
       setSubjects(subjectsData);
       setStats(statsData);
       setStudents(studentsData);
+      // Handle paginated response structure
+      const schoolsData = Array.isArray(schoolsResponse) ? schoolsResponse : (schoolsResponse.schools || []);
       setSchools(schoolsData);
       setGrades(gradesData);
       if (subjectsData.length > 0) {
@@ -1225,7 +1230,7 @@ const AdminDashboard: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
                     <option value="">Select School</option>
-                    {schools.map((school) => (
+                    {safeSchools.map((school) => (
                       <option key={school.id} value={school.id}>
                         {school.name}
                       </option>
