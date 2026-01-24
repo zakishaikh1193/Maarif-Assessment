@@ -287,14 +287,15 @@ export interface AdminStats {
 
 export interface Competency {
   id: number;
+  parent_id?: number | null;
   code: string;
   name: string;
   description?: string;
-  strong_description: string;
-  neutral_description: string;
-  growth_description: string;
-  strong_threshold: number;
-  neutral_threshold: number;
+  strong_description?: string | null;
+  neutral_description?: string | null;
+  growth_description?: string | null;
+  strong_threshold?: number | null;
+  neutral_threshold?: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

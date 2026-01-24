@@ -484,7 +484,11 @@ export const competenciesAPI = {
   getStudentCompetencyGrowth: (studentId: number, subjectId: number) => 
     api.get('/admin/student-competency-growth', { 
       params: { studentId, subjectId } 
-    }).then(res => res.data)
+    }).then(res => res.data),
+  importFromCSV: async (csvData: any[]) => {
+    const response = await api.post('/admin/competencies/import-csv', { csvData });
+    return response.data;
+  }
 };
 
 // SSO API

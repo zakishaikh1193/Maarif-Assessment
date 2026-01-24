@@ -1,10 +1,35 @@
 import { executeQuery } from '../config/database.js';
 
+// Helper function to check for circular reference
+const checkCircularReference = async (competencyId, parentId) => {
+  if (!parentId || parentId === 0) return false;
+  if (competencyId === parentId) return true;
+  
+  // Check if parentId is an ancestor of competencyId
+  let currentParentId = parentId;
+  const visited = new Set([competencyId]);
+  
+  while (currentParentId && currentParentId !== 0) {
+    if (visited.has(currentParentId)) return true;
+    visited.add(currentParentId);
+    
+    const parent = await executeQuery(
+      'SELECT parent_id FROM competencies WHERE id = ?',
+      [currentParentId]
+    );
+    
+    if (parent.length === 0) break;
+    currentParentId = parent[0].parent_id || 0;
+  }
+  
+  return false;
+};
+
 // Get all competencies
 export const getAllCompetencies = async (req, res) => {
   try {
     const competencies = await executeQuery(
-      'SELECT id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at FROM competencies ORDER BY code ASC'
+      'SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at FROM competencies ORDER BY code ASC'
     );
     res.json(competencies);
   } catch (error) {
@@ -17,7 +42,7 @@ export const getAllCompetencies = async (req, res) => {
 export const getActiveCompetencies = async (req, res) => {
   try {
     const competencies = await executeQuery(
-      'SELECT id, code, name, description, strong_threshold, neutral_threshold FROM competencies WHERE is_active = 1 ORDER BY code ASC'
+      'SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold FROM competencies WHERE is_active = 1 ORDER BY code ASC'
     );
     res.json(competencies);
   } catch (error) {
@@ -59,10 +84,29 @@ export const createCompetency = async (req, res) => {
       strong_description,
       neutral_description,
       growth_description,
-      strong_threshold = 70,
-      neutral_threshold = 50,
-      is_active = 1
+      strong_threshold,
+      neutral_threshold,
+      is_active = 1,
+      parent_id = 0
     } = req.body;
+
+    // Validate parent_id
+    const parentId = parent_id === null || parent_id === undefined ? 0 : parseInt(parent_id);
+    
+    // If parent_id is provided and not 0, verify it exists
+    if (parentId !== 0) {
+      const parentExists = await executeQuery(
+        'SELECT id FROM competencies WHERE id = ?',
+        [parentId]
+      );
+      
+      if (parentExists.length === 0) {
+        return res.status(400).json({
+          error: 'Parent competency not found',
+          code: 'PARENT_COMPETENCY_NOT_FOUND'
+        });
+      }
+    }
 
     // Check if competency code already exists
     const existingCode = await executeQuery(
@@ -90,21 +134,37 @@ export const createCompetency = async (req, res) => {
       });
     }
 
-    // Validate thresholds
-    if (strong_threshold <= neutral_threshold) {
-      return res.status(400).json({
-        error: 'Strong threshold must be greater than neutral threshold',
-        code: 'INVALID_THRESHOLDS'
-      });
+    // Validate thresholds if both are provided
+    if (strong_threshold !== undefined && strong_threshold !== null && strong_threshold !== '' &&
+        neutral_threshold !== undefined && neutral_threshold !== null && neutral_threshold !== '') {
+      const strong = typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold;
+      const neutral = typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold;
+      if (strong <= neutral) {
+        return res.status(400).json({
+          error: 'Strong threshold must be greater than neutral threshold',
+          code: 'INVALID_THRESHOLDS'
+        });
+      }
     }
+
+    // Handle optional fields - convert empty strings to null
+    const strongDesc = strong_description && strong_description.trim() !== '' ? strong_description : null;
+    const neutralDesc = neutral_description && neutral_description.trim() !== '' ? neutral_description : null;
+    const growthDesc = growth_description && growth_description.trim() !== '' ? growth_description : null;
+    const strongThresh = (strong_threshold !== undefined && strong_threshold !== null && strong_threshold !== '') 
+      ? (typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold) 
+      : null;
+    const neutralThresh = (neutral_threshold !== undefined && neutral_threshold !== null && neutral_threshold !== '') 
+      ? (typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold) 
+      : null;
 
     const result = await executeQuery(
       `INSERT INTO competencies (
-        code, name, description, strong_description, neutral_description, 
+        parent_id, code, name, description, strong_description, neutral_description, 
         growth_description, strong_threshold, neutral_threshold, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [code, name, description, strong_description, neutral_description, 
-       growth_description, strong_threshold, neutral_threshold, is_active]
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [parentId, code, name, description || null, strongDesc, neutralDesc, 
+       growthDesc, strongThresh, neutralThresh, is_active]
     );
 
     // Fetch the created competency
@@ -136,12 +196,13 @@ export const updateCompetency = async (req, res) => {
       growth_description,
       strong_threshold,
       neutral_threshold,
-      is_active
+      is_active,
+      parent_id
     } = req.body;
 
     // Check if competency exists
     const existingCompetency = await executeQuery(
-      'SELECT id FROM competencies WHERE id = ?',
+      'SELECT id, parent_id FROM competencies WHERE id = ?',
       [id]
     );
 
@@ -150,6 +211,35 @@ export const updateCompetency = async (req, res) => {
         error: 'Competency not found',
         code: 'COMPETENCY_NOT_FOUND'
       });
+    }
+
+    // Validate parent_id if provided
+    if (parent_id !== undefined) {
+      const parentId = parent_id === null || parent_id === undefined ? 0 : parseInt(parent_id);
+      
+      // Check for circular reference
+      const hasCircularRef = await checkCircularReference(parseInt(id), parentId);
+      if (hasCircularRef) {
+        return res.status(400).json({
+          error: 'Cannot set parent: would create circular reference',
+          code: 'CIRCULAR_REFERENCE_ERROR'
+        });
+      }
+      
+      // If parent_id is provided and not 0, verify it exists
+      if (parentId !== 0) {
+        const parentExists = await executeQuery(
+          'SELECT id FROM competencies WHERE id = ?',
+          [parentId]
+        );
+        
+        if (parentExists.length === 0) {
+          return res.status(400).json({
+            error: 'Parent competency not found',
+            code: 'PARENT_COMPETENCY_NOT_FOUND'
+          });
+        }
+      }
     }
 
     // Check if code already exists (excluding current competency)
@@ -183,8 +273,11 @@ export const updateCompetency = async (req, res) => {
     }
 
     // Validate thresholds if both are provided
-    if (strong_threshold !== undefined && neutral_threshold !== undefined) {
-      if (strong_threshold <= neutral_threshold) {
+    if (strong_threshold !== undefined && strong_threshold !== null && strong_threshold !== '' &&
+        neutral_threshold !== undefined && neutral_threshold !== null && neutral_threshold !== '') {
+      const strong = typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold;
+      const neutral = typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold;
+      if (strong <= neutral) {
         return res.status(400).json({
           error: 'Strong threshold must be greater than neutral threshold',
           code: 'INVALID_THRESHOLDS'
@@ -196,6 +289,11 @@ export const updateCompetency = async (req, res) => {
     const updateFields = [];
     const updateValues = [];
 
+    if (parent_id !== undefined) {
+      const parentId = parent_id === null || parent_id === undefined ? 0 : parseInt(parent_id);
+      updateFields.push('parent_id = ?');
+      updateValues.push(parentId);
+    }
     if (code !== undefined) {
       updateFields.push('code = ?');
       updateValues.push(code);
@@ -210,23 +308,29 @@ export const updateCompetency = async (req, res) => {
     }
     if (strong_description !== undefined) {
       updateFields.push('strong_description = ?');
-      updateValues.push(strong_description);
+      updateValues.push(strong_description && strong_description.trim() !== '' ? strong_description : null);
     }
     if (neutral_description !== undefined) {
       updateFields.push('neutral_description = ?');
-      updateValues.push(neutral_description);
+      updateValues.push(neutral_description && neutral_description.trim() !== '' ? neutral_description : null);
     }
     if (growth_description !== undefined) {
       updateFields.push('growth_description = ?');
-      updateValues.push(growth_description);
+      updateValues.push(growth_description && growth_description.trim() !== '' ? growth_description : null);
     }
     if (strong_threshold !== undefined) {
       updateFields.push('strong_threshold = ?');
-      updateValues.push(strong_threshold);
+      const strongThresh = (strong_threshold !== null && strong_threshold !== '') 
+        ? (typeof strong_threshold === 'string' ? parseInt(strong_threshold) : strong_threshold) 
+        : null;
+      updateValues.push(strongThresh);
     }
     if (neutral_threshold !== undefined) {
       updateFields.push('neutral_threshold = ?');
-      updateValues.push(neutral_threshold);
+      const neutralThresh = (neutral_threshold !== null && neutral_threshold !== '') 
+        ? (typeof neutral_threshold === 'string' ? parseInt(neutral_threshold) : neutral_threshold) 
+        : null;
+      updateValues.push(neutralThresh);
     }
     if (is_active !== undefined) {
       updateFields.push('is_active = ?');
@@ -278,6 +382,19 @@ export const deleteCompetency = async (req, res) => {
       return res.status(404).json({
         error: 'Competency not found',
         code: 'COMPETENCY_NOT_FOUND'
+      });
+    }
+
+    // Check if competency has children
+    const children = await executeQuery(
+      'SELECT COUNT(*) as count FROM competencies WHERE parent_id = ?',
+      [id]
+    );
+
+    if (children[0].count > 0) {
+      return res.status(400).json({
+        error: 'Cannot delete competency that has child competencies. Please delete or reassign child competencies first.',
+        code: 'COMPETENCY_HAS_CHILDREN'
       });
     }
 
@@ -370,5 +487,162 @@ export const getCompetencyQuestions = async (req, res) => {
   } catch (error) {
     console.error('Error fetching competency questions:', error);
     res.status(500).json({ error: 'Failed to fetch competency questions', code: 'FETCH_COMPETENCY_QUESTIONS_ERROR' });
+  }
+};
+
+// Import competencies from CSV
+export const importCompetenciesFromCSV = async (req, res) => {
+  try {
+    const { csvData } = req.body;
+
+    if (!Array.isArray(csvData) || csvData.length === 0) {
+      return res.status(400).json({
+        error: 'CSV data is required and must be a non-empty array',
+        code: 'INVALID_CSV_DATA'
+      });
+    }
+
+    const success = [];
+    const errors = [];
+    const codeToIdMap = new Map(); // Map competency codes to their IDs (for parent mapping)
+
+    // First, get all existing competencies to build code-to-id map
+    const existingCompetencies = await executeQuery(
+      'SELECT id, code FROM competencies'
+    );
+    existingCompetencies.forEach(comp => {
+      codeToIdMap.set(comp.code, comp.id);
+    });
+
+    // Process competencies in multiple passes:
+    // Pass 1: Create top-level competencies (no parent or parent doesn't exist in CSV)
+    // Pass 2+: Create competencies whose parents were created in previous passes
+    const processed = new Set();
+    let pass = 0;
+    const maxPasses = 10; // Prevent infinite loops
+
+    while (processed.size < csvData.length && pass < maxPasses) {
+      pass++;
+      let progressMade = false;
+
+      for (let i = 0; i < csvData.length; i++) {
+        const row = csvData[i];
+        const rowNumber = i + 1;
+
+        // Skip if already processed
+        if (processed.has(i)) continue;
+
+        const { compCode, compName, description, parentCompetency } = row;
+
+        // Validate required fields
+        if (!compCode || !compName) {
+          errors.push({
+            row: rowNumber,
+            error: 'Comp Code and Comp Name are required',
+            data: row
+          });
+          processed.add(i);
+          continue;
+        }
+
+        // Check if competency code already exists
+        if (codeToIdMap.has(compCode)) {
+          errors.push({
+            row: rowNumber,
+            error: `Competency code "${compCode}" already exists`,
+            data: row
+          });
+          processed.add(i);
+          continue;
+        }
+
+        // Determine parent_id
+        let parentId = 0;
+        if (parentCompetency && parentCompetency.trim()) {
+          const parentCode = parentCompetency.trim();
+          
+          // Check if parent exists in codeToIdMap (either existing or newly created)
+          if (codeToIdMap.has(parentCode)) {
+            parentId = codeToIdMap.get(parentCode);
+          } else {
+            // Parent doesn't exist yet - skip this row for now (will process in next pass)
+            continue;
+          }
+        }
+
+        // Create competency
+        try {
+          const result = await executeQuery(
+            `INSERT INTO competencies (
+              parent_id, code, name, description, is_active
+            ) VALUES (?, ?, ?, ?, ?)`,
+            [
+              parentId,
+              compCode.trim(),
+              compName.trim(),
+              description && description.trim() ? description.trim() : null,
+              1 // is_active = true by default
+            ]
+          );
+
+          const newId = result.insertId;
+          codeToIdMap.set(compCode.trim(), newId);
+
+          success.push({
+            row: rowNumber,
+            competencyId: newId,
+            code: compCode.trim(),
+            name: compName.trim(),
+            parentCode: parentCompetency && parentCompetency.trim() ? parentCompetency.trim() : undefined
+          });
+
+          processed.add(i);
+          progressMade = true;
+        } catch (error) {
+          console.error(`Error creating competency at row ${rowNumber}:`, error);
+          errors.push({
+            row: rowNumber,
+            error: error.message || 'Failed to create competency',
+            data: row
+          });
+          processed.add(i);
+        }
+      }
+
+      // If no progress was made in this pass, break to avoid infinite loop
+      if (!progressMade) {
+        // Mark remaining as errors
+        for (let i = 0; i < csvData.length; i++) {
+          if (!processed.has(i)) {
+            const row = csvData[i];
+            errors.push({
+              row: i + 1,
+              error: `Parent competency "${row.parentCompetency || ''}" not found in CSV or database`,
+              data: row
+            });
+            processed.add(i);
+          }
+        }
+        break;
+      }
+    }
+
+    res.json({
+      results: {
+        success,
+        errors,
+        summary: {
+          total: csvData.length,
+          successful: success.length,
+          failed: errors.length
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error importing competencies from CSV:', error);
+    res.status(500).json({
+      error: 'Failed to import competencies from CSV',
+      code: 'IMPORT_COMPETENCIES_ERROR'
+    });
   }
 };
