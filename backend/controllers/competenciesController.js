@@ -33,6 +33,10 @@ export const getAllCompetencies = async (req, res) => {
     const offset = (page - 1) * limit;
     const searchTerm = req.query.search || '';
 
+    // Validate and sanitize limit and offset
+    const validatedLimit = Math.max(1, Math.min(1000, limit));
+    const validatedOffset = Math.max(0, offset);
+
     // Build WHERE clause for search
     let whereClause = '';
     let queryParams = [];
@@ -48,15 +52,15 @@ export const getAllCompetencies = async (req, res) => {
     const countResult = await executeQuery(countQuery, queryParams);
     const total = countResult[0]?.total || 0;
 
-    // Get paginated competencies
+    // Get paginated competencies - embed LIMIT and OFFSET directly to avoid parameter binding issues
     const competenciesQuery = `
       SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at 
       FROM competencies 
       ${whereClause}
       ORDER BY code ASC 
-      LIMIT ? OFFSET ?
+      LIMIT ${validatedLimit} OFFSET ${validatedOffset}
     `;
-    const competencies = await executeQuery(competenciesQuery, [...queryParams, limit, offset]);
+    const competencies = await executeQuery(competenciesQuery, queryParams);
 
     const totalPages = Math.ceil(total / limit);
 

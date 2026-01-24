@@ -31,7 +31,7 @@ import {
 const StudentDashboard: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardData[]>([]);
-  const [assessmentConfigs, setAssessmentConfigs] = useState<Record<number, AssessmentConfiguration>>({});
+  const [_assessmentConfigs, setAssessmentConfigs] = useState<Record<number, AssessmentConfiguration>>({});
   const [assignments, setAssignments] = useState<any[]>([]);
   const [completedAssignments, setCompletedAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +76,7 @@ const StudentDashboard: React.FC = () => {
       setAssignments(assignmentsData || []);
       
       // Sort completed assignments by completion date (most recent first)
-      const sortedCompleted = (completedAssignmentsData || []).sort((a, b) => {
+      const sortedCompleted = (completedAssignmentsData || []).sort((a: any, b: any) => {
         const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
         const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
         return dateB - dateA; // Descending order (most recent first)
@@ -150,54 +150,6 @@ const StudentDashboard: React.FC = () => {
     return assignments.filter(assignment => !assignment.isCompleted);
   };
 
-  const getAssignmentsForSubject = (subjectId: number) => {
-    // Backend already filters by isActive and isPublished, so we only need to check subjectId and completion
-    // Ensure both are numbers for comparison
-    const filtered = assignments.filter(assignment => {
-      const assignmentSubjectId = Number(assignment.subjectId);
-      const targetSubjectId = Number(subjectId);
-      const isCompleted = Boolean(assignment.isCompleted);
-      const matches = assignmentSubjectId === targetSubjectId && !isCompleted;
-      
-      if (matches) {
-        console.log(`✅ Assignment "${assignment.name}" matches subject ${subjectId}`, {
-          assignmentSubjectId,
-          targetSubjectId,
-          isCompleted: assignment.isCompleted,
-          matches
-        });
-      }
-      return matches;
-    });
-    
-    if (filtered.length === 0 && assignments.length > 0) {
-      // Debug: Check why no assignments match
-      const subjectAssignments = assignments.filter(a => Number(a.subjectId) === Number(subjectId));
-      if (subjectAssignments.length > 0) {
-        console.log(`⚠️ Found ${subjectAssignments.length} assignment(s) for subject ${subjectId}, but all are completed`);
-        subjectAssignments.forEach(a => {
-          console.log(`  - "${a.name}": isCompleted=${a.isCompleted} (type: ${typeof a.isCompleted})`);
-        });
-      } else {
-        console.log(`⚠️ No assignments found for subject ${subjectId} (looking for: ${subjectId}, type: ${typeof subjectId})`);
-        console.log(`   Available assignment subject IDs:`, 
-          [...new Set(assignments.map(a => ({ id: a.subjectId, type: typeof a.subjectId })))]);
-      }
-    }
-    
-    return filtered;
-  };
-
-  const viewLatestReport = async (subjectId: number) => {
-    try {
-      const detailedResults = await studentAPI.getLatestAssessmentDetails(subjectId);
-      navigate('/results', { 
-        state: detailedResults 
-      });
-    } catch (error) {
-      console.error('Failed to fetch latest assessment details:', error);
-    }
-  };
 
   const getCompletedAssessments = (subjectId: number) => {
     const subjectData = dashboardData.find(data => data.subjectId === subjectId);

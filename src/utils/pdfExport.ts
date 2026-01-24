@@ -1,4 +1,55 @@
 import jsPDF from 'jspdf';
+import maarifLogo from '../images/Marrif_V 1.1.png';
+
+// Helper to load Maarif logo as base64
+const loadLogoAsBase64 = async (): Promise<string | null> => {
+  try {
+    try {
+      const logoUrl = maarifLogo;
+      const response = await fetch(logoUrl);
+      if (response.ok) {
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            if (result && result.startsWith('data:')) resolve(result);
+            else resolve(null);
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to load logo via import:', e);
+    }
+    const fallbackPaths = ['/src/images/Marrif_V 1.1.png', '/images/Marrif_V 1.1.png', './src/images/Marrif_V 1.1.png'];
+    for (const path of fallbackPaths) {
+      try {
+        const response = await fetch(path);
+        if (response.ok) {
+          const blob = await response.blob();
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              if (result && result.startsWith('data:')) resolve(result);
+              else resolve(null);
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error loading logo:', error);
+    return null;
+  }
+};
 
 interface Question {
   id: number;
@@ -311,43 +362,55 @@ export const exportAssessmentToPDF = async (
     });
   };
 
-  // Add Header
-  pdf.setFillColor(59, 130, 246); // Blue color
-  pdf.rect(0, 0, pageWidth, 40, 'F');
-  
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(20);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('Assessment Export', margin, 25);
-  
-  yPosition = 50;
+  // Load Maarif logo
+  const logoBase64 = await loadLogoAsBase64();
 
-  // Add Metadata Section
+  // Header: white background only (no blue)
+  pdf.setFillColor(255, 255, 255);
+  const headerHeight = 95;
+  pdf.rect(0, 0, pageWidth, headerHeight, 'F');
+
+  const logoW = 22;
+  const logoH = 14;
+
+  // Maarif logo on the right
+  if (logoBase64) {
+    try {
+      pdf.addImage(logoBase64, 'PNG', pageWidth - margin - logoW, 8, logoW, logoH);
+    } catch (e) {
+      console.warn('Could not add logo to PDF:', e);
+    }
+  }
+
+  // Assessment details on the left
+  let headerY = 12;
   pdf.setTextColor(0, 0, 0);
-  pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('Assessment Details', margin, yPosition);
-  yPosition += 10;
-
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  
-  const metadataLines = [
-    `Assessment Name: ${metadata.title}`,
-    `Subject: ${metadata.subject}`,
-    `Grade: ${metadata.grade}`,
-    `Time Limit: ${metadata.timeLimitMinutes} minutes`,
-    `Difficulty Level: ${metadata.difficultyLevel}`,
-    `Total Questions: ${metadata.questionCount}`
-  ];
+  const infoX = margin;
+  pdf.text(`Assessment Name: ${metadata.title}`, infoX, headerY);
+  headerY += 6;
+  pdf.text(`Subject: ${metadata.subject}`, infoX, headerY);
+  headerY += 6;
+  pdf.text(`Grade: ${metadata.grade}`, infoX, headerY);
+  headerY += 6;
+  pdf.text(`Time Limit: ${metadata.timeLimitMinutes} minutes`, infoX, headerY);
+  headerY += 6;
+  pdf.text(`Total Questions: ${metadata.questionCount}`, infoX, headerY);
 
-  metadataLines.forEach(line => {
-    checkPageBreak(7);
-    pdf.text(line, margin, yPosition);
-    yPosition += 7;
-  });
-
-  yPosition += 5;
+  // Student fill-in lines: Name on own row; Class and Roll No. on same row
+  const underscoreLine = '_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _';
+  const underscoreFive = '_ _ _ _ _ _ _ _ _'; // 5 underscores for Class and Roll No.
+  yPosition = 52;
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Name:     ' + underscoreLine, margin, yPosition);
+  yPosition += 10;
+  // Class and Roll No. on same row, each with 5 underscores
+  const midX = margin + contentWidth / 2;
+  pdf.text('Class:    ' + underscoreFive, margin, yPosition);
+  pdf.text('Roll No.: ' + underscoreFive, midX, yPosition);
+  yPosition += 16;
 
   // Add Questions
   pdf.setFontSize(16);
