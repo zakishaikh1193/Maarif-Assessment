@@ -13,6 +13,9 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log(`[API] Request to ${config.url} - Token included: ${token.substring(0, 20)}...`);
+  } else {
+    console.warn(`[API] Request to ${config.url} - NO TOKEN FOUND in localStorage`);
   }
   return config;
 });
@@ -185,7 +188,15 @@ export const adminAPI = {
     if (filters?.gradeId) params.append('gradeId', filters.gradeId.toString());
     if (filters?.subjectId) params.append('subjectId', filters.subjectId.toString());
     if (filters?.year) params.append('year', filters.year.toString());
-    const response = await api.get(`/admin/analytics/competency-mastery?${params}`);
+    // Add timestamp to prevent caching for analytics data
+    params.append('_t', Date.now().toString());
+    const response = await api.get(`/admin/analytics/competency-mastery?${params}`, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     return response.data;
   },
   

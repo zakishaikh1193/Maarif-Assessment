@@ -37,12 +37,12 @@ const PORT = process.env.PORT || 5000;
 // Trust proxy for rate limiting
 app.set('trust proxy', 1);
 
-// Middleware
+// Middleware - CORS must be before other middleware
+app.use(cors(corsOptions));
 app.use(securityHeaders);
 app.use(compressionMiddleware);
 app.use(loggingMiddleware);
 app.use(requestLogger);
-app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

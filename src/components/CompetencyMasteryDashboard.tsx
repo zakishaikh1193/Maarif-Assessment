@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, Target, Users } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import { School, Grade, Subject } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CompetencyMasteryDashboardProps {
   schools: School[];
@@ -13,21 +14,46 @@ interface CompetencyMasteryDashboardProps {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({ schools, grades, subjects }) => {
+  const { user, loading: authLoading } = useAuth();
   const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const years = [2023, 2024, 2025];
 
   useEffect(() => {
-    loadData();
-  }, [selectedSchool, selectedGrade, selectedSubject, selectedYear]);
+    // Wait for auth to be ready before making requests
+    if (!authLoading && user) {
+      loadData();
+    }
+  }, [selectedSchool, selectedGrade, selectedSubject, selectedYear, authLoading, user]);
 
   const loadData = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      console.error('User not authenticated');
+      setError('You are not authenticated. Please log in again.');
+      setData(null);
+      setLoading(false);
+      return;
+    }
+
+    // Check if token exists before making request
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No authentication token found. Please log in again.');
+      setError('You are not authenticated. Please log in again.');
+      setData(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     try {
       const filters: any = {};
       if (selectedSchool) filters.schoolId = selectedSchool;
@@ -35,11 +61,28 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
       if (selectedSubject) filters.subjectId = selectedSubject;
       if (selectedYear) filters.year = selectedYear;
 
-             const response = await adminAPI.getCompetencyMastery(filters);
-       console.log('Competency Mastery Data:', response);
-       setData(response);
-    } catch (error) {
+      console.log('[CompetencyMastery] Making request with filters:', filters);
+      console.log('[CompetencyMastery] Token exists:', !!token);
+      
+      const response = await adminAPI.getCompetencyMastery(filters);
+      console.log('Competency Mastery Data:', response);
+      setData(response);
+    } catch (error: any) {
       console.error('Error loading competency mastery data:', error);
+      console.error('Error response:', error.response);
+      // If it's an auth error, the interceptor should handle redirect
+      // But we'll also set data to null to show appropriate message
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        const errorMessage = error.response?.data?.error || 'Authentication failed';
+        setError(`${errorMessage}. Please log in again.`);
+        setData(null);
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('CORS')) {
+        setError('Network error. Please check if the backend server is running.');
+        setData(null);
+      } else {
+        setError(error.response?.data?.error || 'Failed to load competency mastery data. Please try again.');
+        setData(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -316,7 +359,23 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
                  </>
        )}
 
-       {data && (!data.competencyMastery || data.competencyMastery.length === 0) && (
+       {error && (
+         <div className="bg-red-50 border border-red-200 rounded-xl shadow-sm p-6">
+           <div className="text-center py-4">
+             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+             <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Data</h3>
+             <p className="text-red-700 mb-4">{error}</p>
+             <button
+               onClick={loadData}
+               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+             >
+               Retry
+             </button>
+           </div>
+         </div>
+       )}
+
+       {!error && data && (!data.competencyMastery || data.competencyMastery.length === 0) && (
          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
            <div className="text-center py-8">
              <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />

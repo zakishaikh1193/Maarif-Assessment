@@ -2530,6 +2530,59 @@ export const getCompetencyMasteryReport = async (req, res) => {
   try {
     const { schoolId, gradeId, subjectId, year } = req.query;
     
+    console.log('[CompetencyMastery] Request filters:', { schoolId, gradeId, subjectId, year });
+    
+    // First, check if we have any competency scores at all
+    const totalScoresCheck = await executeQuery(`
+      SELECT COUNT(*) as total FROM student_competency_scores WHERE final_score IS NOT NULL
+    `);
+    console.log('[CompetencyMastery] Total competency scores with final_score:', totalScoresCheck[0]?.total || 0);
+    
+    // Check assessments with rit_score
+    const assessmentsWithRit = await executeQuery(`
+      SELECT COUNT(*) as total FROM assessments WHERE rit_score IS NOT NULL
+    `);
+    console.log('[CompetencyMastery] Assessments with rit_score:', assessmentsWithRit[0]?.total || 0);
+    
+    // Debug: Check if competency scores are linked to assessments with rit_score
+    const scoresWithRitAssessments = await executeQuery(`
+      SELECT COUNT(*) as total 
+      FROM student_competency_scores scs
+      JOIN assessments a ON scs.assessment_id = a.id
+      WHERE scs.final_score IS NOT NULL AND a.rit_score IS NOT NULL
+    `);
+    console.log('[CompetencyMastery] Competency scores linked to assessments with rit_score:', scoresWithRitAssessments[0]?.total || 0);
+    
+    // Debug: Sample some competency scores to see their structure
+    const sampleScores = await executeQuery(`
+      SELECT scs.id, scs.assessment_id, scs.competency_id, scs.final_score, 
+             a.id as assessment_id_check, a.rit_score, a.subject_id, a.year, a.student_id,
+             u.school_id, u.grade_id
+      FROM student_competency_scores scs
+      LEFT JOIN assessments a ON scs.assessment_id = a.id
+      LEFT JOIN users u ON a.student_id = u.id
+      WHERE scs.final_score IS NOT NULL
+      LIMIT 5
+    `);
+    console.log('[CompetencyMastery] Sample competency scores:', JSON.stringify(sampleScores, null, 2));
+    
+    // Debug: Check if the assessment IDs from competency scores actually exist
+    const assessmentIds = sampleScores.map(s => s.assessment_id).filter(Boolean);
+    if (assessmentIds.length > 0) {
+      const assessmentsCheck = await executeQuery(`
+        SELECT id, student_id, subject_id, year, rit_score, date_taken
+        FROM assessments
+        WHERE id IN (${assessmentIds.join(',')})
+      `);
+      console.log('[CompetencyMastery] Assessments check for IDs', assessmentIds, ':', JSON.stringify(assessmentsCheck, null, 2));
+    }
+    
+    // Check if student_competency_scores has student_id column
+    const tableStructure = await executeQuery(`
+      DESCRIBE student_competency_scores
+    `);
+    console.log('[CompetencyMastery] student_competency_scores table structure:', JSON.stringify(tableStructure, null, 2));
+    
     let whereClause = 'WHERE scs.final_score IS NOT NULL';
     let params = [];
     
@@ -2550,8 +2603,11 @@ export const getCompetencyMasteryReport = async (req, res) => {
       params.push(year);
     }
 
-    // Competency mastery by competency (latest assessment only)
-    const competencyMastery = await executeQuery(`
+    // Competency mastery by competency
+    // Join directly from student_competency_scores to users via student_id (not through assessments)
+    // This works even if assessments don't exist or don't have required data
+    const filteredParams = params.filter(p => p !== undefined && p !== null);
+    let competencyMastery = await executeQuery(`
       SELECT 
         c.id as competency_id,
         c.code as competency_code,
@@ -2562,78 +2618,59 @@ export const getCompetencyMasteryReport = async (req, res) => {
         SUM(CASE WHEN scs.final_score < 50 THEN 1 ELSE 0 END) as struggling_count,
         STDDEV_POP(scs.final_score) as standard_deviation
       FROM student_competency_scores scs
-      JOIN assessments a ON scs.assessment_id = a.id
-      JOIN users u ON a.student_id = u.id
+      LEFT JOIN users u ON scs.student_id = u.id
+      LEFT JOIN assessments a ON scs.assessment_id = a.id
       JOIN competencies c ON scs.competency_id = c.id
-      JOIN (
-        SELECT 
-          student_id, 
-          subject_id, 
-          MAX(date_taken) as latest_date
-        FROM assessments 
-        WHERE rit_score IS NOT NULL
-        GROUP BY student_id, subject_id
-      ) latest_assessments ON a.student_id = latest_assessments.student_id 
-        AND a.subject_id = latest_assessments.subject_id 
-        AND a.date_taken = latest_assessments.latest_date
-      ${whereClause}
+      WHERE scs.final_score IS NOT NULL
+        ${schoolId ? 'AND (u.school_id = ? OR u.school_id IS NULL)' : ''}
+        ${gradeId ? 'AND (u.grade_id = ? OR u.grade_id IS NULL)' : ''}
+        ${subjectId ? 'AND (a.subject_id = ? OR a.subject_id IS NULL)' : ''}
+        ${year ? 'AND (a.year = ? OR a.year IS NULL)' : ''}
       GROUP BY c.id, c.code, c.name
       ORDER BY average_score ASC
-    `, params);
+    `, filteredParams);
+    
+    console.log('[CompetencyMastery] Query result (direct student join):', competencyMastery.length, 'rows');
 
-    // Competency mastery by school (overall average per school - latest assessment only)
-    const schoolCompetencyMastery = await executeQuery(`
+    // Competency mastery by school - join directly via student_id
+    let schoolCompetencyMastery = await executeQuery(`
       SELECT 
         s.id as school_id,
         s.name as school_name,
         AVG(scs.final_score) as average_score,
         COUNT(DISTINCT scs.student_id) as student_count
       FROM student_competency_scores scs
-      JOIN assessments a ON scs.assessment_id = a.id
-      JOIN users u ON a.student_id = u.id
-      JOIN schools s ON u.school_id = s.id
-      JOIN (
-        SELECT 
-          student_id, 
-          subject_id, 
-          MAX(date_taken) as latest_date
-        FROM assessments 
-        WHERE rit_score IS NOT NULL
-        GROUP BY student_id, subject_id
-      ) latest_assessments ON a.student_id = latest_assessments.student_id 
-        AND a.subject_id = latest_assessments.subject_id 
-        AND a.date_taken = latest_assessments.latest_date
-      ${whereClause}
+      LEFT JOIN users u ON scs.student_id = u.id
+      LEFT JOIN assessments a ON scs.assessment_id = a.id
+      LEFT JOIN schools s ON u.school_id = s.id
+      WHERE scs.final_score IS NOT NULL
+        ${schoolId ? 'AND (u.school_id = ? OR u.school_id IS NULL)' : ''}
+        ${gradeId ? 'AND (u.grade_id = ? OR u.grade_id IS NULL)' : ''}
+        ${subjectId ? 'AND (a.subject_id = ? OR a.subject_id IS NULL)' : ''}
+        ${year ? 'AND (a.year = ? OR a.year IS NULL)' : ''}
       GROUP BY s.id, s.name
       ORDER BY s.name
-    `, params);
+    `, filteredParams);
 
-    // Competency mastery by grade (overall average per grade - latest assessment only)
-    const gradeCompetencyMastery = await executeQuery(`
+    // Competency mastery by grade - join directly via student_id
+    let gradeCompetencyMastery = await executeQuery(`
       SELECT 
         g.id as grade_id,
         g.display_name as grade_name,
         AVG(scs.final_score) as average_score,
         COUNT(DISTINCT scs.student_id) as student_count
       FROM student_competency_scores scs
-      JOIN assessments a ON scs.assessment_id = a.id
-      JOIN users u ON a.student_id = u.id
-      JOIN grades g ON u.grade_id = g.id
-      JOIN (
-        SELECT 
-          student_id, 
-          subject_id, 
-          MAX(date_taken) as latest_date
-        FROM assessments 
-        WHERE rit_score IS NOT NULL
-        GROUP BY student_id, subject_id
-      ) latest_assessments ON a.student_id = latest_assessments.student_id 
-        AND a.subject_id = latest_assessments.subject_id 
-        AND a.date_taken = latest_assessments.latest_date
-      ${whereClause}
+      LEFT JOIN users u ON scs.student_id = u.id
+      LEFT JOIN assessments a ON scs.assessment_id = a.id
+      LEFT JOIN grades g ON u.grade_id = g.id
+      WHERE scs.final_score IS NOT NULL
+        ${schoolId ? 'AND (u.school_id = ? OR u.school_id IS NULL)' : ''}
+        ${gradeId ? 'AND (u.grade_id = ? OR u.grade_id IS NULL)' : ''}
+        ${subjectId ? 'AND (a.subject_id = ? OR a.subject_id IS NULL)' : ''}
+        ${year ? 'AND (a.year = ? OR a.year IS NULL)' : ''}
       GROUP BY g.id, g.display_name
       ORDER BY g.display_name
-    `, params);
+    `, filteredParams);
 
     // Debug: Check what competencies exist
     const competencyCheck = await executeQuery(`
@@ -2644,6 +2681,13 @@ export const getCompetencyMasteryReport = async (req, res) => {
     console.log('Competency Mastery Data:', competencyMastery);
     console.log('School Competency Mastery Data:', schoolCompetencyMastery);
     console.log('Grade Competency Mastery Data:', gradeCompetencyMastery);
+    
+    // Set cache-control headers to prevent caching of analytics data
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     
     res.json({
       competencyMastery,
