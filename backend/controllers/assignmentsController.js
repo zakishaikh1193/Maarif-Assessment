@@ -281,6 +281,10 @@ export const getAssignmentById = async (req, res) => {
         aq.points,
         q.question_text as questionText,
         q.options,
+        q.question_type as questionType,
+        q.question_metadata as questionMetadata,
+        q.correct_option_index as correctOptionIndex,
+        q.correct_answer as correctAnswer,
         q.difficulty_level as difficultyLevel
       FROM assignment_questions aq
       JOIN questions q ON aq.question_id = q.id
