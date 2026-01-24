@@ -185,6 +185,7 @@ export interface GrowthOverTimeData {
   gradeName?: string;
   studentScores: GrowthDataPoint[];
   classAverages: ClassAverageDataPoint[];
+  schoolAverages?: ClassAverageDataPoint[];
   districtAverages?: ClassAverageDataPoint[];
   periodDistributions: PeriodDistribution[];
   totalAssessments: number;

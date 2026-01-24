@@ -1,8 +1,9 @@
 import express from 'express';
-import { 
+import {
   getAdminStats,
   getStudents,
   getStudentGrowth,
+  getGrowthData,
   getStudentsBySchoolAndGrade,
   createStudent,
   updateStudent,
@@ -56,6 +57,7 @@ router.get('/analytics/subject-performance', getSubjectPerformanceDashboard);
 router.get('/analytics/achievement-gaps', getAchievementGapAnalysis);
 router.get('/analytics/competency-mastery', getCompetencyMasteryReport);
 router.get('/analytics/competency-growth', getCompetencyGrowthTracking);
+router.get('/analytics/growth-data', getGrowthData);
 
 // Student Competency Analytics
 router.get('/student-competency-scores', getStudentCompetencyScores);
