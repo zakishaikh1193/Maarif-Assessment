@@ -422,7 +422,7 @@ const AssessmentPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-pink-50">
         <Navigation />
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center h-64 pt-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
             <p className="text-gray-600 font-medium">Preparing your assessment...</p>
@@ -436,7 +436,7 @@ const AssessmentPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-pink-50">
         <Navigation />
-        <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto px-4 py-8 pt-20">
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 text-center">
             <div className="text-red-600 text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Error</h1>
@@ -457,10 +457,10 @@ const AssessmentPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-pink-50">
       <Navigation />
       
-      <div className="flex max-w-7xl mx-auto px-4 py-6 gap-6">
+      <div className="flex max-w-7xl mx-auto px-4 py-6 gap-6 pt-20">
         {/* Left Sidebar */}
         <div className="w-80 flex-shrink-0">
-          <div className="sticky top-6 space-y-6">
+          <div className="sticky top-24 space-y-6">
             {/* Circular Timer */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <div className="flex flex-col items-center">
@@ -914,7 +914,7 @@ const AssessmentPage: React.FC = () => {
                     <h3 className="text-sm font-semibold text-gray-900 mb-3">Column A</h3>
                     <div className="space-y-3">
                       {questionMetadata.leftItems.map((_leftItem: string, leftIdx: number) => (
-                        <div key={leftIdx} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        <div key={leftIdx} className="flex items-center space-x-3 p-4 min-h-[60px] border border-gray-200 rounded-lg bg-gray-50">
                           <span className="text-sm font-medium text-gray-700 min-w-[30px]">
                             {leftIdx + 1}.
                           </span>
@@ -931,8 +931,8 @@ const AssessmentPage: React.FC = () => {
                       {questionMetadata.leftItems.map((_leftItem: string, leftIdx: number) => {
                         const isDisabled = mode === 'Standard' ? submitting : feedback.show;
                         return (
-                          <div key={leftIdx} className="p-3 border border-gray-200 rounded-lg bg-white">
-                            <div className="flex items-center space-x-3">
+                          <div key={leftIdx} className="p-4 min-h-[60px] border border-gray-200 rounded-lg bg-white">
+                            <div className="flex items-center space-x-3 h-full">
                               <span className="text-sm font-medium text-gray-700 min-w-[30px]">
                                 {leftIdx + 1}.
                               </span>
@@ -944,7 +944,7 @@ const AssessmentPage: React.FC = () => {
                                   setMatchingAnswers(newAnswers);
                                 }}
                                 disabled={isDisabled}
-                                className="flex-1 px-3 py-2 border-2 border-blue-500 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex-1 px-3 py-3 border-2 border-blue-500 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-600 disabled:opacity-60 disabled:cursor-not-allowed h-full"
                               >
                                 <option value="">Select match...</option>
                                 {questionMetadata.rightItems.map((rightItem: string, rightIdx: number) => (
@@ -1001,39 +1001,6 @@ const AssessmentPage: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Enhanced Instructions */}
-          {mode === 'Adaptive' ? (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Target className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-blue-900 mb-2">Maarif Adaptive Testing</h3>
-                  <p className="text-sm text-blue-800 leading-relaxed">
-                    This assessment adapts to your performance in real-time. Answer correctly to receive more challenging questions, 
-                    or answer incorrectly for easier ones. Your final Growth Metric score is calculated as the average difficulty of all questions you attempted.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <List className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-green-900 mb-2">Standard Assessment</h3>
-                  <p className="text-sm text-green-800 leading-relaxed">
-                    This is a standard assessment with a fixed set of questions. Answer all questions to the best of your ability. 
-                    Your performance will be evaluated based on the number of correct answers and the difficulty level of the questions you answered correctly.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

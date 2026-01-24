@@ -206,18 +206,6 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Assessment Progress Indicators */}
-            <div className="absolute top-1/2 right-12 flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 border-2 border-white/50 backdrop-blur-sm shadow-lg flex items-center justify-center"
-                >
-                  <span className="text-white text-xs font-bold">{i}</span>
-                </div>
-              ))}
-            </div>
-
             {/* Science Assessment Card */}
             <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg max-w-xs">
               <div className="flex items-center justify-between mb-2">

@@ -7,7 +7,6 @@ import Navigation from '../components/Navigation';
 import { 
   Play, 
   Trophy, 
-  Calendar, 
   BookOpen, 
   TrendingUp, 
   FileText, 
@@ -16,12 +15,17 @@ import {
   CheckCircle,
   Users,
   Zap,
-  ArrowRight,
-  Brain,
   Target as TargetIcon,
   Lightbulb,
   List,
-  Hash
+  Hash,
+  LayoutDashboard,
+  BarChart3,
+  Menu,
+  X,
+  Building,
+  GraduationCap,
+  User as UserIcon
 } from 'lucide-react';
 
 const StudentDashboard: React.FC = () => {
@@ -31,6 +35,8 @@ const StudentDashboard: React.FC = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [completedAssignments, setCompletedAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [profileImageError, setProfileImageError] = useState(false);
   const hasLoadedRef = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -51,6 +57,11 @@ const StudentDashboard: React.FC = () => {
     hasLoadedRef.current = true;
     loadDashboardData();
   }, []);
+
+  // Reset profile image error when user changes
+  useEffect(() => {
+    setProfileImageError(false);
+  }, [user?.profilePicture]);
 
   const loadDashboardData = async () => {
     try {
@@ -322,99 +333,212 @@ const StudentDashboard: React.FC = () => {
   const consistencyScore = getConsistencyScore();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
+      {/* Main Layout with Sidebar */}
+      <div className="flex pt-16">
+        {/* Sidebar */}
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 fixed left-0 top-16 h-[calc(100vh-4rem)] transition-all duration-300 z-40 shadow-sm`}>
+          <div className="p-4">
+            {/* Sidebar Toggle Button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="w-full flex items-center justify-center p-2 mb-4 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+
+            {/* Navigation Items */}
+            <nav className="space-y-2">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors group"
+              >
+                <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
+                {sidebarOpen && <span className="font-medium">Dashboard</span>}
+              </button>
+              
+              <button
+                onClick={() => navigate('/results')}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors group"
+              >
+                <BarChart3 className="h-5 w-5 flex-shrink-0" />
+                {sidebarOpen && <span className="font-medium">Results</span>}
+              </button>
+            </nav>
+
+            {/* Divider */}
+            {sidebarOpen && (
+              <div className="my-6 border-t border-gray-200">
+                <div className="px-4 py-2 mt-4">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Access</p>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions in Sidebar */}
+            {sidebarOpen && (
+              <div className="mt-4 space-y-2">
+                {subjects.length > 0 ? (
+                  subjects.slice(0, 5).map((subject) => {
+                    const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
+                    return (
+                      <button
+                        key={subject.id}
+                        onClick={() => {
+                          if (!isCompleted) {
+                            startAssessment(subject.id, currentPeriod);
+                          }
+                        }}
+                        className={`w-full flex items-center space-x-3 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          isCompleted
+                            ? 'text-gray-500 bg-gray-50 cursor-not-allowed'
+                            : 'text-gray-700 hover:bg-yellow-50 hover:text-yellow-700'
+                        }`}
+                        disabled={isCompleted}
+                      >
+                        <BookOpen className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{subject.name}</span>
+                        {isCompleted && <CheckCircle className="h-4 w-4 ml-auto text-green-500" />}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-gray-500 px-4 py-2">No subjects available</p>
+                )}
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
       <div className="w-full px-6 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.firstName || user?.username}!
-          </h1>
-          {user?.school && user?.grade && (
-            <div className="flex items-center space-x-4 mb-2">
-              <div className="flex items-center space-x-2 text-gray-600">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+            {/* Profile Container */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+              <div className="flex items-center space-x-6">
+                {/* Profile Picture */}
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-pink-500 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg relative">
+                    {user?.profilePicture && !profileImageError ? (
+                      <img 
+                        src={user.profilePicture} 
+                        alt={`${user.firstName || user.username}`}
+                        className="w-full h-full object-cover"
+                        onError={() => setProfileImageError(true)}
+                      />
+                    ) : (
+                      <span className="text-white text-2xl font-bold">
+                        {(user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || user?.username?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Student Information */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {user?.firstName && user?.lastName 
+                        ? `${user.firstName} ${user.lastName}`
+                        : user?.username || 'Student'}
+                    </h2>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 mt-3">
+                    {/* School */}
+                    {user?.school && (
+                      <div className="flex items-center space-x-2 text-gray-700">
+                        <Building className="h-5 w-5 text-teal-600" />
                 <span className="font-medium">{user.school.name}</span>
               </div>
-              <div className="flex items-center space-x-2 text-gray-600">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+                    )}
+                    
+                    {/* Grade */}
+                    {user?.grade && (
+                      <div className="flex items-center space-x-2 text-gray-700">
+                        <GraduationCap className="h-5 w-5 text-purple-600" />
                 <span className="font-medium">{user.grade.display_name}</span>
-              </div>
             </div>
           )}
-          <p className="text-gray-600">
+                    
+                    {/* Username/Student ID */}
+                    <div className="flex items-center space-x-2 text-gray-700">
+                      <UserIcon className="h-5 w-5 text-yellow-600" />
+                      <span className="font-medium">{user?.username || 'Student'}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm mt-3">
             Track your academic progress and take {currentPeriod} assessments for your grade level
           </p>
+                </div>
+              </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{subjects.length}</p>
+                <p className="text-gray-600 text-sm font-medium">Available Subjects</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-lg">
                 <BookOpen className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{subjects.length}</p>
-                <p className="text-gray-600 text-sm">Available Subjects</p>
-              </div>
             </div>
           </div>
+              </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-pink-100 rounded-lg">
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{overallStats.totalAssessments}</p>
+                <p className="text-gray-600 text-sm font-medium">Assessments Completed</p>
+              </div>
+              <div className="p-3 bg-pink-100 rounded-lg">
                 <Trophy className="h-6 w-6 text-pink-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{overallStats.totalAssessments}</p>
-                <p className="text-gray-600 text-sm">Assessments Completed</p>
-              </div>
             </div>
           </div>
+              </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{overallStats.averageScore || 0}</p>
+                <p className="text-gray-600 text-sm font-medium">Average Growth Metric Score</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{overallStats.averageScore}</p>
-                <p className="text-gray-600 text-sm">Average Growth Metric Score</p>
-              </div>
             </div>
           </div>
-
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-teal-100 rounded-lg">
-                <Users className="h-6 w-6 text-teal-600" />
               </div>
+
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-gray-900">{user?.grade?.display_name || 'N/A'}</p>
-                <p className="text-gray-600 text-sm">Current Grade</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{user?.grade?.display_name || 'N/A'}</p>
+                <p className="text-gray-600 text-sm font-medium">Current Grade</p>
+              </div>
+              <div className="p-3 bg-teal-100 rounded-lg">
+                <Users className="h-6 w-6 text-teal-600" />
               </div>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - Subjects */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* Main Content - Left Side */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Active Assessments Section */}
             {getActiveAssignments().length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Active Assessments</h2>
-                  <div className="flex items-center space-x-2 text-sm text-blue-600">
-                    <Clock className="h-4 w-4" />
-                    <span>{getActiveAssignments().length} Available</span>
-                  </div>
+                  <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    {getActiveAssignments().length} Available
+                  </span>
                 </div>
 
                 <div className="space-y-3">
@@ -493,13 +617,12 @@ const StudentDashboard: React.FC = () => {
 
             {/* Completed Assessments Section */}
             {completedAssignments.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Completed Assessments</h2>
-                  <div className="flex items-center space-x-2 text-sm text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    <span>{completedAssignments.length} Completed</span>
-                  </div>
+                  <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    {completedAssignments.length} Completed
+                  </span>
                 </div>
 
                 <div className="space-y-3">
@@ -575,255 +698,52 @@ const StudentDashboard: React.FC = () => {
                 </div>
               </div>
             )}
-
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Your Subjects</h2>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Calendar className="h-4 w-4" />
-                  <span>{currentPeriod} Assessment</span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {subjects.map((subject) => {
-                  const completedAssessments = getCompletedAssessments(subject.id);
-                  const latestRITScore = getLatestRITScore(subject.id);
-                  const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
-                  const config = assessmentConfigs[subject.id];
-
-                  return (
-                    <div key={subject.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                            <BookOpen className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{subject.name}</h3>
-                            <p className="text-gray-600 text-sm">{subject.description}</p>
-                          </div>
-                        </div>
-                        {latestRITScore && (
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-yellow-600">{latestRITScore}</div>
-                            <div className="text-sm text-gray-600">Latest Growth Metric</div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-4">
-                        {/* Assignments Section */}
-                        {getAssignmentsForSubject(subject.id).length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-700">Assigned Assessments</h4>
-                            {getAssignmentsForSubject(subject.id).map((assignment) => (
-                              <div key={assignment.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center space-x-2">
-                                    <span className="text-sm font-medium text-gray-900">{assignment.name}</span>
-                                    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full ${
-                                      assignment.mode === 'Standard'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-blue-100 text-blue-800'
-                                    }`}>
-                                      {assignment.mode === 'Standard' ? (
-                                        <>
-                                          <List className="h-3 w-3 mr-1" />
-                                          Standard
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Zap className="h-3 w-3 mr-1" />
-                                          Adaptive
-                                        </>
-                                      )}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center space-x-1 text-blue-600">
-                                    <Clock className="h-4 w-4" />
-                                    <span className="text-xs font-medium">Available</span>
-                                  </div>
-                                </div>
-                                
-                                {assignment.description && (
-                                  <p className="text-xs text-gray-600 mb-2">{assignment.description}</p>
-                                )}
-                                
-                                <div className="mb-3 space-y-1">
-                                  <div className="flex items-center justify-between text-xs text-gray-600">
-                                    <div className="flex items-center space-x-1">
-                                      <Hash className="h-3 w-3" />
-                                      <span>Questions:</span>
-                                    </div>
-                                    <span className="font-medium">{assignment.totalQuestions}</span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-xs text-gray-600">
-                                    <div className="flex items-center space-x-1">
-                                      <Clock className="h-3 w-3" />
-                                      <span>Time Limit:</span>
-                                    </div>
-                                    <span className="font-medium">{assignment.timeLimitMinutes} minutes</span>
-                                  </div>
-                                </div>
-                                
-                                <button
-                                  onClick={() => startAssignment(assignment.id, assignment.mode)}
-                                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 font-medium"
-                                >
-                                  <Play className="h-4 w-4" />
-                                  <span>Start Assessment</span>
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Seasonal Assessment Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-gray-700">{currentPeriod} Assessment</span>
-                              {isCompleted ? (
-                                <div className="flex items-center space-x-1 text-green-600">
-                                  <CheckCircle className="h-4 w-4" />
-                                  <span className="text-xs font-medium">Completed</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center space-x-1 text-blue-600">
-                                  <Clock className="h-4 w-4" />
-                                  <span className="text-xs font-medium">Available</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Assessment Details - Real Data */}
-                            <div className="mb-3 space-y-2">
-                              <div className="flex items-center justify-between text-xs text-gray-600">
-                                <div className="flex items-center space-x-1">
-                                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                  <span>Questions:</span>
-                                </div>
-                                <span className="font-medium">{config?.questionCount || 'N/A'}</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs text-gray-600">
-                                <div className="flex items-center space-x-1">
-                                  <Clock className="h-3 w-3" />
-                                  <span>Time Limit:</span>
-                                </div>
-                                <span className="font-medium">{config?.timeLimitMinutes ? `${config.timeLimitMinutes} minutes` : 'N/A'}</span>
-                              </div>
-                            </div>
-                            
-                            {isCompleted ? (
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Growth Metric Score:</span>
-                                  <span className="font-semibold text-yellow-600">
-                                    {completedAssessments.find(a => a.assessmentPeriod === currentPeriod)?.ritScore}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Accuracy:</span>
-                                  <span className="font-semibold text-green-600">
-                                    {Math.round((completedAssessments.find(a => a.assessmentPeriod === currentPeriod)?.correctAnswers || 0) / 10 * 100)}%
-                                  </span>
-                                </div>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => startAssessment(subject.id, currentPeriod)}
-                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 font-medium"
-                              >
-                                <Play className="h-4 w-4" />
-                                <span>Start Assessment</span>
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-gray-700">Progress Overview</span>
-                              <Target className="h-4 w-4 text-yellow-500" />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Current Growth Metric:</span>
-                                <span className="font-semibold text-gray-900">{latestRITScore || 'N/A'}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Best Score:</span>
-                                <span className="font-semibold text-green-600">
-                                  {(() => {
-                                    const validScores = completedAssessments
-                                      .map(a => (a as any).rit_score || a.ritScore)
-                                      .filter(score => score !== null && score !== undefined && score > 0);
-                                    
-                                    if (validScores.length === 0) return 'N/A';
-                                    return Math.max(...validScores);
-                                  })()}
-                                </span>
-                              </div>
-                              {completedAssessments.length > 0 && (
-                                <button
-                                  onClick={() => viewLatestReport(subject.id)}
-                                  className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm font-medium"
-                                >
-                                  <FileText className="h-4 w-4" />
-                                  <span>View Report</span>
-                                  <ArrowRight className="h-4 w-4" />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
-          {/* Sidebar - Meaningful Analytics */}
-          <div className="space-y-4">
+          {/* Sidebar - Right Side */}
+          <div className="space-y-6">
              {/* Academic Insights */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Academic Insights</h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                      <Brain className="h-4 w-4 text-white" />
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Lightbulb className="h-4 w-4 text-yellow-600" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">Strongest Subject</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-yellow-600">{strengthsWeaknesses.strongest}</div>
-                    <div className="text-xs text-gray-500">{strengthsWeaknesses.strongestScore > 0 ? `${strengthsWeaknesses.strongestScore} Growth Metric` : 'N/A'}</div>
+                    <div className="text-sm font-bold text-gray-900">
+                      {strengthsWeaknesses.strongestScore > 0 ? strengthsWeaknesses.strongest : 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {strengthsWeaknesses.strongestScore > 0 ? `${strengthsWeaknesses.strongestScore} Growth Metric` : 'N/A'}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center">
-                      <TargetIcon className="h-4 w-4 text-white" />
+                    <div className="p-2 bg-pink-100 rounded-lg">
+                      <TargetIcon className="h-4 w-4 text-pink-600" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">Needs Focus</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-pink-600">{strengthsWeaknesses.weakest}</div>
-                    <div className="text-xs text-gray-500">{strengthsWeaknesses.weakestScore > 0 ? `${strengthsWeaknesses.weakestScore} Growth Metric` : 'N/A'}</div>
+                    <div className="text-sm font-bold text-gray-900">
+                      {strengthsWeaknesses.weakestScore > 0 ? strengthsWeaknesses.weakest : 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {strengthsWeaknesses.weakestScore > 0 ? `${strengthsWeaknesses.weakestScore} Growth Metric` : 'N/A'}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="h-4 w-4 text-white" />
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <TrendingUp className="h-4 w-4 text-purple-600" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">Growth Rate</span>
                   </div>
@@ -837,13 +757,13 @@ const StudentDashboard: React.FC = () => {
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
-                      <Lightbulb className="h-4 w-4 text-white" />
+                    <div className="p-2 bg-teal-100 rounded-lg">
+                      <Lightbulb className="h-4 w-4 text-teal-600" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">Consistency</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-teal-600">{consistencyScore}%</div>
+                    <div className="text-sm font-bold text-gray-900">{consistencyScore}%</div>
                     <div className="text-xs text-gray-500">score stability</div>
                   </div>
                 </div>
@@ -851,26 +771,27 @@ const StudentDashboard: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                {subjects.map((subject) => {
+              <div className="space-y-2">
+                {subjects.length > 0 ? (
+                  subjects.map((subject) => {
                   const isCompleted = isAssessmentCompleted(subject.id, currentPeriod);
                   return (
                     <div key={subject.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <h4 className="font-medium text-gray-900">{subject.name}</h4>
-                        <p className="text-sm text-gray-600">{currentPeriod} Assessment</p>
+                          <h4 className="font-medium text-gray-900 text-sm">{subject.name}</h4>
+                          <p className="text-xs text-gray-600">{currentPeriod} Assessment</p>
                       </div>
                       {isCompleted ? (
-                        <div className="flex items-center space-x-2 text-green-600">
+                          <div className="flex items-center space-x-1 text-green-600">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm font-medium">Completed</span>
+                            <span className="text-xs font-medium">Completed</span>
                         </div>
                       ) : (
                         <button
                           onClick={() => startAssessment(subject.id, currentPeriod)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center space-x-1"
                         >
                           <Play className="h-3 w-3" />
                           <span>Start</span>
@@ -878,11 +799,16 @@ const StudentDashboard: React.FC = () => {
                       )}
                     </div>
                   );
-                })}
+                  })
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">No subjects available</p>
+                )}
               </div>
             </div>
           </div>
         </div>
+      </div>
+        </main>
       </div>
     </div>
     
