@@ -5,7 +5,8 @@ import {
   getAssignmentById,
   updateAssignment,
   deleteAssignment,
-  getAssignmentStudents
+  getAssignmentStudents,
+  reassignAssignment
 } from '../controllers/assignmentsController.js';
 import { authenticateToken, adminOnly } from '../middleware/auth.js';
 import { validateId } from '../middleware/validation.js';
@@ -21,6 +22,9 @@ router.post('/', createAssignment);
 
 // Get all assignments
 router.get('/', getAllAssignments);
+
+// Reassign assignment to schools/grades/students (must be before /:id route)
+router.post('/:id/reassign', validateId, reassignAssignment);
 
 // Get students who took an assignment (must be before /:id route)
 router.get('/:id/students', validateId, getAssignmentStudents);

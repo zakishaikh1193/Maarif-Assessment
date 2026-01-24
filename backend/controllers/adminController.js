@@ -2,6 +2,26 @@ import { executeQuery } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 import { convertImagePlaceholders } from '../utils/imagePlaceholder.js';
 
+// Seeded random number generator for deterministic shuffling (for option shuffling)
+function seededRandom(seed) {
+  let value = seed;
+  return function() {
+    value = (value * 9301 + 49297) % 233280;
+    return value / 233280;
+  };
+}
+
+// Deterministic shuffle function using a seed
+function shuffleWithSeed(array, seed) {
+  const rng = seededRandom(seed);
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 // Get all students
 export const getStudents = async (req, res) => {
   try {
@@ -2665,25 +2685,43 @@ export const getCompetencyMasteryReport = async (req, res) => {
     // Join directly from student_competency_scores to users via student_id (not through assessments)
     // This works even if assessments don't exist or don't have required data
     const filteredParams = params.filter(p => p !== undefined && p !== null);
+    // Get each student's latest score per competency to avoid double-counting
+    // First, get the latest score ID for each student-competency pair
     let competencyMastery = await executeQuery(`
       SELECT 
         c.id as competency_id,
         c.code as competency_code,
         c.name as competency_name,
-        AVG(scs.final_score) as average_score,
-        COUNT(DISTINCT scs.student_id) as student_count,
-        SUM(CASE WHEN scs.final_score >= 75 THEN 1 ELSE 0 END) as proficient_count,
-        SUM(CASE WHEN scs.final_score < 50 THEN 1 ELSE 0 END) as struggling_count,
-        STDDEV_POP(scs.final_score) as standard_deviation
-      FROM student_competency_scores scs
-      LEFT JOIN users u ON scs.student_id = u.id
-      LEFT JOIN assessments a ON scs.assessment_id = a.id
-      JOIN competencies c ON scs.competency_id = c.id
-      WHERE scs.final_score IS NOT NULL
-        ${schoolId ? 'AND (u.school_id = ? OR u.school_id IS NULL)' : ''}
-        ${gradeId ? 'AND (u.grade_id = ? OR u.grade_id IS NULL)' : ''}
-        ${subjectId ? 'AND (a.subject_id = ? OR a.subject_id IS NULL)' : ''}
-        ${year ? 'AND (a.year = ? OR a.year IS NULL)' : ''}
+        AVG(latest_scores.final_score) as average_score,
+        COUNT(DISTINCT latest_scores.student_id) as student_count,
+        COUNT(DISTINCT CASE WHEN latest_scores.final_score >= 75 THEN latest_scores.student_id END) as proficient_count,
+        COUNT(DISTINCT CASE WHEN latest_scores.final_score >= 50 AND latest_scores.final_score < 75 THEN latest_scores.student_id END) as developing_count,
+        COUNT(DISTINCT CASE WHEN latest_scores.final_score < 50 THEN latest_scores.student_id END) as struggling_count,
+        STDDEV_POP(latest_scores.final_score) as standard_deviation
+      FROM (
+        SELECT 
+          scs1.competency_id,
+          scs1.student_id,
+          scs1.final_score
+        FROM student_competency_scores scs1
+        LEFT JOIN users u ON scs1.student_id = u.id
+        LEFT JOIN assessments a ON scs1.assessment_id = a.id
+        WHERE scs1.final_score IS NOT NULL
+          ${schoolId ? 'AND (u.school_id = ? OR u.school_id IS NULL)' : ''}
+          ${gradeId ? 'AND (u.grade_id = ? OR u.grade_id IS NULL)' : ''}
+          ${subjectId ? 'AND (a.subject_id = ? OR a.subject_id IS NULL)' : ''}
+          ${year ? 'AND (a.year = ? OR a.year IS NULL)' : ''}
+          AND scs1.id = (
+            SELECT scs2.id
+            FROM student_competency_scores scs2
+            WHERE scs2.competency_id = scs1.competency_id
+              AND scs2.student_id = scs1.student_id
+              AND scs2.final_score IS NOT NULL
+            ORDER BY COALESCE(scs2.date_calculated, '1970-01-01') DESC, scs2.id DESC
+            LIMIT 1
+          )
+      ) latest_scores
+      JOIN competencies c ON latest_scores.competency_id = c.id
       GROUP BY c.id, c.code, c.name
       ORDER BY average_score ASC
     `, filteredParams);
@@ -3948,6 +3986,465 @@ export const getStudentCompetencyGrowth = async (req, res) => {
     res.status(500).json({
       error: 'Failed to fetch student competency growth data',
       code: 'FETCH_STUDENT_COMPETENCY_GROWTH_ERROR'
+    });
+  }
+};
+
+// Get student assessment responses (admin version - no student_id check)
+export const getStudentAssessmentResponses = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+
+    // Get assessment details (admin can view any assessment)
+    const currentAssessment = await executeQuery(`
+      SELECT 
+        a.id,
+        a.student_id,
+        a.subject_id,
+        a.assessment_period,
+        a.rit_score,
+        a.correct_answers,
+        a.total_questions,
+        a.date_taken,
+        a.duration_minutes,
+        a.year,
+        a.assessment_mode,
+        s.name as subject_name,
+        u.first_name,
+        u.last_name,
+        u.username
+      FROM assessments a
+      JOIN subjects s ON a.subject_id = s.id
+      JOIN users u ON a.student_id = u.id
+      WHERE a.id = ? AND a.rit_score IS NOT NULL
+    `, [assessmentId]);
+
+    if (currentAssessment.length === 0) {
+      return res.status(404).json({
+        error: 'Assessment not found',
+        code: 'ASSESSMENT_NOT_FOUND'
+      });
+    }
+
+    const assessment = currentAssessment[0];
+
+    // Get previous Growth Metric score
+    const previousAssessment = await executeQuery(`
+      SELECT rit_score, date_taken, assessment_period, year
+      FROM assessments 
+      WHERE student_id = ? 
+      AND subject_id = ? 
+      AND id != ? 
+      AND rit_score IS NOT NULL
+      ORDER BY year DESC, 
+        CASE assessment_period 
+          WHEN 'BOY' THEN 1 
+          WHEN 'EOY' THEN 2 
+        END DESC,
+        date_taken DESC 
+      LIMIT 1
+    `, [assessment.student_id, assessment.subject_id, assessmentId]);
+
+    // Get assessment mode and assignment info for option shuffling
+    const assessmentInfo = await executeQuery(`
+      SELECT assessment_mode, assignment_id 
+      FROM assessments 
+      WHERE id = ?
+    `, [assessmentId]);
+    
+    const isStandardMode = assessmentInfo.length > 0 && assessmentInfo[0].assessment_mode === 'Standard';
+    const assignmentId = assessmentInfo.length > 0 ? assessmentInfo[0].assignment_id : null;
+    
+    // Get option sequence if Standard mode
+    let optionSequence = 'fixed';
+    if (isStandardMode && assignmentId) {
+      const assignmentInfo = await executeQuery(
+        'SELECT option_sequence FROM assignments WHERE id = ?',
+        [assignmentId]
+      );
+      if (assignmentInfo.length > 0) {
+        optionSequence = assignmentInfo[0].option_sequence || 'fixed';
+      }
+    }
+
+    // Get detailed response data including AI grading results
+    const responses = await executeQuery(`
+      SELECT 
+        ar.question_order,
+        ar.is_correct,
+        ar.question_difficulty,
+        q.question_text,
+        q.options,
+        ar.selected_option_index,
+        q.correct_option_index,
+        q.correct_answer,
+        q.question_type,
+        q.question_metadata,
+        ar.ai_grading_result,
+        q.id as question_id
+      FROM assessment_responses ar
+      JOIN questions q ON ar.question_id = q.id
+      WHERE ar.assessment_id = ?
+      ORDER BY ar.question_order
+    `, [assessmentId]);
+
+    // Calculate statistics
+    const totalQuestions = assessment.total_questions;
+    const correctAnswers = assessment.correct_answers;
+    const incorrectAnswers = totalQuestions - correctAnswers;
+    const previousRIT = previousAssessment.length > 0 ? previousAssessment[0].rit_score : null;
+    const currentRIT = assessment.rit_score;
+
+    // Format responses for frontend
+    const formattedResponses = responses.map(response => {
+      // Parse AI grading result if available
+      let aiGradingResult = null;
+      if (response.ai_grading_result) {
+        try {
+          aiGradingResult = typeof response.ai_grading_result === 'string' 
+            ? JSON.parse(response.ai_grading_result) 
+            : response.ai_grading_result;
+        } catch (e) {
+          console.error('Error parsing AI grading result:', e);
+        }
+      }
+      
+      // Parse options
+      let options = [];
+      if (typeof response.options === 'string') {
+        try {
+          options = JSON.parse(response.options);
+        } catch (parseError) {
+          options = [];
+        }
+      } else {
+        options = response.options || [];
+      }
+      
+      // Parse question metadata
+      let questionMetadata = null;
+      if (response.question_metadata) {
+        try {
+          questionMetadata = typeof response.question_metadata === 'string' 
+            ? JSON.parse(response.question_metadata) 
+            : response.question_metadata;
+        } catch (e) {
+          console.error('Error parsing question_metadata:', e);
+        }
+      }
+      
+      // Parse selected answer based on question type
+      let parsedSelectedAnswer = response.selected_option_index;
+      let formattedSelectedAnswer = 'N/A';
+      let formattedCorrectAnswer = 'N/A';
+      
+      try {
+        if (typeof response.selected_option_index === 'string' && 
+            (response.selected_option_index.startsWith('[') || response.selected_option_index.startsWith('{'))) {
+          parsedSelectedAnswer = JSON.parse(response.selected_option_index);
+        }
+      } catch (e) {
+        parsedSelectedAnswer = response.selected_option_index;
+      }
+      
+      // Format answer display based on question type
+      if (response.question_type === 'Matching') {
+        // For Matching: selectedAnswer is array of right indices [0, 1, 2]
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          const pairs = parsedSelectedAnswer.map((rightIdx, leftIdx) => {
+            const numRightIdx = Number(rightIdx);
+            if (isNaN(numRightIdx) || numRightIdx < 0 || numRightIdx >= questionMetadata.rightItems.length) {
+              return 'N/A';
+            }
+            const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+            const rightItem = questionMetadata.rightItems[numRightIdx] || 'N/A';
+            return `${leftItem} → ${rightItem}`;
+          });
+          formattedSelectedAnswer = pairs.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        // Format correct answer - check both correct_answer and correct_option_index
+        if (questionMetadata?.leftItems && questionMetadata?.rightItems) {
+          let correctPairs = [];
+          let correctAnswerData = null;
+          
+          // Try correct_answer first (for Matching questions, this is where the pairs are stored)
+          if (response.correct_answer) {
+            try {
+              correctAnswerData = typeof response.correct_answer === 'string' 
+                ? JSON.parse(response.correct_answer) 
+                : response.correct_answer;
+            } catch (e) {
+              console.error('Error parsing correct_answer for Matching:', e);
+            }
+          }
+          
+          // Fallback to correct_option_index if correct_answer is not available
+          if (!correctAnswerData && response.correct_option_index) {
+            try {
+              correctAnswerData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+            } catch (e) {
+              console.error('Error parsing correct_option_index for Matching:', e);
+            }
+          }
+          
+          if (correctAnswerData) {
+            if (Array.isArray(correctAnswerData)) {
+              // Format: [{left: 0, right: 1}, {left: 1, right: 0}]
+              correctPairs = correctAnswerData.map((pair) => {
+                const leftItem = questionMetadata.leftItems[pair.left] || 'N/A';
+                const rightItem = questionMetadata.rightItems[pair.right] || 'N/A';
+                return `${leftItem} → ${rightItem}`;
+              });
+            } else if (typeof correctAnswerData === 'string' && correctAnswerData.includes('-')) {
+              // Format: "0-1,1-0" (left-right pairs)
+              const pairs = correctAnswerData.split(',').map((pair) => {
+                const [leftIdx, rightIdx] = pair.split('-').map(Number);
+                const leftItem = questionMetadata.leftItems[leftIdx] || 'N/A';
+                const rightItem = questionMetadata.rightItems[rightIdx] || 'N/A';
+                return `${leftItem} → ${rightItem}`;
+              });
+              correctPairs = pairs;
+            }
+          }
+          
+          if (correctPairs.length > 0) {
+            formattedCorrectAnswer = correctPairs.join(', ');
+          }
+        }
+      } else if (response.question_type === 'FillInBlank') {
+        // For FillInBlank: selectedAnswer is array of option indices for each blank [0, 1]
+        if (Array.isArray(parsedSelectedAnswer) && parsedSelectedAnswer.length > 0 && questionMetadata?.blanks) {
+          const answers = parsedSelectedAnswer.map((optionIdx, blankIdx) => {
+            const numOptionIdx = Number(optionIdx);
+            const blank = questionMetadata.blanks[blankIdx];
+            if (blank && blank.options && !isNaN(numOptionIdx) && numOptionIdx >= 0 && numOptionIdx < blank.options.length) {
+              return blank.options[numOptionIdx];
+            }
+            return 'N/A';
+          });
+          formattedSelectedAnswer = answers.join(', ');
+        } else if (parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = 'Invalid answer format';
+        }
+        
+        // Format correct answer
+        if (questionMetadata?.blanks) {
+          try {
+            let correctIndices = [];
+            if (response.correct_option_index) {
+              const correctData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+            }
+            
+            const correctAnswers = correctIndices.map((optionIdx, blankIdx) => {
+              const blank = questionMetadata.blanks[blankIdx];
+              if (blank && blank.options && blank.options[optionIdx]) {
+                return blank.options[optionIdx];
+              }
+              return 'N/A';
+            });
+            if (correctAnswers.length > 0) {
+              formattedCorrectAnswer = correctAnswers.join(', ');
+            }
+          } catch (e) {
+            console.error('Error parsing correct answer for FillInBlank:', e);
+          }
+        }
+      } else if (response.question_type === 'MultipleSelect') {
+        if (Array.isArray(parsedSelectedAnswer) && options.length > 0) {
+          const selectedOptions = parsedSelectedAnswer
+            .map((idx) => options[idx])
+            .filter((opt) => opt !== undefined)
+            .join(', ');
+          formattedSelectedAnswer = selectedOptions || 'N/A';
+        }
+        
+        try {
+          let correctIndices = [];
+          
+          // For MultipleSelect, check correct_answer first (JSON array of indices)
+          if (response.correct_answer) {
+            try {
+              const correctData = typeof response.correct_answer === 'string' 
+                ? JSON.parse(response.correct_answer) 
+                : response.correct_answer;
+              if (Array.isArray(correctData)) {
+                correctIndices = correctData;
+                console.log(`[MultipleSelect] Parsed correct_answer:`, correctIndices);
+              }
+            } catch (e) {
+              console.error('Error parsing correct_answer for MultipleSelect:', e, 'Raw value:', response.correct_answer);
+            }
+          }
+          
+          // Fallback to correct_option_index if correct_answer is not available
+          if (correctIndices.length === 0 && response.correct_option_index !== null && response.correct_option_index !== undefined) {
+            try {
+              const correctData = typeof response.correct_option_index === 'string' 
+                ? JSON.parse(response.correct_option_index) 
+                : response.correct_option_index;
+              correctIndices = Array.isArray(correctData) ? correctData : [correctData];
+              console.log(`[MultipleSelect] Using correct_option_index fallback:`, correctIndices);
+            } catch (e) {
+              console.error('Error parsing correct_option_index for MultipleSelect:', e, 'Raw value:', response.correct_option_index);
+            }
+          }
+          
+          if (correctIndices.length > 0 && options.length > 0) {
+            const correctOptions = correctIndices
+              .map((idx) => {
+                const numIdx = Number(idx);
+                return options[numIdx];
+              })
+              .filter((opt) => opt !== undefined && opt !== null);
+            formattedCorrectAnswer = correctOptions.length > 0 ? correctOptions.join(', ') : 'N/A';
+            console.log(`[MultipleSelect] Formatted correct answer:`, formattedCorrectAnswer, 'from indices:', correctIndices, 'options:', options);
+          } else {
+            console.log(`[MultipleSelect] No correct indices found. correct_answer:`, response.correct_answer, 'correct_option_index:', response.correct_option_index);
+            formattedCorrectAnswer = 'N/A';
+          }
+        } catch (e) {
+          console.error('Error parsing correct answer for MultipleSelect:', e);
+          formattedCorrectAnswer = 'N/A';
+        }
+      } else if (response.question_type === 'TrueFalse') {
+        // For True/False: option index 0 = "True", option index 1 = "False"
+        if (parsedSelectedAnswer === 0 || parsedSelectedAnswer === '0') {
+          formattedSelectedAnswer = 'True';
+        } else if (parsedSelectedAnswer === 1 || parsedSelectedAnswer === '1') {
+          formattedSelectedAnswer = 'False';
+        } else if (typeof parsedSelectedAnswer === 'string' && parsedSelectedAnswer.toLowerCase() === 'true') {
+          formattedSelectedAnswer = 'True';
+        } else if (typeof parsedSelectedAnswer === 'string' && parsedSelectedAnswer.toLowerCase() === 'false') {
+          formattedSelectedAnswer = 'False';
+        } else if (options.length >= 2) {
+          formattedSelectedAnswer = options[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        if (response.correct_option_index !== null && response.correct_option_index !== undefined) {
+          // For True/False: option index 0 = "True", option index 1 = "False"
+          if (response.correct_option_index === 0 || response.correct_option_index === '0') {
+            formattedCorrectAnswer = 'True';
+          } else if (response.correct_option_index === 1 || response.correct_option_index === '1') {
+            formattedCorrectAnswer = 'False';
+          } else if (options.length >= 2) {
+            formattedCorrectAnswer = options[Number(response.correct_option_index)] || 'N/A';
+          }
+        }
+      } else if (response.question_type === 'ShortAnswer' || response.question_type === 'Essay') {
+        if (response.selected_option_index && typeof response.selected_option_index === 'string') {
+          formattedSelectedAnswer = response.selected_option_index.trim();
+        } else if (parsedSelectedAnswer && typeof parsedSelectedAnswer === 'string') {
+          formattedSelectedAnswer = parsedSelectedAnswer.trim();
+        } else {
+          formattedSelectedAnswer = 'N/A';
+        }
+        formattedCorrectAnswer = 'N/A';
+      } else {
+        // For MCQ and other types
+        let displayOptions = options;
+        let displayCorrectIndex = response.correct_option_index;
+        
+        if (isStandardMode && optionSequence === 'random' && options.length > 0) {
+          const seed = assignmentId * 1000000 + response.question_id * 1000 + assessment.student_id;
+          const optionsWithIndex = options.map((opt, idx) => ({ opt, originalIdx: idx }));
+          const shuffled = shuffleWithSeed([...optionsWithIndex], seed);
+          
+          displayOptions = shuffled.map((item) => item.opt);
+          displayCorrectIndex = shuffled.findIndex(item => item.originalIdx === response.correct_option_index);
+        }
+        
+        if (displayOptions.length > 0 && parsedSelectedAnswer !== null && parsedSelectedAnswer !== undefined) {
+          formattedSelectedAnswer = displayOptions[Number(parsedSelectedAnswer)] || 'N/A';
+        }
+        
+        if (displayOptions.length > 0 && displayCorrectIndex !== null && displayCorrectIndex !== undefined) {
+          formattedCorrectAnswer = displayOptions[Number(displayCorrectIndex)] || 'N/A';
+        }
+      }
+      
+      // Convert image placeholders in question text and options
+      let processedQuestionText = convertImagePlaceholders(response.question_text, req);
+      let processedOptions = options.map((opt) => convertImagePlaceholders(opt, req));
+      
+      // Parse correctAnswer for Matching and MultipleSelect questions to return as array
+      let parsedCorrectAnswer = response.correct_answer || response.correct_option_index;
+      if ((response.question_type === 'Matching' || response.question_type === 'MultipleSelect') && parsedCorrectAnswer) {
+        try {
+          if (typeof parsedCorrectAnswer === 'string') {
+            parsedCorrectAnswer = JSON.parse(parsedCorrectAnswer);
+          }
+        } catch (e) {
+          console.error(`Error parsing correctAnswer for ${response.question_type}:`, e);
+          // Keep as is if parsing fails
+        }
+      }
+      
+      return {
+        questionNumber: response.question_order,
+        isCorrect: response.is_correct,
+        difficulty: response.question_difficulty,
+        questionText: processedQuestionText,
+        questionType: response.question_type,
+        options: processedOptions,
+        questionMetadata: questionMetadata,
+        selectedAnswer: parsedSelectedAnswer,
+        formattedSelectedAnswer: formattedSelectedAnswer,
+        correctAnswer: parsedCorrectAnswer,
+        formattedCorrectAnswer: formattedCorrectAnswer,
+        aiGradingResult: aiGradingResult
+      };
+    });
+
+    // Create difficulty progression data
+    const difficultyProgression = responses.map(response => ({
+      questionNumber: response.question_order,
+      difficulty: response.question_difficulty,
+      isCorrect: response.is_correct
+    }));
+
+    res.json({
+      assessment: {
+        id: assessment.id,
+        subjectId: assessment.subject_id,
+        subjectName: assessment.subject_name,
+        period: assessment.assessment_period,
+        year: assessment.year,
+        dateTaken: assessment.date_taken,
+        duration: assessment.duration_minutes,
+        mode: assessment.assessment_mode || 'Adaptive',
+        studentName: `${assessment.first_name || ''} ${assessment.last_name || ''}`.trim() || assessment.username
+      },
+      statistics: {
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        previousRIT,
+        currentRIT,
+        accuracy: Math.round((correctAnswers / totalQuestions) * 100)
+      },
+      responses: formattedResponses,
+      difficultyProgression: difficultyProgression,
+      previousAssessment: previousAssessment.length > 0 ? {
+        ritScore: previousAssessment[0].rit_score,
+        dateTaken: previousAssessment[0].date_taken,
+        period: previousAssessment[0].assessment_period,
+        year: previousAssessment[0].year
+      } : null
+    });
+
+  } catch (error) {
+    console.error('Error fetching student assessment responses:', error);
+    res.status(500).json({
+      error: 'Failed to fetch assessment responses',
+      code: 'FETCH_RESPONSES_ERROR'
     });
   }
 };
