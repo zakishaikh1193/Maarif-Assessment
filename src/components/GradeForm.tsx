@@ -13,6 +13,7 @@ const GradeForm: React.FC<GradeFormProps> = ({ grade, onClose, onGradeCreated, o
   const [formData, setFormData] = useState({
     name: '',
     display_name: '',
+    grade_level: null as number | null,
     description: '',
     is_active: true
   });
@@ -26,6 +27,7 @@ const GradeForm: React.FC<GradeFormProps> = ({ grade, onClose, onGradeCreated, o
       setFormData({
         name: grade.name || '',
         display_name: grade.display_name || '',
+        grade_level: grade.grade_level ?? null,
         description: grade.description || '',
         is_active: grade.is_active
       });
@@ -119,7 +121,24 @@ const GradeForm: React.FC<GradeFormProps> = ({ grade, onClose, onGradeCreated, o
             />
           </div>
 
-
+          <div>
+            <label htmlFor="grade_level" className="block text-sm font-medium text-gray-700 mb-1">
+              Grade Level
+            </label>
+            <input
+              type="number"
+              id="grade_level"
+              name="grade_level"
+              value={formData.grade_level ?? ''}
+              onChange={(e) => {
+                const value = e.target.value === '' ? null : parseInt(e.target.value);
+                setFormData(prev => ({ ...prev, grade_level: value }));
+              }}
+              min="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., 1, 2, 3... (for sorting)"
+            />
+          </div>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">

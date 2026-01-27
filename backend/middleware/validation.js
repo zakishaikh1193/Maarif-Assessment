@@ -357,8 +357,6 @@ export const validateCompetency = (req, res, next) => {
   // Required fields
   if (!code || code.trim().length === 0) {
     errors.push('Competency code is required');
-  } else if (code.length > 20) {
-    errors.push('Competency code must be 20 characters or less');
   }
 
   if (!name || name.trim().length === 0) {

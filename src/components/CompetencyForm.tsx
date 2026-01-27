@@ -35,6 +35,12 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({
   // Build hierarchical list for dropdown
   const buildHierarchicalList = (competencies: Competency[], excludeId?: number): (Competency & { level: number })[] => {
     const result: (Competency & { level: number })[] = [];
+    
+    // Ensure competencies is an array
+    if (!Array.isArray(competencies)) {
+      return result;
+    }
+    
     const competencyMap = new Map<number, Competency>();
     
     // Build map and filter excluded
@@ -75,13 +81,17 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({
   useEffect(() => {
     const loadCompetencies = async () => {
       try {
-        const allCompetencies = await competenciesAPI.getAll();
+        // Get all competencies without pagination (pass large limit to get all)
+        const response = await competenciesAPI.getAll(1, 10000);
+        // Extract competencies array from response (which has { competencies, pagination } structure)
+        const allCompetencies = Array.isArray(response) ? response : (response.competencies || []);
+        
         // Filter out the current competency and its descendants if editing
         let filteredCompetencies = allCompetencies;
         if (editingCompetency) {
           // Get all descendants to exclude them
           const getDescendants = (parentId: number): number[] => {
-            const children = allCompetencies.filter(c => c.parent_id === parentId);
+            const children = allCompetencies.filter(c => (c.parent_id || 0) === parentId);
             const descendantIds = children.map(c => c.id);
             children.forEach(child => {
               descendantIds.push(...getDescendants(child.id));
@@ -95,6 +105,7 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({
         setCompetencies(filteredCompetencies);
       } catch (error) {
         console.error('Failed to load competencies:', error);
+        setCompetencies([]); // Set empty array on error to prevent forEach errors
       }
     };
     loadCompetencies();
@@ -202,10 +213,9 @@ const CompetencyForm: React.FC<CompetencyFormProps> = ({
                 onChange={(e) => handleInputChange('code', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., LOG001, CRT001"
-                maxLength={20}
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Unique identifier (max 20 characters)</p>
+              <p className="text-xs text-gray-500 mt-1">Unique identifier</p>
             </div>
 
             <div>

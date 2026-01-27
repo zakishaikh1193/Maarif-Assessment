@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Building, GraduationCap, Clock, CheckCircle, XCircle, Trophy, Calendar, Search, FileText } from 'lucide-react';
+import { X, User, Building, GraduationCap, Clock, CheckCircle, XCircle, Trophy, Calendar, Search, FileText, Eye, Brain } from 'lucide-react';
 import { assignmentsAPI } from '../services/api';
 
 interface AssignmentViewModalProps {
@@ -46,6 +46,9 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState<StudentResult | null>(null);
+  const [studentResponses, setStudentResponses] = useState<any>(null);
+  const [loadingResponses, setLoadingResponses] = useState(false);
 
   useEffect(() => {
     if (isOpen && assignmentId) {
@@ -84,6 +87,33 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
   const completedStudents = filteredStudents.filter(s => s.isCompleted === 1);
   const pendingStudents = filteredStudents.filter(s => s.isCompleted === 0);
 
+  const handleViewResponses = async (student: StudentResult) => {
+    if (!student.assessmentId) {
+      alert('No assessment found for this student');
+      return;
+    }
+    
+    setSelectedStudent(student);
+    setLoadingResponses(true);
+    setStudentResponses(null);
+    
+    try {
+      const response = await assignmentsAPI.getStudentResponses(student.assessmentId);
+      setStudentResponses(response);
+    } catch (err: any) {
+      console.error('Error fetching student responses:', err);
+      alert(err.response?.data?.error || 'Failed to load student responses');
+      setSelectedStudent(null);
+    } finally {
+      setLoadingResponses(false);
+    }
+  };
+
+  const closeResponsesModal = () => {
+    setSelectedStudent(null);
+    setStudentResponses(null);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -92,7 +122,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Assignment Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Assessment Details</h2>
             {data && (
               <p className="text-sm text-gray-600 mt-1">
                 {data.assignment.subjectName} • {data.assignment.gradeName}
@@ -211,12 +241,15 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Date Taken
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredStudents.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                          <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                             No students found
                           </td>
                         </tr>
@@ -269,7 +302,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                                   <Trophy className="h-4 w-4 text-yellow-500 mr-2" />
                                   <div>
                                     <div className="text-sm font-semibold text-gray-900">
-                                      {student.ritScore} RIT
+                                      {student.ritScore}
                                     </div>
                                     {student.correctAnswers !== null && student.totalQuestions !== null && (
                                       <div className="text-xs text-gray-500">
@@ -288,6 +321,19 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                                   <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                                   {new Date(student.dateTaken).toLocaleDateString()}
                                 </div>
+                              ) : (
+                                <span className="text-sm text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {student.isCompleted === 1 && student.assessmentId ? (
+                                <button
+                                  onClick={() => handleViewResponses(student)}
+                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  View Responses
+                                </button>
                               ) : (
                                 <span className="text-sm text-gray-400">-</span>
                               )}
@@ -313,6 +359,335 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
           </button>
         </div>
       </div>
+
+      {/* Student Responses Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Student Responses</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {selectedStudent.firstName && selectedStudent.lastName
+                    ? `${selectedStudent.firstName} ${selectedStudent.lastName}`
+                    : selectedStudent.username}
+                  {studentResponses?.statistics && (
+                    <span className="ml-2">
+                      • {studentResponses.statistics.correctAnswers}/{studentResponses.statistics.totalQuestions} correct
+                    </span>
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={closeResponsesModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {loadingResponses ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                </div>
+              ) : studentResponses?.responses ? (
+                <div className="space-y-6">
+                  {studentResponses.responses.map((response: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`border-2 rounded-lg p-4 ${
+                        response.isCorrect
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-red-200 bg-red-50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-gray-700">
+                            Question {response.questionNumber}
+                          </span>
+                          {response.isCorrect ? (
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-600" />
+                          )}
+                        </div>
+                        {response.difficulty && (
+                          <span className="text-sm text-gray-500">
+                            Difficulty: {response.difficulty}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Special handling for FillInBlank - show question with answers integrated */}
+                      {response.questionType === 'FillInBlank' && response.questionMetadata?.blanks && Array.isArray(response.selectedAnswer) ? (
+                        <div className="text-gray-900 mb-3">
+                          {(() => {
+                            // Parse question text and replace blanks with selected answers
+                            let questionText = response.questionText || '';
+                            const blanks = response.questionMetadata.blanks;
+                            const selectedAnswers = response.selectedAnswer as number[];
+                            
+                            // Replace each blank placeholder sequentially
+                            const blankPattern = /(___+|\[blank\]|\[BLANK\]|\{[0-9]+\})/gi;
+                            let matchCount = 0;
+                            
+                            questionText = questionText.replace(blankPattern, (match: string) => {
+                              if (matchCount < blanks.length && matchCount < selectedAnswers.length) {
+                                const blank = blanks[matchCount];
+                                const selectedIndex = selectedAnswers[matchCount];
+                                const selectedText = blank.options && blank.options[selectedIndex] !== undefined
+                                  ? blank.options[selectedIndex]
+                                  : match;
+                                
+                                matchCount++;
+                                return `<span class="font-bold underline text-blue-600">${selectedText}</span>`;
+                              }
+                              return match;
+                            });
+                            
+                            return <div dangerouslySetInnerHTML={{ __html: questionText }} />;
+                          })()}
+                        </div>
+                      ) : response.questionType === 'Matching' && response.questionMetadata ? (
+                        // Special handling for Matching - show in table format
+                        <div className="mb-3">
+                          <div className="text-gray-900 mb-3" dangerouslySetInnerHTML={{ __html: response.questionText }} />
+                          <div className="mt-4 overflow-x-auto">
+                            <table className="min-w-full border border-gray-300 rounded-lg">
+                              <thead className="bg-gray-100">
+                                <tr>
+                                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b border-gray-300">Column A</th>
+                                  <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b border-gray-300">Student's Match</th>
+                                  {!response.isCorrect && (
+                                    <th className="px-4 py-2 text-left text-sm font-semibold text-emerald-700 border-b border-gray-300">Correct Match</th>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const leftItems = response.questionMetadata.leftItems || [];
+                                  const rightItems = response.questionMetadata.rightItems || [];
+                                  const selectedAnswers = Array.isArray(response.selectedAnswer) 
+                                    ? response.selectedAnswer as number[] 
+                                    : [];
+                                  
+                                  // Get correct pairs
+                                  let correctPairs: any[] = [];
+                                  if (response.correctAnswer) {
+                                    try {
+                                      const correctData = typeof response.correctAnswer === 'string' 
+                                        ? JSON.parse(response.correctAnswer) 
+                                        : response.correctAnswer;
+                                      
+                                      if (Array.isArray(correctData)) {
+                                        correctPairs = correctData;
+                                      } else if (typeof correctData === 'string' && correctData.includes('-')) {
+                                        correctPairs = correctData.split(',').map((pair: string) => {
+                                          const [leftIdx, rightIdx] = pair.split('-').map(Number);
+                                          return { left: leftIdx, right: rightIdx };
+                                        });
+                                      }
+                                    } catch (e) {
+                                      console.error('Error parsing correct pairs:', e);
+                                    }
+                                  }
+                                  
+                                  return leftItems.map((leftItem: string, index: number) => {
+                                    const selectedRightIdx = selectedAnswers[index];
+                                    const selectedRightItem = rightItems[selectedRightIdx] || 'N/A';
+                                    
+                                    const correctPair = correctPairs.find((p: any) => p.left === index);
+                                    const correctRightItem = correctPair 
+                                      ? (rightItems[correctPair.right] || 'N/A')
+                                      : null;
+                                    
+                                    const isMatchCorrect = correctPair && correctPair.right === selectedRightIdx;
+                                    
+                                    return (
+                                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                        <td className="px-4 py-2 text-sm text-gray-900 border-b border-gray-200">{leftItem}</td>
+                                        <td className={`px-4 py-2 text-sm border-b border-gray-200 ${
+                                          isMatchCorrect ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'
+                                        }`}>
+                                          {selectedRightItem}
+                                        </td>
+                                        {!response.isCorrect && (
+                                          <td className="px-4 py-2 text-sm text-emerald-600 font-medium border-b border-gray-200">
+                                            {correctRightItem}
+                                          </td>
+                                        )}
+                                      </tr>
+                                    );
+                                  });
+                                })()}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : (
+                        // Default display for other question types (MCQ, TrueFalse, MultipleSelect, ShortAnswer, Essay)
+                        <>
+                          <div className="text-gray-900 mb-4" dangerouslySetInnerHTML={{ __html: response.questionText }} />
+
+                          {response.options && response.options.length > 0 && (
+                            <div className="space-y-2 mb-4">
+                              {response.options.map((option: string, optIdx: number) => {
+                                const isSelected = Array.isArray(response.selectedAnswer)
+                                  ? response.selectedAnswer.includes(optIdx)
+                                  : response.selectedAnswer === optIdx || response.selectedAnswer === String(optIdx);
+                                const isCorrect = Array.isArray(response.correctAnswer)
+                                  ? response.correctAnswer.includes(optIdx)
+                                  : response.correctAnswer === optIdx || response.correctAnswer === String(optIdx);
+
+                                return (
+                                  <div
+                                    key={optIdx}
+                                    className={`p-3 rounded-lg border-2 ${
+                                      isCorrect && isSelected
+                                        ? 'border-emerald-500 bg-emerald-100'
+                                        : isCorrect
+                                        ? 'border-emerald-500 bg-emerald-50'
+                                        : isSelected
+                                        ? 'border-red-500 bg-red-100'
+                                        : 'border-gray-200 bg-white'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      {isCorrect && (
+                                        <CheckCircle className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                                      )}
+                                      {isSelected && !isCorrect && (
+                                        <XCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                                      )}
+                                      {isSelected && isCorrect && (
+                                        <CheckCircle className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                                      )}
+                                      <span
+                                        className={`text-sm ${isSelected ? 'font-medium' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: option }}
+                                      />
+                                      <div className="ml-auto flex items-center gap-2">
+                                        {isSelected && isCorrect && (
+                                          <>
+                                            <span className="text-xs font-semibold text-emerald-700">
+                                              Student's Answer
+                                            </span>
+                                            <span className="text-xs text-emerald-600">•</span>
+                                            <span className="text-xs font-semibold text-emerald-700">
+                                              Correct
+                                            </span>
+                                          </>
+                                        )}
+                                        {isCorrect && !isSelected && (
+                                          <span className="text-xs font-semibold text-emerald-700">
+                                            Correct Answer
+                                          </span>
+                                        )}
+                                        {isSelected && !isCorrect && (
+                                          <span className="text-xs font-semibold text-red-700">
+                                            Student's Answer
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Default display for other question types (MCQ, TrueFalse, MultipleSelect, ShortAnswer, Essay) */}
+                          {response.questionType !== 'FillInBlank' && response.questionType !== 'Matching' && (
+                            <>
+                              {/* For ShortAnswer and Essay, show answer in a box */}
+                              {(response.questionType === 'ShortAnswer' || response.questionType === 'Essay') ? (
+                                <div className="mb-3">
+                                  <span className="font-medium text-gray-700">Student's Answer: </span>
+                                  <div className="mt-1 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <p className="text-sm text-gray-800">
+                                      {response.formattedSelectedAnswer || (typeof response.selectedAnswer === 'string' ? response.selectedAnswer : 'N/A')}
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                                  <div>
+                                    <span className="font-medium text-gray-700">Student's Answer: </span>
+                                    <span className={response.isCorrect ? 'text-emerald-600' : 'text-red-600'}>
+                                      {response.formattedSelectedAnswer !== undefined 
+                                        ? response.formattedSelectedAnswer 
+                                        : (response.options && response.options[response.selectedAnswer as number] || 'N/A')}
+                                    </span>
+                                  </div>
+                                  {!response.isCorrect && (
+                                    <div>
+                                      <span className="font-medium text-gray-700">Correct Answer: </span>
+                                      <span className="text-emerald-600">
+                                        {response.formattedCorrectAnswer !== undefined 
+                                          ? response.formattedCorrectAnswer 
+                                          : (response.options && response.options[response.correctAnswer as number] || 'N/A')}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+
+                      {/* Show AI Grading Reason for Short Answer and Essay - matches student page exactly */}
+                      {(response.questionType === 'ShortAnswer' || response.questionType === 'Essay') && response.aiGradingResult && (
+                        <div className={`mt-3 p-3 rounded-lg border ${
+                          response.isCorrect 
+                            ? 'bg-emerald-50 border-emerald-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}>
+                          <div className="flex items-start space-x-2">
+                            <Brain className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                              response.isCorrect ? 'text-emerald-600' : 'text-red-600'
+                            }`} />
+                            <div className="flex-1">
+                              <p className={`text-sm font-medium ${
+                                response.isCorrect ? 'text-emerald-800' : 'text-red-800'
+                              }`}>
+                                AI Grading Feedback:
+                              </p>
+                              <p className={`text-sm mt-1 ${
+                                response.isCorrect ? 'text-emerald-700' : 'text-red-700'
+                              }`}>
+                                {response.aiGradingResult.reason}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No responses found for this student
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end p-6 border-t border-gray-200">
+              <button
+                onClick={closeResponsesModal}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

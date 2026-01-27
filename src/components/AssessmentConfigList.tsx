@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AssessmentConfiguration, Grade, Subject } from '../types';
 import { assessmentConfigAPI, gradesAPI, subjectsAPI, assignmentsAPI } from '../services/api';
-import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye } from 'lucide-react';
+import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye, UserPlus } from 'lucide-react';
 import AssessmentConfigForm from './AssessmentConfigForm';
 import AssignmentViewModal from './AssignmentViewModal';
 import AssessmentQuestionsModal from './AssessmentQuestionsModal';
+import ReassignAssignmentModal from './ReassignAssignmentModal';
 
 interface Assignment {
   id: number;
@@ -47,6 +48,8 @@ const AssessmentConfigList: React.FC = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingQuestionsAssignmentId, setViewingQuestionsAssignmentId] = useState<number | null>(null);
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  const [reassigningAssignmentId, setReassigningAssignmentId] = useState<number | null>(null);
+  const [showReassignModal, setShowReassignModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -296,19 +299,19 @@ const AssessmentConfigList: React.FC = () => {
                 {filteredAssignments.map((assignment) => {
                   const mode = getAssignmentMode(assignment);
                   return (
-                    <tr key={assignment.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={assignment.id} 
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setViewingAssignmentId(assignment.id);
+                        setShowViewModal(true);
+                      }}
+                    >
                       <td className="px-6 py-4">
                         <div>
-                          <button
-                            onClick={() => {
-                              setViewingQuestionsAssignmentId(assignment.id);
-                              setShowQuestionsModal(true);
-                            }}
-                            className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors text-left cursor-pointer"
-                            title="Click to view questions"
-                          >
+                          <div className="text-sm font-medium text-gray-900">
                             {assignment.name}
-                          </button>
+                          </div>
                           {assignment.description && (
                             <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">
                               {assignment.description}
@@ -377,17 +380,17 @@ const AssessmentConfigList: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => {
-                              setViewingAssignmentId(assignment.id);
-                              setShowViewModal(true);
+                              setReassigningAssignmentId(assignment.id);
+                              setShowReassignModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-900 transition-colors"
-                            title="View Details"
+                            className="text-green-600 hover:text-green-900 transition-colors"
+                            title="Reassign"
                           >
-                            <Eye className="h-4 w-4" />
+                            <UserPlus className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteAssignment(assignment.id)}
@@ -569,6 +572,22 @@ const AssessmentConfigList: React.FC = () => {
             setViewingQuestionsAssignmentId(null);
           }}
           assignmentId={viewingQuestionsAssignmentId}
+        />
+      )}
+
+      {/* Reassign Assignment Modal */}
+      {showReassignModal && reassigningAssignmentId && (
+        <ReassignAssignmentModal
+          isOpen={showReassignModal}
+          onClose={() => {
+            setShowReassignModal(false);
+            setReassigningAssignmentId(null);
+          }}
+          assignmentId={reassigningAssignmentId}
+          assignmentName={assignments.find(a => a.id === reassigningAssignmentId)?.name || ''}
+          onReassignComplete={() => {
+            fetchData(); // Refresh the assignments list
+          }}
         />
       )}
     </div>

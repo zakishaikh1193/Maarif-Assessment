@@ -22,7 +22,7 @@ import CSVImportModal from '../components/CSVImportModal';
 import QuestionCSVImportModal from '../components/QuestionCSVImportModal';
 import SSOSettings from '../components/SSOSettings';
 import SaudiArabiaMap from '../components/SaudiArabiaMap';
-import { Plus, BookOpen, Users, FileQuestion, BarChart3, TrendingUp, User, Settings, Building, GraduationCap, Clock, Target, Brain, Upload, Database, Activity, Zap, Key, FileText, ChevronDown, ChevronRight, AlertTriangle, ArrowDownRight, Trophy } from 'lucide-react';
+import { Plus, BookOpen, Users, FileQuestion, BarChart3, TrendingUp, User, Settings, Building, GraduationCap, Clock, Target, Brain, Upload, Database, Activity, Zap, Key, FileText, ChevronDown, ChevronRight, AlertTriangle, ArrowDownRight, Trophy, Medal } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -37,6 +37,7 @@ const AdminDashboard: React.FC = () => {
     studentId: number;
     studentName: string;
     schoolName: string;
+    gradeName?: string;
     highestScore: number;
     subjectName: string;
   }>>([]);
@@ -397,7 +398,7 @@ const AdminDashboard: React.FC = () => {
       <div className="flex pt-16">
         {/* Fixed Sidebar */}
         <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 shadow-sm overflow-y-auto z-40">
-          <div className="p-4">
+          <div className="px-4 py-4 pt-8">
             <nav className="space-y-1">
             {/* Dashboard Button */}
             <button
@@ -598,352 +599,210 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'dashboard' && (
               <div className="space-y-6 animate-fadeIn">
                 {stats && (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content Area */}
-                    <div className="lg:col-span-2 space-y-6">
-                      {/* Overview Cards 2x2 Grid */}
-                      <div className="grid grid-cols-2 gap-4">
-                        {/* Schools Overview Card */}
-                        <div 
-                          onClick={() => setActiveTab('schools')}
-                          className="group relative bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg border-2 border-red-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-red-300 transition-all duration-300 cursor-pointer overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-red-400/0 to-red-400/0 group-hover:from-red-400/10 group-hover:to-red-400/5 transition-all duration-300"></div>
-                          <div className="relative flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Building className="h-7 w-7 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-lg font-bold text-gray-900 mb-1">{schools.length || 0}</p>
-                                <p className="text-sm font-semibold text-gray-700">Schools</p>
-                                <p className="text-xs text-red-600 mt-1 font-medium flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  <span>↓ 10% vs last month</span>
-                                </p>
-                              </div>
+                  <div className="space-y-6">
+                    {/* Overview Cards - Single Line */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Schools Overview Card */}
+                      <div 
+                        onClick={() => setActiveTab('schools')}
+                        className="group relative bg-gradient-to-r from-blue-50/40 to-blue-50/20 rounded-xl shadow-lg border border-blue-200/20 p-6 hover:shadow-xl hover:border-blue-200/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-300/3 to-blue-200/2 group-hover:from-blue-300/5 group-hover:to-blue-200/3 transition-all duration-300"></div>
+                        <div className="relative flex items-start justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300">
+                              <Building className="h-7 w-7 text-white" />
                             </div>
-                            <ArrowDownRight className="h-5 w-5 text-red-400 group-hover:text-red-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
-                          </div>
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-red-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                        </div>
-
-                        {/* Students Overview Card */}
-                        <div 
-                          onClick={() => setActiveTab('students')}
-                          className="group relative bg-gradient-to-br from-white to-yellow-50 rounded-xl shadow-lg border-2 border-yellow-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-yellow-300 transition-all duration-300 cursor-pointer overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/0 to-yellow-400/0 group-hover:from-yellow-400/10 group-hover:to-yellow-400/5 transition-all duration-300"></div>
-                          <div className="relative flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Users className="h-7 w-7 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-lg font-bold text-gray-900 mb-1">{stats.totalStudents || 0}</p>
-                                <p className="text-sm font-semibold text-gray-700">Students</p>
-                                <p className="text-xs text-yellow-600 mt-1 font-medium flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  <span>↓ 10% vs last month</span>
-                                </p>
-                              </div>
-                            </div>
-                            <ArrowDownRight className="h-5 w-5 text-yellow-400 group-hover:text-yellow-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
-                          </div>
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                        </div>
-
-                        {/* Assessments Overview Card */}
-                        <div 
-                          onClick={() => setActiveTab('configs')}
-                          className="group relative bg-gradient-to-br from-white to-green-50 rounded-xl shadow-lg border-2 border-green-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-green-300 transition-all duration-300 cursor-pointer overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-400/0 group-hover:from-green-400/10 group-hover:to-green-400/5 transition-all duration-300"></div>
-                          <div className="relative flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <BarChart3 className="h-7 w-7 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-lg font-bold text-gray-900 mb-1">{stats.totalAssessments || 0}</p>
-                                <p className="text-sm font-semibold text-gray-700">Assessments</p>
-                                <p className="text-xs text-green-600 mt-1 font-medium flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  <span>↓ 10% vs last month</span>
-                                </p>
-                              </div>
-                            </div>
-                            <ArrowDownRight className="h-5 w-5 text-green-400 group-hover:text-green-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
-                          </div>
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-green-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                        </div>
-
-                        {/* Questions Overview Card */}
-                        <div 
-                          onClick={() => setActiveTab('questions')}
-                          className="group relative bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg border-2 border-blue-100 p-6 hover:shadow-2xl hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/0 to-blue-400/0 group-hover:from-blue-400/10 group-hover:to-blue-400/5 transition-all duration-300"></div>
-                          <div className="relative flex items-start justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <FileQuestion className="h-7 w-7 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-lg font-bold text-gray-900 mb-1">{stats.totalQuestions || 0}</p>
-                                <p className="text-sm font-semibold text-gray-700">Questions</p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  {stats.subjectDistribution?.slice(0, 3).map((subject: any, idx: number) => (
-                                    <div key={idx} className="px-2 py-0.5 bg-blue-100 rounded-md">
-                                      <p className="text-[10px] font-semibold text-blue-700">{subject.question_count || 0} {subject.name.substring(0, 3)}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                                <p className="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  <span>↓ 10% vs last month</span>
-                                </p>
-                              </div>
-                            </div>
-                            <ArrowDownRight className="h-5 w-5 text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />
-                          </div>
-                          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                        </div>
-                      </div>
-
-                      {/* Schools Overview Section */}
-                      <div className="relative bg-gradient-to-br from-white via-blue-50/30 to-white rounded-xl shadow-xl border-2 border-blue-100 p-6 hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/20 to-transparent rounded-full blur-3xl"></div>
-                        <div className="relative">
-                          <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                <Building className="h-6 w-6 text-blue-600" />
-                                Schools Overview
-                              </h3>
-                              <p className="text-sm text-gray-600">
-                                Track and manage all schools in the Maarif Assessment system. Monitor performance across different institutions.
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
-                                {schools.length} Schools
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mb-4">
-                            <button 
-                              onClick={() => setActiveTab('schools')}
-                              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105"
-                            >
-                              <span className="flex items-center gap-2">
-                                <Activity className="h-4 w-4" />
-                                Check Details
-                              </span>
-                            </button>
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                              <p className="text-sm font-medium text-gray-700">
-                                {schools.length} Active Institutions
-                              </p>
-                            </div>
-                          </div>
-                          {/* Saudi Arabia Map with School Locations */}
-                          <SaudiArabiaMap schools={schools} />
-                        </div>
-                      </div>
-
-                      {/* Bottom Row - Two Charts */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Subject Distribution (Enhanced) */}
-                        <div className="group relative bg-gradient-to-br from-white to-purple-50/30 rounded-xl shadow-lg border-2 border-purple-100 p-6 overflow-hidden">
-                          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-200/20 rounded-full blur-2xl"></div>
-                          <div className="relative">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                              <BookOpen className="h-6 w-6 text-purple-600" />
-                              Subject Distribution
-                            </h3>
-                            <div className="flex items-center gap-8">
-                              <div className="flex-1">
-                                {/* Donut chart */}
-                                <div className="relative w-56 h-56 mx-auto">
-                                  <svg className="transform -rotate-90" viewBox="0 0 100 100">
-                                    {stats.subjectDistribution && stats.subjectDistribution.length > 0 && (() => {
-                                      const total = stats.subjectDistribution.reduce((sum: number, s: any) => sum + (s.question_count || 0), 0);
-                                      let currentAngle = 0;
-                                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7'];
-                                      return stats.subjectDistribution.slice(0, 5).map((subject: any, idx: number) => {
-                                        const percentage = total > 0 ? (subject.question_count / total) * 100 : 0;
-                                        const angle = (percentage / 100) * 360;
-                                        const startAngle = currentAngle;
-                                        currentAngle += angle;
-                                        const largeArc = angle > 180 ? 1 : 0;
-                                        const x1 = 50 + 40 * Math.cos((startAngle * Math.PI) / 180);
-                                        const y1 = 50 + 40 * Math.sin((startAngle * Math.PI) / 180);
-                                        const x2 = 50 + 40 * Math.cos((currentAngle * Math.PI) / 180);
-                                        const y2 = 50 + 40 * Math.sin((currentAngle * Math.PI) / 180);
-                                        return (
-                                          <path
-                                            key={idx}
-                                            d={`M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                                            fill={colors[idx % colors.length]}
-                                          />
-                                        );
-                                      });
-                                    })()}
-                                    <circle cx="50" cy="50" r="25" fill="white" className="drop-shadow-sm" />
-                                  </svg>
-                                </div>
-                              </div>
-                              <div className="flex-1 space-y-4">
-                                {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
-                                  const colors = ['bg-red-100 text-red-700', 'bg-orange-100 text-orange-700', 'bg-yellow-100 text-yellow-700', 'bg-green-100 text-green-700'];
-                                  return (
-                                    <div key={idx} className={`flex items-center gap-3 p-4 rounded-lg ${colors[idx % colors.length]}`}>
-                                      <div className={`h-4 w-4 rounded-full ${colors[idx % colors.length].split(' ')[0]}`}></div>
-                                      <span className="text-base font-semibold">{subject.name}</span>
-                                      <span className="text-base font-bold ml-auto">{subject.question_count || 0}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Performance by Grade (Enhanced) */}
-                        <div className="group relative bg-gradient-to-br from-white to-indigo-50/30 rounded-xl shadow-lg border-2 border-indigo-100 p-6 hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-200/20 rounded-full blur-2xl"></div>
-                          <div className="relative">
-                            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                              <TrendingUp className="h-5 w-5 text-indigo-600" />
-                              Performance by Grade
-                            </h3>
-                            <div className="space-y-4">
-                              {stats.gradePerformance && stats.gradePerformance.length > 0 ? (
-                                stats.gradePerformance.slice(0, 5).map((gradePerf: any, idx: number) => {
-                                  const colors = [
-                                    { bg: 'bg-gradient-to-r from-red-500 to-red-600', text: 'text-red-700' },
-                                    { bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', text: 'text-yellow-700' },
-                                    { bg: 'bg-gradient-to-r from-green-500 to-green-600', text: 'text-green-700' },
-                                    { bg: 'bg-gradient-to-r from-blue-500 to-blue-600', text: 'text-blue-700' },
-                                    { bg: 'bg-gradient-to-r from-gray-500 to-gray-600', text: 'text-gray-700' }
-                                  ];
-                                  const width = gradePerf.performance_percentage || 0;
-                                  const colorSet = colors[idx % colors.length];
-                                  return (
-                                    <div key={gradePerf.id} className="group/item">
-                                      <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-gray-800">{gradePerf.display_name || `Grade ${gradePerf.id}`}</span>
-                                        <span className={`text-xs font-bold ${colorSet.text}`}>{width}%</span>
-                                      </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                                        <div
-                                          className={`h-full rounded-full ${colorSet.bg} transition-all duration-1000 ease-out group-hover/item:scale-y-110`}
-                                          style={{ width: `${width}%` }}
-                                        >
-                                          <div className="h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })
+                              <p className="text-2xl font-black text-gray-900 mb-1">{schools.length || 0}</p>
+                              <p className="text-sm font-semibold text-gray-700">Schools</p>
+                              {stats.trends?.schools ? (
+                                <p className={`text-xs mt-1 font-medium flex items-center gap-1 ${
+                                  stats.trends.schools.direction === 'up' ? 'text-green-600' : 'text-blue-600'
+                                }`}>
+                                  {stats.trends.schools.direction === 'up' ? (
+                                    <TrendingUp className="h-3 w-3" />
+                                  ) : (
+                                    <TrendingUp className="h-3 w-3 rotate-180" />
+                                  )}
+                                  <span>
+                                    {stats.trends.schools.direction === 'up' ? '↑' : '↓'} {Math.abs(stats.trends.schools.percentage).toFixed(1)}% vs last month
+                                  </span>
+                                </p>
                               ) : (
-                                grades.slice(0, 5).map((grade, idx) => {
-                                  const colors = [
-                                    { bg: 'bg-gradient-to-r from-red-500 to-red-600', text: 'text-red-700' },
-                                    { bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', text: 'text-yellow-700' },
-                                    { bg: 'bg-gradient-to-r from-green-500 to-green-600', text: 'text-green-700' },
-                                    { bg: 'bg-gradient-to-r from-blue-500 to-blue-600', text: 'text-blue-700' },
-                                    { bg: 'bg-gradient-to-r from-gray-500 to-gray-600', text: 'text-gray-700' }
-                                  ];
-                                  const width = 0; // No data available
-                                  const colorSet = colors[idx % colors.length];
-                                  return (
-                                    <div key={grade.id} className="group/item">
-                                      <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-gray-800">{grade.display_name || `Grade ${grade.id}`}</span>
-                                        <span className={`text-xs font-bold ${colorSet.text}`}>N/A</span>
-                                      </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                                        <div
-                                          className={`h-full rounded-full ${colorSet.bg} transition-all duration-1000 ease-out group-hover/item:scale-y-110`}
-                                          style={{ width: `${width}%` }}
-                                        >
-                                          <div className="h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })
+                                <p className="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3 rotate-180" />
+                                  <span>No trend data</span>
+                                </p>
                               )}
                             </div>
-                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                              <span className="text-xs font-medium text-gray-500">Low</span>
-                              <span className="text-xs font-medium text-gray-500">Medium</span>
-                              <span className="text-xs font-medium text-gray-500">High</span>
+                          </div>
+                          <ArrowDownRight className="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-all duration-300" />
+                        </div>
+                      </div>
+
+                      {/* Students Overview Card */}
+                      <div 
+                        onClick={() => setActiveTab('students')}
+                        className="group relative bg-gradient-to-r from-blue-50/40 to-blue-50/20 rounded-xl shadow-lg border border-blue-200/20 p-6 hover:shadow-xl hover:border-blue-200/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-300/3 to-blue-200/2 group-hover:from-blue-300/5 group-hover:to-blue-200/3 transition-all duration-300"></div>
+                        <div className="relative flex items-start justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300">
+                              <Users className="h-7 w-7 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-black text-gray-900 mb-1">{stats.totalStudents || 0}</p>
+                              <p className="text-sm font-semibold text-gray-700">Students</p>
+                              {stats.trends?.students ? (
+                                <p className={`text-xs mt-1 font-medium flex items-center gap-1 ${
+                                  stats.trends.students.direction === 'up' ? 'text-green-600' : 'text-blue-600'
+                                }`}>
+                                  {stats.trends.students.direction === 'up' ? (
+                                    <TrendingUp className="h-3 w-3" />
+                                  ) : (
+                                    <TrendingUp className="h-3 w-3 rotate-180" />
+                                  )}
+                                  <span>
+                                    {stats.trends.students.direction === 'up' ? '↑' : '↓'} {Math.abs(stats.trends.students.percentage).toFixed(1)}% vs last month
+                                  </span>
+                                </p>
+                              ) : (
+                                <p className="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3 rotate-180" />
+                                  <span>No trend data</span>
+                                </p>
+                              )}
                             </div>
                           </div>
+                          <ArrowDownRight className="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-all duration-300" />
+                        </div>
+                      </div>
+
+                      {/* Assessments Overview Card */}
+                      <div 
+                        onClick={() => setActiveTab('configs')}
+                        className="group relative bg-gradient-to-r from-blue-50/40 to-blue-50/20 rounded-xl shadow-lg border border-blue-200/20 p-6 hover:shadow-xl hover:border-blue-200/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-300/3 to-blue-200/2 group-hover:from-blue-300/5 group-hover:to-blue-200/3 transition-all duration-300"></div>
+                        <div className="relative flex items-start justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300">
+                              <BarChart3 className="h-7 w-7 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-black text-gray-900 mb-1">{stats.totalAssessments || 0}</p>
+                              <p className="text-sm font-semibold text-gray-700">Assessments</p>
+                              {stats.trends?.assessments ? (
+                                <p className={`text-xs mt-1 font-medium flex items-center gap-1 ${
+                                  stats.trends.assessments.direction === 'up' ? 'text-green-600' : 'text-blue-600'
+                                }`}>
+                                  {stats.trends.assessments.direction === 'up' ? (
+                                    <TrendingUp className="h-3 w-3" />
+                                  ) : (
+                                    <TrendingUp className="h-3 w-3 rotate-180" />
+                                  )}
+                                  <span>
+                                    {stats.trends.assessments.direction === 'up' ? '↑' : '↓'} {Math.abs(stats.trends.assessments.percentage).toFixed(1)}% vs last month
+                                  </span>
+                                </p>
+                              ) : (
+                                <p className="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3 rotate-180" />
+                                  <span>No trend data</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <ArrowDownRight className="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-all duration-300" />
+                        </div>
+                      </div>
+
+                      {/* Questions Overview Card */}
+                      <div 
+                        onClick={() => setActiveTab('questions')}
+                        className="group relative bg-gradient-to-r from-blue-50/40 to-blue-50/20 rounded-xl shadow-lg border border-blue-200/20 p-6 hover:shadow-xl hover:border-blue-200/30 transition-all duration-300 cursor-pointer overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-300/3 to-blue-200/2 group-hover:from-blue-300/5 group-hover:to-blue-200/3 transition-all duration-300"></div>
+                        <div className="relative flex items-start justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300">
+                              <FileQuestion className="h-7 w-7 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-black text-gray-900 mb-1">{stats.totalQuestions || 0}</p>
+                              <p className="text-sm font-semibold text-gray-700">Questions</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                {stats.subjectDistribution?.slice(0, 3).map((subject: any, idx: number) => (
+                                  <div key={idx} className="px-2 py-0.5 bg-blue-200/60 rounded-md border border-blue-300/30">
+                                    <p className="text-[10px] font-semibold text-blue-700">{subject.question_count || 0} {subject.name.substring(0, 3)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                              {stats.trends?.questions ? (
+                                <p className={`text-xs mt-1 font-medium flex items-center gap-1 ${
+                                  stats.trends.questions.direction === 'up' ? 'text-green-600' : 'text-blue-600'
+                                }`}>
+                                  {stats.trends.questions.direction === 'up' ? (
+                                    <TrendingUp className="h-3 w-3" />
+                                  ) : (
+                                    <TrendingUp className="h-3 w-3 rotate-180" />
+                                  )}
+                                  <span>
+                                    {stats.trends.questions.direction === 'up' ? '↑' : '↓'} {Math.abs(stats.trends.questions.percentage).toFixed(1)}% vs last month
+                                  </span>
+                                </p>
+                              ) : (
+                                <p className="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
+                                  <TrendingUp className="h-3 w-3 rotate-180" />
+                                  <span>No trend data</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <ArrowDownRight className="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-all duration-300" />
                         </div>
                       </div>
                     </div>
 
-                    {/* Right Sidebar */}
-                    <div className="space-y-6">
-                      {/* Subject Distribution List */}
-                      <div className="relative bg-gradient-to-br from-white to-cyan-50/30 rounded-xl shadow-lg border-2 border-cyan-100 p-5 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-200/20 rounded-full blur-2xl"></div>
-                        <div className="relative">
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <BookOpen className="h-5 w-5 text-cyan-600" />
-                            Subject Distribution
-                          </h3>
-                          <div className="space-y-3">
-                            {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
-                              const icons = [Users, Building, AlertTriangle, Target];
-                              const Icon = icons[idx % icons.length];
-                              const colors = [
-                                'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700',
-                                'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                              ];
-                              return (
-                                <div
-                                  key={idx}
-                                  className={`flex items-center justify-between p-3 rounded-xl ${colors[idx]} cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300 group`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg ${idx === 0 ? 'bg-white/20' : 'bg-gray-200'} group-hover:scale-110 transition-transform duration-300`}>
-                                      <Icon className={`h-5 w-5 ${idx === 0 ? 'text-white' : 'text-gray-600'}`} />
-                                    </div>
-                                    <span className={`text-sm font-semibold ${idx === 0 ? 'text-white' : 'text-gray-700'}`}>
-                                      {subject.question_count || 0} {subject.name}
-                                    </span>
-                                  </div>
-                                  {idx === 0 && <ArrowDownRight className="h-4 w-4 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-300" />}
-                                </div>
-                              );
-                            })}
+                    {/* Schools Overview and Best Performance - Side by Side */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                      {/* Schools Overview Section - 2/3 width */}
+                      <div className="lg:col-span-2 relative bg-gradient-to-br from-white via-blue-50/30 to-white rounded-xl shadow-xl border-2 border-blue-100 p-4 hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/20 to-transparent rounded-full blur-3xl"></div>
+                        <div className="relative flex flex-col h-full">
+                          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+                                <Building className="h-5 w-5 text-blue-600" />
+                                Schools Overview
+                              </h3>
+                              <p className="text-xs text-gray-600">
+                                Track and manage all schools in the Maarif Assessment system. Monitor performance across different institutions.
+                              </p>
+                            </div>
+                          </div>
+                          {/* Saudi Arabia Map with School Locations and Filters */}
+                          <div className="w-full flex-1 overflow-hidden rounded-lg min-h-0">
+                            <SaudiArabiaMap schools={schools} />
                           </div>
                         </div>
                       </div>
 
-                      {/* Best Performance Section */}
-                      <div className="relative bg-gradient-to-br from-white via-pink-50/40 to-purple-50/40 rounded-xl shadow-lg border-2 border-pink-100 p-5 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-pink-200/20 rounded-full blur-3xl"></div>
+                      {/* Best Performance Section - 1/3 width */}
+                      <div className="lg:col-span-1 relative bg-gradient-to-br from-blue-50/40 via-blue-50/20 to-white rounded-xl shadow-lg border border-blue-200/30 p-4 overflow-hidden flex flex-col h-full hover:shadow-xl transition-all duration-300">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/20 to-transparent rounded-full blur-2xl"></div>
                         <div className="relative">
-                          <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                              <Trophy className="h-5 w-5 text-pink-400" />
-                              Best Performance
-                              <span className="h-2 w-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></span>
-                            </h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Trophy className="h-5 w-5 text-yellow-500" />
+                            <h3 className="text-base font-bold text-gray-900">Best Performance</h3>
+                            <span className="h-2 w-2 bg-green-500 rounded-full ml-auto"></span>
                           </div>
-                          <p className="text-xs text-gray-600 mb-4 font-medium">Top performing students with highest scores</p>
+                          <p className="text-xs text-gray-600 mb-3">Top performing students with highest scores</p>
                           {topPerformersLoading ? (
                             <div className="flex items-center justify-center py-12">
-                              <div className="rounded-full h-8 w-8 border-4 border-pink-200 border-t-pink-400"></div>
+                              <div className="rounded-full h-8 w-8 border-4 border-gray-200 border-t-gray-400 animate-spin"></div>
                             </div>
                           ) : topPerformers.length === 0 ? (
                             <div className="text-center py-12">
@@ -954,57 +813,205 @@ const AdminDashboard: React.FC = () => {
                               <p className="text-sm text-gray-500 font-medium">No performance data available</p>
                             </div>
                           ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                               {topPerformers.map((performer, index) => {
-                                const rankColors = [
-                                  { bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200', border: 'border-yellow-200', text: 'text-yellow-800', badge: 'bg-yellow-300', trophy: 'text-yellow-600', glow: 'shadow-yellow-200/30' },
-                                  { bg: 'bg-gradient-to-br from-slate-100 to-slate-200', border: 'border-slate-200', text: 'text-slate-700', badge: 'bg-slate-300', trophy: 'text-slate-500', glow: 'shadow-slate-200/30' },
-                                  { bg: 'bg-gradient-to-br from-orange-100 to-orange-200', border: 'border-orange-200', text: 'text-orange-800', badge: 'bg-orange-300', trophy: 'text-orange-600', glow: 'shadow-orange-200/30' },
-                                  { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-300', trophy: 'text-blue-600', glow: 'shadow-blue-200/30' },
-                                  { bg: 'bg-gradient-to-br from-purple-100 to-purple-200', border: 'border-purple-200', text: 'text-purple-800', badge: 'bg-purple-300', trophy: 'text-purple-600', glow: 'shadow-purple-200/30' }
+                                const rank = index + 1;
+                                // Card styling based on rank
+                                const cardStyles = [
+                                  { bg: 'bg-yellow-50', badge: 'bg-yellow-400', badgeText: 'text-white', text: 'text-gray-900', icon: Trophy, iconColor: 'text-yellow-600' },
+                                  { bg: 'bg-gray-100', badge: 'bg-gray-400', badgeText: 'text-white', text: 'text-gray-900', icon: Medal, iconColor: 'text-gray-500' },
+                                  { bg: 'bg-orange-50', badge: 'bg-orange-400', badgeText: 'text-white', text: 'text-gray-900', icon: Medal, iconColor: 'text-orange-600' },
+                                  { bg: 'bg-white', badge: 'bg-gray-200', badgeText: 'text-gray-700', text: 'text-gray-900', icon: TrendingUp, iconColor: 'text-gray-400' },
+                                  { bg: 'bg-white', badge: 'bg-gray-200', badgeText: 'text-gray-700', text: 'text-gray-900', icon: TrendingUp, iconColor: 'text-gray-400' }
                                 ];
-                                const rank = rankColors[index] || rankColors[3];
+                                const style = cardStyles[index] || cardStyles[3];
+                                const IconComponent = style.icon;
+                                
                                 return (
                                   <div 
                                     key={performer.studentId} 
-                                    className={`relative flex items-center gap-3 p-3 rounded-xl border-2 ${rank.border} ${rank.bg} ${rank.glow} cursor-pointer overflow-hidden`}
+                                    className={`relative flex items-center gap-3 p-2.5 rounded-lg ${style.bg} border border-blue-200/30 hover:border-blue-300/50 transition-all duration-200`}
                                   >
-                                    <div className="relative flex items-center justify-between gap-3 w-full">
-                                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className={`relative flex-shrink-0`}>
-                                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${rank.badge} shadow-lg`}>
-                                            {index + 1}
-                                          </div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className={`text-sm font-bold ${rank.text} truncate`}>
-                                            {performer.studentName}
-                                          </p>
-                                          <p className={`text-xs ${rank.text} opacity-80 truncate`}>
-                                            {performer.schoolName}
-                                          </p>
-                                          <div className="flex items-center gap-2 mt-1">
-                                            <span className={`text-xs font-bold ${rank.text} px-2 py-0.5 rounded-md bg-white/50 backdrop-blur-sm`}>
-                                              🎯 {performer.highestScore}
-                                            </span>
-                                            <span className={`text-xs ${rank.text} opacity-60`}>•</span>
-                                            <span className={`text-xs ${rank.text} opacity-80 truncate`}>
-                                              {performer.subjectName}
-                                            </span>
-                                          </div>
-                                        </div>
+                                    {/* Rank Badge */}
+                                    <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${style.badge} ${style.badgeText} font-bold text-sm shadow-sm`}>
+                                      {rank}
+                                    </div>
+                                    
+                                    {/* Student Info */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <p className={`text-sm font-bold ${style.text} truncate`}>
+                                          {performer.studentName}
+                                        </p>
+                                        {performer.gradeName && (
+                                          <span className="px-2 py-0.5 bg-gray-200 rounded-full text-[10px] font-medium text-gray-700 whitespace-nowrap">
+                                            {performer.gradeName}
+                                          </span>
+                                        )}
                                       </div>
-                                      <div className={`relative flex-shrink-0`}>
-                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-white/50 backdrop-blur-sm shadow-lg`}>
-                                          <Trophy className={`h-6 w-6 ${rank.trophy}`} />
-                                        </div>
+                                      <p className={`text-xs ${style.text} opacity-80 truncate mb-1`}>
+                                        {performer.schoolName}
+                                      </p>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 bg-green-500 rounded-full"></span>
+                                        <span className={`text-xs font-medium ${style.text}`}>
+                                          {performer.highestScore}
+                                        </span>
+                                        <span className={`text-xs ${style.text} opacity-60`}>•</span>
+                                        <span className={`text-xs ${style.text} opacity-80 truncate`}>
+                                          {performer.subjectName}
+                                        </span>
                                       </div>
+                                    </div>
+                                    
+                                    {/* Award Icon */}
+                                    <div className="flex-shrink-0">
+                                      <IconComponent className={`h-5 w-5 ${style.iconColor}`} />
                                     </div>
                                   </div>
                                 );
                               })}
                             </div>
                           )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row - Two Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Subject Distribution (Enhanced) */}
+                      <div className="group relative bg-gradient-to-br from-white to-purple-50/30 rounded-xl shadow-lg border-2 border-purple-100 p-6 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-purple-200/20 rounded-full blur-2xl"></div>
+                        <div className="relative">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                            <BookOpen className="h-6 w-6 text-purple-600" />
+                            Subject Distribution
+                          </h3>
+                          <div className="flex items-center gap-8">
+                            <div className="flex-1">
+                              {/* Donut chart */}
+                              <div className="relative w-56 h-56 mx-auto">
+                                <svg className="transform -rotate-90" viewBox="0 0 100 100">
+                                  {stats.subjectDistribution && stats.subjectDistribution.length > 0 && (() => {
+                                    const total = stats.subjectDistribution.reduce((sum: number, s: any) => sum + (s.question_count || 0), 0);
+                                    let currentAngle = 0;
+                                    const colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
+                                    return stats.subjectDistribution.slice(0, 5).map((subject: any, idx: number) => {
+                                      const percentage = total > 0 ? (subject.question_count / total) * 100 : 0;
+                                      const angle = (percentage / 100) * 360;
+                                      const startAngle = currentAngle;
+                                      currentAngle += angle;
+                                      const largeArc = angle > 180 ? 1 : 0;
+                                      const x1 = 50 + 40 * Math.cos((startAngle * Math.PI) / 180);
+                                      const y1 = 50 + 40 * Math.sin((startAngle * Math.PI) / 180);
+                                      const x2 = 50 + 40 * Math.cos((currentAngle * Math.PI) / 180);
+                                      const y2 = 50 + 40 * Math.sin((currentAngle * Math.PI) / 180);
+                                      return (
+                                        <path
+                                          key={idx}
+                                          d={`M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                                          fill={colors[idx % colors.length]}
+                                        />
+                                      );
+                                    });
+                                  })()}
+                                  <circle cx="50" cy="50" r="25" fill="white" className="drop-shadow-sm" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="flex-1 space-y-4">
+                              {stats.subjectDistribution?.slice(0, 4).map((subject: any, idx: number) => {
+                                const chartColors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
+                                const bgColors = ['bg-purple-50', 'bg-cyan-50', 'bg-amber-50', 'bg-emerald-50', 'bg-red-50', 'bg-pink-50'];
+                                const textColors = ['text-purple-700', 'text-cyan-700', 'text-amber-700', 'text-emerald-700', 'text-red-700', 'text-pink-700'];
+                                const color = chartColors[idx % chartColors.length];
+                                const bgColor = bgColors[idx % bgColors.length];
+                                const textColor = textColors[idx % textColors.length];
+                                return (
+                                  <div key={idx} className={`flex items-center gap-3 p-4 rounded-lg ${bgColor} ${textColor}`}>
+                                    <div className="h-4 w-4 rounded-full" style={{ backgroundColor: color }}></div>
+                                    <span className="text-base font-semibold">{subject.name}</span>
+                                    <span className="text-base font-bold ml-auto">{subject.question_count || 0}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Performance by Grade (Enhanced) */}
+                      <div className="group relative bg-gradient-to-br from-white to-indigo-50/30 rounded-xl shadow-lg border-2 border-indigo-100 p-6 hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-200/20 rounded-full blur-2xl"></div>
+                        <div className="relative">
+                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-indigo-600" />
+                            Performance by Grade
+                          </h3>
+                          <div className="space-y-4">
+                            {stats.gradePerformance && stats.gradePerformance.length > 0 ? (
+                              stats.gradePerformance.slice(0, 5).map((gradePerf: any, idx: number) => {
+                                const colors = [
+                                  { bg: 'bg-gradient-to-r from-red-500 to-red-600', text: 'text-red-700' },
+                                  { bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', text: 'text-yellow-700' },
+                                  { bg: 'bg-gradient-to-r from-green-500 to-green-600', text: 'text-green-700' },
+                                  { bg: 'bg-gradient-to-r from-blue-500 to-blue-600', text: 'text-blue-700' },
+                                  { bg: 'bg-gradient-to-r from-gray-500 to-gray-600', text: 'text-gray-700' }
+                                ];
+                                const width = gradePerf.performance_percentage || 0;
+                                const colorSet = colors[idx % colors.length];
+                                return (
+                                  <div key={gradePerf.id} className="group/item">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-sm font-semibold text-gray-800">{gradePerf.display_name || `Grade ${gradePerf.id}`}</span>
+                                      <span className={`text-xs font-bold ${colorSet.text}`}>{width}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                                      <div
+                                        className={`h-full rounded-full ${colorSet.bg} transition-all duration-1000 ease-out group-hover/item:scale-y-110`}
+                                        style={{ width: `${width}%` }}
+                                      >
+                                        <div className="h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              grades.slice(0, 5).map((grade, idx) => {
+                                const colors = [
+                                  { bg: 'bg-gradient-to-r from-red-500 to-red-600', text: 'text-red-700' },
+                                  { bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', text: 'text-yellow-700' },
+                                  { bg: 'bg-gradient-to-r from-green-500 to-green-600', text: 'text-green-700' },
+                                  { bg: 'bg-gradient-to-r from-blue-500 to-blue-600', text: 'text-blue-700' },
+                                  { bg: 'bg-gradient-to-r from-gray-500 to-gray-600', text: 'text-gray-700' }
+                                ];
+                                const width = 0; // No data available
+                                const colorSet = colors[idx % colors.length];
+                                return (
+                                  <div key={grade.id} className="group/item">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-sm font-semibold text-gray-800">{grade.display_name || `Grade ${grade.id}`}</span>
+                                      <span className={`text-xs font-bold ${colorSet.text}`}>N/A</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                                      <div
+                                        className={`h-full rounded-full ${colorSet.bg} transition-all duration-1000 ease-out group-hover/item:scale-y-110`}
+                                        style={{ width: `${width}%` }}
+                                      >
+                                        <div className="h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                            <span className="text-xs font-medium text-gray-500">Low</span>
+                            <span className="text-xs font-medium text-gray-500">Medium</span>
+                            <span className="text-xs font-medium text-gray-500">High</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1049,7 +1056,7 @@ const AdminDashboard: React.FC = () => {
                           <p className="text-gray-600 text-sm font-medium">Total Questions</p>
                           <div className="flex items-center space-x-1 mt-2">
                             <Database className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-gray-500">Active Database</span>
+                            <span className="text-xs text-gray-500">Active</span>
                           </div>
                         </div>
                       </div>

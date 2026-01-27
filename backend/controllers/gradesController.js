@@ -4,7 +4,7 @@ import { executeQuery } from '../config/database.js';
 export const getAllGrades = async (req, res) => {
   try {
     const grades = await executeQuery(
-      'SELECT id, name, display_name, grade_level, description, is_active, created_at FROM grades ORDER BY COALESCE(grade_level, 999), name'
+      'SELECT id, name, display_name, grade_level, description, is_active, created_at FROM grades ORDER BY COALESCE(grade_level, 999) ASC, name ASC'
     );
 
     res.json(grades);
@@ -333,7 +333,7 @@ export const getGradeStats = async (req, res) => {
 export const getActiveGrades = async (req, res) => {
   try {
     const grades = await executeQuery(
-      'SELECT id, name, display_name, grade_level, description FROM grades WHERE is_active = 1 ORDER BY COALESCE(grade_level, 999), name'
+      'SELECT id, name, display_name, grade_level, description FROM grades WHERE is_active = 1 ORDER BY COALESCE(grade_level, 999) ASC, name ASC'
     );
 
     res.json(grades);

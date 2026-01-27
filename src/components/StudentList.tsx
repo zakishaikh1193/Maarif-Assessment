@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { studentsAPI, schoolsAPI, gradesAPI } from '../services/api';
 import StudentForm from './StudentForm';
-import { Search, Building, GraduationCap, X, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Building, GraduationCap, X, Upload, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 
 interface StudentListProps {
   onStudentSelected?: (student: any) => void;
@@ -29,6 +29,9 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
   const [schools, setSchools] = useState<any[]>([]);
   const [grades, setGrades] = useState<any[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Ensure schools is always an array
   const safeSchools = Array.isArray(schools) ? schools : [];
@@ -72,6 +75,8 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedStudents(new Set()); // Clear selection when filters change
+    setIsSelectionMode(false); // Exit selection mode when filters change
   }, [searchTerm, selectedSchoolId, selectedGradeId]);
 
   // Filter students based on search term, school, and grade
@@ -140,6 +145,14 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     try {
       setDeletingStudent(studentId);
       await studentsAPI.delete(studentId);
+      
+      // Remove from selection if it was selected
+      setSelectedStudents(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(studentId);
+        return newSet;
+      });
+      
       // If current page becomes empty after deletion, go to previous page
       if (filteredStudents.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
@@ -167,7 +180,82 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      setSelectedStudents(new Set()); // Clear selection when page changes
+      setIsSelectionMode(false); // Exit selection mode when page changes
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectStudent = (studentId: number) => {
+    setSelectedStudents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(studentId)) {
+        newSet.delete(studentId);
+      } else {
+        newSet.add(studentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedStudents.size === paginatedStudents.length) {
+      setSelectedStudents(new Set());
+    } else {
+      setSelectedStudents(new Set(paginatedStudents.map(s => s.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedStudents.size === 0) return;
+
+    const count = selectedStudents.size;
+    const confirmMessage = `Are you sure you want to delete ${count} student${count > 1 ? 's' : ''}? This action cannot be undone.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setBulkDeleting(true);
+      const studentIds = Array.from(selectedStudents);
+      const deletePromises = studentIds.map(id => studentsAPI.delete(id));
+      
+      // Delete all selected students
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Check for failures
+      const failures = results.filter(result => result.status === 'rejected');
+      if (failures.length > 0) {
+        const errorMessages = failures.map((failure: any) => 
+          failure.reason?.response?.data?.error || 'Unknown error'
+        ).join(', ');
+        alert(`Failed to delete ${failures.length} student(s): ${errorMessages}`);
+      } else {
+        // Success - clear selection, exit selection mode, and refresh
+        setSelectedStudents(new Set());
+        setIsSelectionMode(false);
+        // If current page becomes empty after deletion, go to previous page
+        const remainingCount = filteredStudents.length - count;
+        if (remainingCount === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        } else {
+          await fetchStudents(currentPage);
+        }
+      }
+    } catch (err: any) {
+      alert('An error occurred during bulk deletion. Please try again.');
+      console.error('Bulk delete error:', err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      // Clear selection when exiting selection mode
+      setSelectedStudents(new Set());
     }
   };
 
@@ -183,28 +271,68 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Students</h2>
           <p className="text-sm text-gray-600 mt-1">Manage all students in the system</p>
         </div>
         <div className="flex items-center gap-3">
-          {onImportCSV && (
-            <button
-              onClick={onImportCSV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 shadow-md"
-            >
-              <Upload className="h-4 w-4" />
-              <span>Import CSV</span>
-            </button>
+          {!isSelectionMode ? (
+            <>
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete Student</span>
+              </button>
+              {onImportCSV && (
+                <button
+                  onClick={onImportCSV}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 shadow-md"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span>Import CSV</span>
+                </button>
+              )}
+              <button
+                onClick={handleAddStudent}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>+ Add Student</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {selectedStudents.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-md transition-colors"
+                >
+                  {bulkDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Selected ({selectedStudents.size})</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span>Cancel</span>
+              </button>
+            </>
           )}
-          <button
-            onClick={handleAddStudent}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 shadow-md"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>+ Add Student</span>
-          </button>
         </div>
       </div>
 
@@ -358,82 +486,129 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Students</h3>
-          </div>
-          <ul className="divide-y divide-gray-200">
-            {paginatedStudents.map((student) => (
-              <li key={student.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                          <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {student.first_name} {student.last_name}
-                          </p>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Student
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 truncate">
-                          @{student.username}
-                        </p>
-                        <div className="flex space-x-4 text-xs text-gray-400">
-                          {student.school_name && (
-                            <span>{student.school_name}</span>
-                          )}
-                          {student.grade_name && (
-                            <span>• {student.grade_name}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {onStudentSelected && (
-                      <button
-                        onClick={() => onStudentSelected(student)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        Select
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleEditStudent(student)}
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Edit student"
+          {isSelectionMode && selectedStudents.size > 0 && (
+            <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-blue-900">
+                  {selectedStudents.size} student{selectedStudents.size > 1 ? 's' : ''} selected
+                </p>
+                <button
+                  onClick={() => setSelectedStudents(new Set())}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-white border-b border-gray-200">
+                <tr>
+                  {isSelectionMode && (
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudents.size === paginatedStudents.length && paginatedStudents.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </th>
+                  )}
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">#</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Full Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Username</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">School</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Grade</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedStudents.map((student, index) => {
+                  const isSelected = selectedStudents.has(student.id);
+                  const rowNumber = (currentPage - 1) * studentsPerPage + index + 1;
+                  const isEven = index % 2 === 0;
+                  return (
+                    <tr
+                      key={student.id}
+                      className={`transition-colors ${
+                        isSelected 
+                          ? 'bg-purple-50 border-l-4 border-purple-500' 
+                          : isEven 
+                            ? 'bg-white' 
+                            : 'bg-gray-50'
+                      } hover:bg-gray-100`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteStudent(student.id)}
-                      disabled={deletingStudent === student.id}
-                      className="text-gray-400 hover:text-red-600 disabled:opacity-50"
-                      title="Delete student"
-                    >
-                      {deletingStudent === student.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                      {isSelectionMode && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectStudent(student.id)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </td>
                       )}
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {rowNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-semibold text-blue-600">
+                              {student.first_name?.[0]?.toUpperCase() || ''}{student.last_name?.[0]?.toUpperCase() || ''}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-gray-900">
+                                {student.first_name} {student.last_name}
+                              </p>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Student
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        @{student.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {student.school_name || '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {student.grade_name || '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleEditStudent(student)}
+                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Edit student"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteStudent(student.id)}
+                            disabled={deletingStudent === student.id}
+                            className="text-gray-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            title="Delete student"
+                          >
+                            {deletingStudent === student.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
           
           {/* Pagination Controls */}
           {(filteredTotalPages > 1 || totalPages > 1) && (

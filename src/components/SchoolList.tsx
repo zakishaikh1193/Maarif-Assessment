@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { School } from '../types';
 import { schoolsAPI } from '../services/api';
 import SchoolForm from './SchoolForm';
-import { Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, X, ChevronLeft, ChevronRight, Building, Edit, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 
 interface SchoolListProps {
   onSchoolSelected?: (school: School) => void;
@@ -15,6 +15,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
   const [showSchoolForm, setShowSchoolForm] = useState(false);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<number | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,7 +56,8 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
         (school.name && school.name.toLowerCase().includes(searchLower)) ||
         (school.address && school.address.toLowerCase().includes(searchLower)) ||
         (school.contact_email && school.contact_email.toLowerCase().includes(searchLower)) ||
-        (school.contact_phone && school.contact_phone.toLowerCase().includes(searchLower))
+        (school.contact_phone && school.contact_phone.toLowerCase().includes(searchLower)) ||
+        (school.school_type && school.school_type.toLowerCase().includes(searchLower))
       );
     });
   }, [schools, searchTerm]);
@@ -115,6 +117,12 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
     try {
       setDeletingSchool(schoolId);
       await schoolsAPI.delete(schoolId);
+      
+      // If we're viewing the deleted school, go back to list
+      if (selectedSchool && selectedSchool.id === schoolId) {
+        setSelectedSchool(null);
+      }
+      
       // If current page becomes empty after deletion, go to previous page
       if (paginatedSchools.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
@@ -137,7 +145,35 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
 
   const handleSchoolUpdated = () => {
     fetchSchools(currentPage);
+    if (selectedSchool) {
+      // Refresh selected school data
+      fetchSchools(currentPage).then(() => {
+        const updatedSchool = schools.find(s => s.id === selectedSchool.id);
+        if (updatedSchool) {
+          setSelectedSchool(updatedSchool);
+        }
+      });
+    }
   };
+
+  const handleSchoolClick = (school: School) => {
+    setSelectedSchool(school);
+  };
+
+  const handleBackToList = () => {
+    setSelectedSchool(null);
+  };
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedSchool) {
+        setSelectedSchool(null);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [selectedSchool]);
 
   if (loading) {
     return (
@@ -146,6 +182,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
       </div>
     );
   }
+
 
   return (
     <div className="space-y-4">
@@ -280,38 +317,42 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
           </div>
           <ul className="divide-y divide-gray-200">
             {paginatedSchools.map((school) => (
-              <li key={school.id} className="px-6 py-4 hover:bg-gray-50">
+              <li 
+                key={school.id} 
+                className="px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={() => handleSchoolClick(school)}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3">
                       <div className="flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
+                          <Building className="h-5 w-5 text-blue-600" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
                           {school.name}
                         </p>
                         {school.address && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 truncate mt-1">
                             {school.address}
                           </p>
                         )}
-                        <div className="flex space-x-4 text-xs text-gray-400">
-                          {school.contact_email && (
-                            <span>{school.contact_email}</span>
-                          )}
-                          {school.contact_phone && (
-                            <span>{school.contact_phone}</span>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                          {school.contact_email && school.contact_phone ? (
+                            <span>{school.contact_email} {school.contact_phone}</span>
+                          ) : (
+                            <>
+                              {school.contact_email && <span>{school.contact_email}</span>}
+                              {school.contact_phone && <span>{school.contact_phone}</span>}
+                            </>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                     {onSchoolSelected && (
                       <button
                         onClick={() => onSchoolSelected(school)}
@@ -325,9 +366,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
                       className="text-gray-400 hover:text-gray-600"
                       title="Edit school"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteSchool(school.id)}
@@ -338,9 +377,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
                       {deletingSchool === school.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
                       ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <Trash2 className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -419,10 +456,122 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
         </div>
       )}
 
+      {/* School Detail Modal Popup */}
+      {selectedSchool && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={handleBackToList}>
+          <div 
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Building className="h-6 w-6 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">{selectedSchool.name}</h2>
+              </div>
+              <button
+                onClick={handleBackToList}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="space-y-4">
+                {selectedSchool.address && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Address</p>
+                      <p className="text-sm text-gray-600">{selectedSchool.address}</p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-3">
+                  {selectedSchool.contact_email && (
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
+                        <p className="text-sm text-gray-600">{selectedSchool.contact_email}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedSchool.contact_phone && (
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Phone</p>
+                        <p className="text-sm text-gray-600">{selectedSchool.contact_phone}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {selectedSchool.school_type && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">School Type</p>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {selectedSchool.school_type}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3 rounded-b-xl">
+              <button
+                onClick={handleBackToList}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  handleEditSchool(selectedSchool);
+                  setSelectedSchool(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition-colors"
+              >
+                <Edit className="h-4 w-4" />
+                <span>Edit School</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteSchool(selectedSchool.id);
+                  setSelectedSchool(null);
+                }}
+                disabled={deletingSchool === selectedSchool.id}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 transition-colors"
+              >
+                {deletingSchool === selectedSchool.id ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showSchoolForm && (
         <SchoolForm
           school={editingSchool}
-          onClose={() => setShowSchoolForm(false)}
+          onClose={() => {
+            setShowSchoolForm(false);
+            setEditingSchool(null);
+          }}
           onSchoolCreated={handleSchoolCreated}
           onSchoolUpdated={handleSchoolUpdated}
         />
