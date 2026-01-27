@@ -748,6 +748,59 @@ export const getAdminStats = async (req, res) => {
     const totalAssessmentsResult = await executeQuery('SELECT COUNT(*) as count FROM assessments WHERE rit_score IS NOT NULL');
     const totalAssessments = totalAssessmentsResult[0].count;
 
+    // Get total schools
+    const totalSchoolsResult = await executeQuery('SELECT COUNT(*) as count FROM schools');
+    const totalSchools = totalSchoolsResult[0].count;
+
+    // Calculate month-over-month trends
+    // Compare current total vs total at end of last month
+    const now = new Date();
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+    // Questions trend - compare total now vs total at end of last month
+    const questionsNow = totalQuestions;
+    const questionsLastMonth = await executeQuery(
+      'SELECT COUNT(*) as count FROM questions WHERE created_at <= ?',
+      [lastMonthEnd]
+    );
+    const questionsLastMonthCount = questionsLastMonth[0]?.count || 0;
+    const questionsTrend = questionsLastMonthCount > 0 
+      ? ((questionsNow - questionsLastMonthCount) / questionsLastMonthCount) * 100 
+      : (questionsNow > 0 ? 100 : 0);
+
+    // Students trend - compare total now vs total at end of last month
+    const studentsNow = totalStudents;
+    const studentsLastMonth = await executeQuery(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'student' AND created_at <= ?",
+      [lastMonthEnd]
+    );
+    const studentsLastMonthCount = studentsLastMonth[0]?.count || 0;
+    const studentsTrend = studentsLastMonthCount > 0 
+      ? ((studentsNow - studentsLastMonthCount) / studentsLastMonthCount) * 100 
+      : (studentsNow > 0 ? 100 : 0);
+
+    // Assessments trend - compare total now vs total at end of last month
+    const assessmentsNow = totalAssessments;
+    const assessmentsLastMonth = await executeQuery(
+      'SELECT COUNT(*) as count FROM assessments WHERE rit_score IS NOT NULL AND date_taken <= ?',
+      [lastMonthEnd]
+    );
+    const assessmentsLastMonthCount = assessmentsLastMonth[0]?.count || 0;
+    const assessmentsTrend = assessmentsLastMonthCount > 0 
+      ? ((assessmentsNow - assessmentsLastMonthCount) / assessmentsLastMonthCount) * 100 
+      : (assessmentsNow > 0 ? 100 : 0);
+
+    // Schools trend - compare total now vs total at end of last month
+    const schoolsNow = totalSchools;
+    const schoolsLastMonth = await executeQuery(
+      'SELECT COUNT(*) as count FROM schools WHERE created_at <= ?',
+      [lastMonthEnd]
+    );
+    const schoolsLastMonthCount = schoolsLastMonth[0]?.count || 0;
+    const schoolsTrend = schoolsLastMonthCount > 0 
+      ? ((schoolsNow - schoolsLastMonthCount) / schoolsLastMonthCount) * 100 
+      : (schoolsNow > 0 ? 100 : 0);
+
     // Get difficulty distribution
     const difficultyDistribution = await executeQuery(`
       SELECT 
@@ -826,9 +879,28 @@ export const getAdminStats = async (req, res) => {
       totalQuestions,
       totalStudents,
       totalAssessments,
+      totalSchools,
       difficultyDistribution,
       subjectDistribution,
-      gradePerformance: gradePerformanceWithPercentage
+      gradePerformance: gradePerformanceWithPercentage,
+      trends: {
+        questions: {
+          percentage: Math.round(questionsTrend * 10) / 10,
+          direction: questionsTrend >= 0 ? 'up' : 'down'
+        },
+        students: {
+          percentage: Math.round(studentsTrend * 10) / 10,
+          direction: studentsTrend >= 0 ? 'up' : 'down'
+        },
+        assessments: {
+          percentage: Math.round(assessmentsTrend * 10) / 10,
+          direction: assessmentsTrend >= 0 ? 'up' : 'down'
+        },
+        schools: {
+          percentage: Math.round(schoolsTrend * 10) / 10,
+          direction: schoolsTrend >= 0 ? 'up' : 'down'
+        }
+      }
     });
 
   } catch (error) {
@@ -862,13 +934,15 @@ export const getTopPerformers = async (req, res) => {
         u.first_name,
         u.last_name,
         s.name as school_name,
+        g.display_name as grade_name,
         MAX(a.rit_score) as highest_score
       FROM assessments a
       JOIN users u ON a.student_id = u.id
       LEFT JOIN schools s ON u.school_id = s.id
+      LEFT JOIN grades g ON u.grade_id = g.id
       WHERE a.rit_score IS NOT NULL
       AND u.role = 'student'
-      GROUP BY u.id, u.username, u.first_name, u.last_name, s.name
+      GROUP BY u.id, u.username, u.first_name, u.last_name, s.name, g.display_name
       ORDER BY MAX(a.rit_score) DESC
       LIMIT ${limit}
     `);
@@ -902,6 +976,7 @@ export const getTopPerformers = async (req, res) => {
       studentId: performer.student_id,
       studentName: `${performer.first_name || ''} ${performer.last_name || ''}`.trim() || performer.username,
       schoolName: performer.school_name || 'Unknown School',
+      gradeName: performer.grade_name || 'Unknown Grade',
       highestScore: performer.highest_score,
       subjectName: performer.subject_name || 'Unknown Subject',
       dateTaken: performer.date_taken || null

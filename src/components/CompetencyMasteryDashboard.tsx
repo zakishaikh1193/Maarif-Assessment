@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Brain, TrendingUp, AlertTriangle, CheckCircle, Target, Users } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Brain, AlertTriangle, CheckCircle, Target, Users } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import { School, Grade, Subject } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,8 +10,6 @@ interface CompetencyMasteryDashboardProps {
   grades: Grade[];
   subjects: Subject[];
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({ schools, grades, subjects }) => {
   const { user, loading: authLoading } = useAuth();
@@ -177,25 +175,73 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
              {data && data.competencyMastery && data.competencyMastery.length > 0 && (
         <>
           {/* Competency Mastery Overview */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Brain className="h-5 w-5 text-purple-600 mr-2" />
-              Competency Mastery Overview
-            </h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                                 <BarChart data={data.competencyMastery.map((competency: any) => ({
-                   ...competency,
-                   average_score: Number(competency.average_score) || 0
-                 }))}>
-                   <CartesianGrid strokeDasharray="3 3" />
-                   <XAxis dataKey="competency_name" angle={-45} textAnchor="end" height={80} />
-                   <YAxis domain={[0, 100]} />
-                   <Tooltip />
-                   <Legend />
-                   <Bar dataKey="average_score" fill="#8B5CF6" name="Average Score (%)" />
-                 </BarChart>
-              </ResponsiveContainer>
+          <div className="group relative bg-gradient-to-br from-white via-purple-50/20 to-white rounded-xl shadow-lg border-2 border-purple-100 p-6 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-200/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="relative">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <Brain className="h-6 w-6 text-purple-600" />
+                Competency Mastery Overview
+              </h3>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={data.competencyMastery.map((competency: any) => ({
+                      ...competency,
+                      average_score: Number(competency.average_score) || 0
+                    }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <XAxis 
+                      dataKey="competency_name" 
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      interval={0}
+                    />
+                    <YAxis 
+                      domain={[0, 100]}
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      label={{ 
+                        value: 'Average Score (%)', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+                      }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        padding: '12px'
+                      }}
+                      labelStyle={{ 
+                        color: '#111827', 
+                        fontWeight: 600, 
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}
+                      formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Average Score (%)']}
+                    />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                    />
+                    <Bar 
+                      dataKey="average_score" 
+                      fill="#8B5CF6" 
+                      name="Average Score (%)"
+                      radius={[8, 8, 0, 0]}
+                      stroke="#7C3AED"
+                      strokeWidth={1}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -203,41 +249,79 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {data.competencyMastery.map((competency: any) => {
               const mastery = getMasteryLevel(competency.average_score);
+              const proficientPercent = competency.student_count ? ((competency.proficient_count || 0) / competency.student_count * 100).toFixed(1) : '0.0';
+              const strugglingPercent = competency.student_count ? ((competency.struggling_count || 0) / competency.student_count * 100).toFixed(1) : '0.0';
+              
+              // Determine gradient colors based on mastery level
+              const gradientColors = {
+                'Proficient': 'from-green-50/40 via-green-50/20 to-white',
+                'Developing': 'from-yellow-50/40 via-yellow-50/20 to-white',
+                'Needs Support': 'from-red-50/40 via-red-50/20 to-white'
+              };
+              const borderColors = {
+                'Proficient': 'border-green-200/50',
+                'Developing': 'border-yellow-200/50',
+                'Needs Support': 'border-red-200/50'
+              };
+              const blurColors = {
+                'Proficient': 'from-green-200/15',
+                'Developing': 'from-yellow-200/15',
+                'Needs Support': 'from-red-200/15'
+              };
+              const badgeBorderColors = {
+                'Proficient': 'border-green-600',
+                'Developing': 'border-yellow-600',
+                'Needs Support': 'border-red-600'
+              };
+              
               return (
-                <div key={competency.competency_id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-900">{competency.competency_name}</h4>
-                    {getMasteryIcon(competency.average_score)}
-                  </div>
-                  <div className="space-y-3">
-                                         <div className="flex justify-between items-center">
-                       <span className="text-gray-600">Average Score:</span>
-                       <span className={`font-bold text-lg ${mastery.color}`}>
-                         {competency.average_score ? Number(competency.average_score).toFixed(1) : '0.0'}%
-                       </span>
-                     </div>
-                    <div className={`px-3 py-2 rounded-lg ${mastery.bgColor}`}>
-                      <span className={`text-sm font-medium ${mastery.color}`}>
-                        {mastery.level}
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <div className="flex justify-between">
-                        <span>Students:</span>
-                        <span className="font-medium">{competency.student_count}</span>
+                <div key={competency.competency_id} className={`group relative bg-gradient-to-br ${gradientColors[mastery.level as keyof typeof gradientColors]} rounded-lg shadow-md border-2 ${borderColors[mastery.level as keyof typeof borderColors]} p-4 overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-300`}>
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${blurColors[mastery.level as keyof typeof blurColors]} to-transparent rounded-full blur-2xl`}></div>
+                  <div className="relative">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-base text-gray-900">{competency.competency_name}</h4>
+                      <div className="p-1.5 rounded-md bg-white/80 shadow-sm border border-gray-200/50">
+                        {getMasteryIcon(competency.average_score)}
                       </div>
-                                             <div className="flex justify-between">
-                         <span>Proficient:</span>
-                         <span className="font-medium text-green-600">
-                           {competency.proficient_count || 0} ({competency.student_count ? ((competency.proficient_count || 0) / competency.student_count * 100).toFixed(1) : '0.0'}%)
-                         </span>
-                       </div>
-                       <div className="flex justify-between">
-                         <span>Struggling:</span>
-                         <span className="font-medium text-red-600">
-                           {competency.struggling_count || 0} ({competency.student_count ? ((competency.struggling_count || 0) / competency.student_count * 100).toFixed(1) : '0.0'}%)
-                         </span>
-                       </div>
+                    </div>
+                    
+                    {/* Average Score - Large and Prominent */}
+                    <div className="mb-3">
+                      <div className="flex items-baseline gap-1.5 mb-2">
+                        <span className={`font-black text-3xl ${mastery.color}`}>
+                          {competency.average_score ? Number(competency.average_score).toFixed(1) : '0.0'}
+                        </span>
+                        <span className={`text-lg font-bold ${mastery.color} opacity-70`}>%</span>
+                      </div>
+                      <div className={`inline-block px-3 py-1.5 rounded-md ${mastery.bgColor} border-2 ${badgeBorderColors[mastery.level as keyof typeof badgeBorderColors]} shadow-sm`}>
+                        <span className={`text-xs font-bold ${mastery.color}`}>
+                          {mastery.level}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Divider */}
+                    <div className="border-t border-gray-200/50 my-3"></div>
+                    
+                    {/* Student Statistics */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center py-1.5 px-2.5 bg-gray-50/50 rounded-md">
+                        <span className="text-xs font-semibold text-gray-700">Students:</span>
+                        <span className="font-bold text-sm text-gray-900">{competency.student_count}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 px-2.5 bg-green-50/50 rounded-md border border-green-100">
+                        <span className="text-xs font-semibold text-gray-700">Proficient:</span>
+                        <span className="font-bold text-sm text-green-600">
+                          {competency.proficient_count || 0} <span className="text-xs font-normal">({proficientPercent}%)</span>
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 px-2.5 bg-red-50/50 rounded-md border border-red-100">
+                        <span className="text-xs font-semibold text-gray-700">Struggling:</span>
+                        <span className="font-bold text-sm text-red-600">
+                          {competency.struggling_count || 0} <span className="text-xs font-normal">({strugglingPercent}%)</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -247,72 +331,167 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
 
           {/* School Competency Comparison */}
                      {data.schoolCompetencyMastery && data.schoolCompetencyMastery.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Users className="h-5 w-5 text-blue-600 mr-2" />
-                School Competency Comparison
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                                   <BarChart data={data.schoolCompetencyMastery.map((school: any) => ({
-                   ...school,
-                   average_score: Number(school.average_score) || 0
-                 }))}>
-                   <CartesianGrid strokeDasharray="3 3" />
-                   <XAxis dataKey="school_name" />
-                   <YAxis domain={[0, 100]} />
-                   <Tooltip />
-                   <Legend />
-                   <Bar dataKey="average_score" fill="#3B82F6" name="Average Score (%)" />
-                 </BarChart>
-                </ResponsiveContainer>
+            <div className="group relative bg-gradient-to-br from-white via-blue-50/20 to-white rounded-xl shadow-lg border-2 border-blue-100 p-6 overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <Users className="h-6 w-6 text-blue-600" />
+                  School Competency Comparison
+                </h3>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={data.schoolCompetencyMastery.map((school: any) => ({
+                        ...school,
+                        average_score: Number(school.average_score) || 0
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                      <XAxis 
+                        dataKey="school_name" 
+                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                        axisLine={{ stroke: '#d1d5db' }}
+                        tickLine={{ stroke: '#d1d5db' }}
+                        interval={0}
+                      />
+                      <YAxis 
+                        domain={[0, 100]}
+                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                        axisLine={{ stroke: '#d1d5db' }}
+                        tickLine={{ stroke: '#d1d5db' }}
+                        label={{ 
+                          value: 'Average Score (%)', 
+                          angle: -90, 
+                          position: 'insideLeft',
+                          style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+                        }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          padding: '12px'
+                        }}
+                        labelStyle={{ 
+                          color: '#111827', 
+                          fontWeight: 600, 
+                          marginBottom: '8px',
+                          fontSize: '14px'
+                        }}
+                        formatter={(value: any) => [`${Number(value).toFixed(3)}%`, 'Average Score (%)']}
+                      />
+                      <Legend 
+                        wrapperStyle={{ paddingTop: '20px' }}
+                        iconType="rect"
+                      />
+                      <Bar 
+                        dataKey="average_score" 
+                        fill="#3B82F6" 
+                        name="Average Score (%)"
+                        radius={[8, 8, 0, 0]}
+                        stroke="#2563eb"
+                        strokeWidth={1}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           )}
 
           {/* Grade Competency Comparison */}
                      {data.gradeCompetencyMastery && data.gradeCompetencyMastery.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Target className="h-5 w-5 text-green-600 mr-2" />
-                Grade Competency Comparison
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                                   <BarChart data={data.gradeCompetencyMastery.map((grade: any) => ({
-                   ...grade,
-                   average_score: Number(grade.average_score) || 0
-                 }))}>
-                   <CartesianGrid strokeDasharray="3 3" />
-                   <XAxis dataKey="grade_name" />
-                   <YAxis domain={[0, 100]} />
-                   <Tooltip />
-                   <Legend />
-                   <Bar dataKey="average_score" fill="#10B981" name="Average Score (%)" />
-                 </BarChart>
-                </ResponsiveContainer>
+            <div className="group relative bg-gradient-to-br from-white via-green-50/20 to-white rounded-xl shadow-lg border-2 border-green-100 p-6 overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-200/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <Target className="h-6 w-6 text-green-600" />
+                  Grade Competency Comparison
+                </h3>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={data.gradeCompetencyMastery.map((grade: any) => ({
+                        ...grade,
+                        average_score: Number(grade.average_score) || 0
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                      <XAxis 
+                        dataKey="grade_name" 
+                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                        axisLine={{ stroke: '#d1d5db' }}
+                        tickLine={{ stroke: '#d1d5db' }}
+                      />
+                      <YAxis 
+                        domain={[0, 100]}
+                        tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                        axisLine={{ stroke: '#d1d5db' }}
+                        tickLine={{ stroke: '#d1d5db' }}
+                        label={{ 
+                          value: 'Average Score (%)', 
+                          angle: -90, 
+                          position: 'insideLeft',
+                          style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+                        }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          padding: '12px'
+                        }}
+                        labelStyle={{ 
+                          color: '#111827', 
+                          fontWeight: 600, 
+                          marginBottom: '8px',
+                          fontSize: '14px'
+                        }}
+                        formatter={(value: any) => [`${Number(value).toFixed(3)}%`, 'Average Score (%)']}
+                      />
+                      <Legend 
+                        wrapperStyle={{ paddingTop: '20px' }}
+                        iconType="rect"
+                      />
+                      <Bar 
+                        dataKey="average_score" 
+                        fill="#10B981" 
+                        name="Average Score (%)"
+                        radius={[8, 8, 0, 0]}
+                        stroke="#059669"
+                        strokeWidth={1}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           )}
 
           {/* Mastery Distribution */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Mastery Distribution</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                             {data.competencyMastery.map((competency: any) => {
-                 const proficientCount = competency.proficient_count || 0;
-                 const developingCount = competency.developing_count || 0;
-                 const strugglingCount = competency.struggling_count || 0;
-                 const studentCount = competency.student_count || 1;
-                 
-                 // Use actual developing_count from backend, or calculate if not available
-                 const actualDevelopingCount = developingCount > 0 
-                   ? developingCount 
-                   : Math.max(0, studentCount - proficientCount - strugglingCount);
-                 
-                 const proficientPercent = (proficientCount / studentCount) * 100;
-                 const developingPercent = (actualDevelopingCount / studentCount) * 100;
-                 const strugglingPercent = (strugglingCount / studentCount) * 100;
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">Mastery Distribution</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {data.competencyMastery.map((competency: any) => {
+                const proficientCount = competency.proficient_count || 0;
+                const developingCount = competency.developing_count || 0;
+                const strugglingCount = competency.struggling_count || 0;
+                const studentCount = competency.student_count || 1;
+                
+                // Use actual developing_count from backend, or calculate if not available
+                const actualDevelopingCount = developingCount > 0 
+                  ? developingCount 
+                  : Math.max(0, studentCount - proficientCount - strugglingCount);
+                
+                const proficientPercent = (proficientCount / studentCount) * 100;
+                const developingPercent = (actualDevelopingCount / studentCount) * 100;
+                const strugglingPercent = (strugglingCount / studentCount) * 100;
 
                 // Round percentages to avoid floating point issues
                 let roundedProficient = Math.round(proficientPercent * 10) / 10;
@@ -349,42 +528,66 @@ const CompetencyMasteryDashboard: React.FC<CompetencyMasteryDashboardProps> = ({
                 }
 
                 return (
-                  <div key={competency.competency_id} className="text-center">
-                    <h4 className="font-medium text-gray-900 mb-3">{competency.competency_name}</h4>
-                    <div className="h-48">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={pieData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={30}
-                            outerRadius={80}
-                            paddingAngle={0}
-                            dataKey="value"
-                            startAngle={90}
-                            endAngle={-270}
-                          >
-                            {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-3 space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-green-600">Proficient:</span>
-                        <span>{roundedProficient.toFixed(1)}%</span>
+                  <div key={competency.competency_id} className="bg-white rounded-xl shadow-md border-2 border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
+                    <h4 className="font-semibold text-gray-900 mb-4 text-center">{competency.competency_name}</h4>
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                      {/* Donut Chart */}
+                      <div className="flex-shrink-0">
+                        <div className="h-48 w-48">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={80}
+                                paddingAngle={2}
+                                dataKey="value"
+                                startAngle={90}
+                                endAngle={-270}
+                              >
+                                {pieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={2} />
+                                ))}
+                              </Pie>
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '6px',
+                                  padding: '8px'
+                                }}
+                                formatter={(value: any) => `${Number(value).toFixed(1)}%`}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-yellow-600">Developing:</span>
-                        <span>{roundedDeveloping.toFixed(1)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-red-600">Needs Support:</span>
-                        <span>{roundedStruggling.toFixed(1)}%</span>
+                      
+                      {/* Legend */}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-md">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="text-sm font-medium text-gray-700">Proficient:</span>
+                          </div>
+                          <span className="text-sm font-semibold text-green-600">{roundedProficient.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-md">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                            <span className="text-sm font-medium text-gray-700">Developing:</span>
+                          </div>
+                          <span className="text-sm font-semibold text-orange-600">{roundedDeveloping.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-md">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                            <span className="text-sm font-medium text-gray-700">Needs Support:</span>
+                          </div>
+                          <span className="text-sm font-semibold text-red-600">{roundedStruggling.toFixed(1)}%</span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -7,11 +7,10 @@ import React from 'react';
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Bar,
     Area
   } from 'recharts';
 import { GrowthOverTimeData } from '../types';
-import { TrendingUp, Target, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Download, BarChart3 } from 'lucide-react';
 import { exportGrowthGraphicalToPDF } from '../utils/growthReportExport';
 import { exportCompletePerformanceReportToPDF } from '../utils/performanceReportExport';
 
@@ -311,33 +310,35 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-blue-600" />
-            <span>Growth Over Time</span>
-          </h3>
-          <p className="text-gray-600 text-sm">
-            {data.subjectName || 'All Subjects'} - Growth Metric Score progression across assessment periods
-          </p>
-        </div>
-        <button
-          onClick={handleDownloadPDF}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Download className="h-4 w-4" />
-          <span>Download PDF</span>
-        </button>
-      </div>
-
-      <div id="growth-chart-container" className="h-96">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+    <div className="group relative bg-gradient-to-br from-white via-blue-50/20 to-white rounded-xl shadow-lg border-2 border-blue-100 p-6 overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/10 to-transparent rounded-full blur-3xl"></div>
+      <div className="relative">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+              <span>Growth Over Time</span>
+            </h3>
+            <p className="text-gray-600 text-sm">
+              {data.subjectName || 'All Subjects'} - Growth Metric Score progression across assessment periods
+            </p>
+          </div>
+          <button
+            onClick={handleDownloadPDF}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <Download className="h-4 w-4" />
+            <span>Download PDF</span>
+          </button>
+        </div>
+
+        <div id="growth-chart-container" className="h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
 
                          {/* Connected background areas spanning full width */}
              <Area
@@ -388,19 +389,37 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
 
             <XAxis
               dataKey="period"
-              tick={{ fontSize: 12 }}
+              tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
               angle={-45}
               textAnchor="end"
               height={60}
+              axisLine={{ stroke: '#d1d5db' }}
+              tickLine={{ stroke: '#d1d5db' }}
             />
             <YAxis
               domain={[0, 100]}
-              tick={{ fontSize: 12 }}
+              tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
               orientation="right"
               ticks={[0, 20, 40, 60, 80, 100]}
-              label={{ value: '% of Students', angle: -90, position: 'insideRight' }}
+              axisLine={{ stroke: '#d1d5db' }}
+              tickLine={{ stroke: '#d1d5db' }}
+              label={{ 
+                value: '% of Students', 
+                angle: -90, 
+                position: 'insideRight',
+                style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+              }}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip 
+              content={<CustomTooltip />}
+              contentStyle={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                padding: '12px'
+              }}
+            />
 
             {/* Student Line(s) - show one line per student if multiple students */}
             {studentIds.length > 0 ? (
@@ -675,16 +694,32 @@ const GrowthOverTimeChart: React.FC<GrowthOverTimeChartProps> = ({ data, userRol
               <TrendingUp className="h-4 w-4 text-emerald-600" />
               <span className="text-sm font-medium text-emerald-900">Growth Trend</span>
             </div>
-            <div className="text-sm text-emerald-700">
+            <div className="flex items-center space-x-2 text-sm text-emerald-700">
               {data.studentScores.length >= 2 ? (
                 data.studentScores[data.studentScores.length - 1].ritScore > data.studentScores[0].ritScore 
-                  ? "📈 Improving" 
-                  : "📉 Declining"
-              ) : "📊 Insufficient data"}
+                  ? (
+                    <>
+                      <TrendingUp className="h-4 w-4 text-emerald-600" />
+                      <span>Improving</span>
+                    </>
+                  )
+                  : (
+                    <>
+                      <TrendingDown className="h-4 w-4 text-red-600" />
+                      <span>Declining</span>
+                    </>
+                  )
+              ) : (
+                <>
+                  <BarChart3 className="h-4 w-4 text-gray-500" />
+                  <span>Insufficient data</span>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
+    </div>
     );
   };
 

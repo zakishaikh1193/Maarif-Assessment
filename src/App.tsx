@@ -9,6 +9,7 @@ import AssessmentPage from './pages/AssessmentPage';
 import ResultsPage from './pages/ResultsPage';
 import GrowthPage from './pages/GrowthPage';
 import CreateAssessmentPage from './pages/CreateAssessmentPage';
+import AssessmentsPage from './pages/AssessmentsPage';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -58,6 +59,14 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute requiredRole="student">
             <AssessmentPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/assessments" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <AssessmentsPage />
           </ProtectedRoute>
         } 
       />

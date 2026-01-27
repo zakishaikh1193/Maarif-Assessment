@@ -122,7 +122,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Assignment Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Assessment Details</h2>
             {data && (
               <p className="text-sm text-gray-600 mt-1">
                 {data.assignment.subjectName} • {data.assignment.gradeName}
@@ -302,7 +302,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                                   <Trophy className="h-4 w-4 text-yellow-500 mr-2" />
                                   <div>
                                     <div className="text-sm font-semibold text-gray-900">
-                                      {student.ritScore} RIT
+                                      {student.ritScore}
                                     </div>
                                     {student.correctAnswers !== null && student.totalQuestions !== null && (
                                       <div className="text-xs text-gray-500">
@@ -435,7 +435,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                             const blankPattern = /(___+|\[blank\]|\[BLANK\]|\{[0-9]+\})/gi;
                             let matchCount = 0;
                             
-                            questionText = questionText.replace(blankPattern, (match) => {
+                            questionText = questionText.replace(blankPattern, (match: string) => {
                               if (matchCount < blanks.length && matchCount < selectedAnswers.length) {
                                 const blank = blanks[matchCount];
                                 const selectedIndex = selectedAnswers[matchCount];

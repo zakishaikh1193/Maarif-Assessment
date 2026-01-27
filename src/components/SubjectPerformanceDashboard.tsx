@@ -301,111 +301,206 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
     return (
       <>
         {/* Subject Performance Overview */}
-        <div id="performance-overview-chart" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            {React.createElement(icon, { className: "h-5 w-5 text-blue-600 mr-2" })}
-            {title}
-          </h3>
-          {hasData ? (
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredPerformanceData.map((subject: any) => ({
-                  ...subject,
-                  average_rit_score: Number(subject.average_rit_score) || 0
-                }))}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="subject_name" />
-                  <YAxis domain={[100, 350]} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="average_rit_score" fill="#3B82F6" name="Average Growth Metric Score" />
-                </BarChart>
-              </ResponsiveContainer>
+        <div id="performance-overview-chart" className="group relative bg-gradient-to-br from-white via-blue-50/20 to-white rounded-xl shadow-lg border-2 border-blue-100 p-6 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/10 to-transparent rounded-full blur-3xl"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                {React.createElement(icon, { className: "h-6 w-6 text-blue-600" })}
+                {title}
+              </h3>
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No performance data available for the selected filters.</p>
-            </div>
-          )}
+            {hasData ? (
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={filteredPerformanceData.map((subject: any) => ({
+                      ...subject,
+                      average_rit_score: Number(subject.average_rit_score) || 0
+                    }))}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <XAxis 
+                      dataKey="subject_name" 
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                    />
+                    <YAxis 
+                      domain={[100, 350]}
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      label={{ 
+                        value: 'Average Growth Metric Score', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+                      }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        padding: '12px'
+                      }}
+                      labelStyle={{ 
+                        color: '#111827', 
+                        fontWeight: 600, 
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}
+                      formatter={(value: any) => [Number(value).toFixed(4), 'Average Growth Metric Score']}
+                    />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                    />
+                    <Bar 
+                      dataKey="average_rit_score" 
+                      fill="#3B82F6" 
+                      name="Average Growth Metric Score"
+                      radius={[8, 8, 0, 0]}
+                      stroke="#2563eb"
+                      strokeWidth={1}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-600 font-medium">No performance data available for the selected filters.</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Growth Rates - Filter by subject if selected */}
         {data.growthRates && data.growthRates.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
-              Growth Rates (BOY to EOY)
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.growthRates
-                .filter((subject: any) => selectedSubjects.length === 0 || selectedSubjects.includes(subject.subject_id))
-                .map((subject: any) => {
-                  const growthRate = getGrowthRate(subject);
-                  return (
-                    <div key={subject.subject_id} className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900">{subject.subject_name}</h4>
-                        {growthRate && getGrowthIcon(Number(growthRate))}
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">BOY:</span>
-                          <span className="font-medium">{subject.boy_avg ? Number(subject.boy_avg).toFixed(1) : 'N/A'}</span>
+          <div className="group relative bg-gradient-to-br from-white via-green-50/20 to-white rounded-xl shadow-lg border-2 border-green-100 p-6 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-200/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="relative">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+                Growth Rates (BOY to EOY)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {data.growthRates
+                  .filter((subject: any) => selectedSubjects.length === 0 || selectedSubjects.includes(subject.subject_id))
+                  .map((subject: any) => {
+                    const growthRate = getGrowthRate(subject);
+                    return (
+                      <div key={subject.subject_id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900">{subject.subject_name}</h4>
+                          {growthRate && getGrowthIcon(Number(growthRate))}
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">EOY:</span>
-                          <span className="font-medium">{subject.eoy_avg ? Number(subject.eoy_avg).toFixed(1) : 'N/A'}</span>
-                        </div>
-                        <div className="border-t pt-1 mt-2">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Growth:</span>
-                            <span className={`font-medium ${Number(growthRate) > 0 ? 'text-green-600' : Number(growthRate) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                              {growthRate ? `${growthRate}%` : 'N/A'}
-                            </span>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between items-center py-1">
+                            <span className="text-gray-600">BOY:</span>
+                            <span className="font-semibold text-gray-900">{subject.boy_avg ? Number(subject.boy_avg).toFixed(1) : 'N/A'}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-1">
+                            <span className="text-gray-600">EOY:</span>
+                            <span className="font-semibold text-gray-900">{subject.eoy_avg ? Number(subject.eoy_avg).toFixed(1) : 'N/A'}</span>
+                          </div>
+                          <div className="border-t border-gray-200 pt-2 mt-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600 font-medium">Growth:</span>
+                              <span className={`font-bold text-lg ${Number(growthRate) > 0 ? 'text-green-600' : Number(growthRate) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                {growthRate ? `${growthRate}%` : 'N/A'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+              </div>
             </div>
           </div>
         )}
 
         {/* Year-over-Year Trends - Filter by subject if selected */}
         {data.yearTrends && data.yearTrends.length > 0 && (
-          <div id="year-trends-chart" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Target className="h-5 w-5 text-purple-600 mr-2" />
-              Year-over-Year Trends
-            </h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.yearTrends.map((trend: any) => ({
-                  ...trend,
-                  average_rit_score: Number(trend.average_rit_score) || 0
-                }))}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis domain={[100, 350]} />
-                  <Tooltip />
-                  <Legend />
-                  {filteredPerformanceData.map((subject: any, idx: number) => (
-                    <Line
-                      key={subject.subject_id}
-                      type="monotone"
-                      dataKey="average_rit_score"
-                      data={data.yearTrends.filter((item: any) => item.subject_id === subject.subject_id).map((item: any) => ({
-                        ...item,
-                        average_rit_score: Number(item.average_rit_score) || 0
-                      }))}
-                      stroke={COLORS[idx % COLORS.length]}
-                      name={subject.subject_name}
-                      strokeWidth={2}
+          <div id="year-trends-chart" className="group relative bg-gradient-to-br from-white via-purple-50/20 to-white rounded-xl shadow-lg border-2 border-purple-100 p-6 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-200/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="relative">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <Target className="h-6 w-6 text-purple-600" />
+                Year-over-Year Trends
+              </h3>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={data.yearTrends.map((trend: any) => ({
+                      ...trend,
+                      average_rit_score: Number(trend.average_rit_score) || 0
+                    }))}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+                    <XAxis 
+                      dataKey="year" 
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
                     />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+                    <YAxis 
+                      domain={[100, 350]}
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: '#d1d5db' }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      label={{ 
+                        value: 'Average Growth Metric Score', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 12, fontWeight: 600 }
+                      }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        padding: '12px'
+                      }}
+                      labelStyle={{ 
+                        color: '#111827', 
+                        fontWeight: 600, 
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}
+                      formatter={(value: any) => [Number(value).toFixed(4), 'Average Growth Metric Score']}
+                    />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="line"
+                    />
+                    {filteredPerformanceData.map((subject: any, idx: number) => (
+                      <Line
+                        key={subject.subject_id}
+                        type="monotone"
+                        dataKey="average_rit_score"
+                        data={data.yearTrends.filter((item: any) => item.subject_id === subject.subject_id).map((item: any) => ({
+                          ...item,
+                          average_rit_score: Number(item.average_rit_score) || 0
+                        }))}
+                        stroke={COLORS[idx % COLORS.length]}
+                        name={subject.subject_name}
+                        strokeWidth={3}
+                        dot={{ fill: COLORS[idx % COLORS.length], strokeWidth: 2, r: 6 }}
+                        activeDot={{ r: 8, strokeWidth: 2 }}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
@@ -414,24 +509,27 @@ const SubjectPerformanceDashboard: React.FC<SubjectPerformanceDashboardProps> = 
         {hasData && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredPerformanceData.map((subject: any) => (
-              <div key={subject.subject_id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h4 className="font-medium text-gray-900 mb-3">{subject.subject_name}</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Average:</span>
-                    <span className="font-medium">{subject.average_rit_score ? Number(subject.average_rit_score).toFixed(1) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Students:</span>
-                    <span className="font-medium">{subject.student_count || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Range:</span>
-                    <span className="font-medium">{subject.min_score || 0} - {subject.max_score || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Std Dev:</span>
-                    <span className="font-medium">{subject.standard_deviation ? Number(subject.standard_deviation).toFixed(1) : 'N/A'}</span>
+              <div key={subject.subject_id} className="group relative bg-gradient-to-br from-white via-blue-50/20 to-white rounded-xl shadow-lg border-2 border-blue-100 p-6 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/10 to-transparent rounded-full blur-2xl"></div>
+                <div className="relative">
+                  <h4 className="font-bold text-gray-900 mb-4 text-lg">{subject.subject_name}</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Average:</span>
+                      <span className="font-semibold text-gray-900">{subject.average_rit_score ? Number(subject.average_rit_score).toFixed(1) : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Students:</span>
+                      <span className="font-semibold text-gray-900">{subject.student_count || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Range:</span>
+                      <span className="font-semibold text-gray-900">{subject.min_score || 0} - {subject.max_score || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Std Dev:</span>
+                      <span className="font-semibold text-gray-900">{subject.standard_deviation ? Number(subject.standard_deviation).toFixed(1) : 'N/A'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
