@@ -50,17 +50,10 @@ export const corsOptions = {
       ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
       : [];
     
-    // Allow requests with no origin (e.g., mobile apps, Postman)
-    if (!origin) {
-      return callback(null, true);
-    }
-    
-    // Check if origin is in allowed list
     if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      console.log(`CORS: Allowing origin: ${origin}`);
       callback(null, true);
     } else {
-      console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+      console.warn(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -102,40 +95,13 @@ export const loggingMiddleware = morgan('combined', {
 
 // Error handling middleware
 export const errorHandler = (err, req, res, next) => {
-  // Log full error details for debugging
-  console.error('\n❌ ========== ERROR OCCURRED ==========');
-  console.error('Timestamp:', new Date().toISOString());
-  console.error('Request:', req.method, req.originalUrl);
-  console.error('Error Name:', err.name);
-  console.error('Error Message:', err.message);
-  console.error('Error Code:', err.code);
-  console.error('Error SQL State:', err.sqlState);
-  console.error('Error SQL Message:', err.sqlMessage);
-  
-  if (err.stack) {
-    console.error('Stack Trace:');
-    console.error(err.stack);
-  }
-  
-  // Log request details if available
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.error('Request Body:', JSON.stringify(req.body, null, 2));
-  }
-  if (req.query && Object.keys(req.query).length > 0) {
-    console.error('Request Query:', JSON.stringify(req.query, null, 2));
-  }
-  if (req.params && Object.keys(req.params).length > 0) {
-    console.error('Request Params:', JSON.stringify(req.params, null, 2));
-  }
-  
-  console.error('=====================================\n');
+  console.error('Error:', err);
 
   // Handle specific error types
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       error: 'Validation error',
-      details: err.message,
-      code: 'VALIDATION_ERROR'
+      details: err.message
     });
   }
 
@@ -149,48 +115,21 @@ export const errorHandler = (err, req, res, next) => {
   if (err.code === 'ER_DUP_ENTRY') {
     return res.status(409).json({
       error: 'Resource already exists',
-      code: 'DUPLICATE_ENTRY',
-      details: err.message
+      code: 'DUPLICATE_ENTRY'
     });
   }
 
   if (err.code === 'ER_NO_REFERENCED_ROW_2') {
     return res.status(400).json({
       error: 'Referenced resource not found',
-      code: 'FOREIGN_KEY_CONSTRAINT',
-      details: err.message
+      code: 'FOREIGN_KEY_CONSTRAINT'
     });
   }
 
-  // Database connection errors
-  if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
-    return res.status(503).json({
-      error: 'Database connection failed',
-      code: 'DATABASE_CONNECTION_ERROR',
-      details: 'Unable to connect to database. Please check server logs.'
-    });
-  }
-
-  // MySQL errors
-  if (err.code && err.code.startsWith('ER_')) {
-    return res.status(500).json({
-      error: 'Database error',
-      code: 'DATABASE_ERROR',
-      details: err.message,
-      sqlCode: err.code
-    });
-  }
-
-  // Default error - but include more details in development
-  const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+  // Default error
   res.status(500).json({
     error: 'Internal server error',
-    code: 'INTERNAL_ERROR',
-    ...(isDevelopment && {
-      details: err.message,
-      stack: err.stack,
-      name: err.name
-    })
+    code: 'INTERNAL_ERROR'
   });
 };
 
