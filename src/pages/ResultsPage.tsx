@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DetailedAssessmentResults, AssessmentResult, CompetencyScore, CompetencyGrowthData, DashboardData, Subject } from '../types';
+import { DetailedAssessmentResults, CompetencyScore, CompetencyGrowthData, DashboardData, Subject } from '../types';
 import Navigation from '../components/Navigation';
+import StudentSidebar from '../components/StudentSidebar';
 import DifficultyProgressionChart from '../components/DifficultyProgressionChart';
 import GrowthOverTimeChart from '../components/GrowthOverTimeChart';
 import CompetencyAnalytics from '../components/CompetencyAnalytics';
 import { studentAPI } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 import { 
   Trophy, 
   Target, 
@@ -14,24 +14,21 @@ import {
   CheckCircle, 
   XCircle, 
   ArrowRight, 
-  Star, 
   TrendingUp, 
   TrendingDown,
   Calendar,
-  BookOpen,
   BarChart3,
   BarChart,
   LineChart,
   Brain,
   Eye,
-  LayoutDashboard,
-  Menu,
-  X,
-  Play,
   Search,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  BookOpen,
+  CheckCircle2
 } from 'lucide-react';
 
 const ResultsPage: React.FC = () => {
@@ -57,7 +54,6 @@ const ResultsPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const competencyDataFetched = useRef(false);
-  const { user } = useAuth();
   
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +78,9 @@ const ResultsPage: React.FC = () => {
       if (detailedResults?.assessment?.id) {
         fetchPerformanceAnalysis(detailedResults.assessment.id);
       }
+    } else if (location.state?.assessmentId) {
+      // We have an assessmentId, fetch detailed results
+      viewAssessmentDetails(location.state.assessmentId);
     } else if (location.state?.ritScore) {
       // We have basic results, show fallback
       setLoading(false);
@@ -166,6 +165,26 @@ const ResultsPage: React.FC = () => {
         period
       }
     });
+  };
+
+  // Get subjects that have assessments
+  const getSubjectsWithAssignments = () => {
+    // Get all unique subject IDs from allAssessments
+    const subjectIdsWithAssignments = new Set<number>();
+    
+    // Add subject IDs from all assessments
+    allAssessments.forEach((assessment: any) => {
+      if (assessment.subjectId) {
+        subjectIdsWithAssignments.add(assessment.subjectId);
+      }
+    });
+    
+    // Filter subjects to only include those with assessments
+    const subjectsWithAssignments = subjects.filter(subject => 
+      subjectIdsWithAssignments.has(subject.id)
+    );
+    
+    return subjectsWithAssignments;
   };
 
   const fetchPerformanceAnalysis = async (assessmentId: number) => {
@@ -302,75 +321,16 @@ const ResultsPage: React.FC = () => {
     };
   };
 
-  // Sidebar component
-  const Sidebar = () => (
-    <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 fixed left-0 top-16 h-[calc(100vh-4rem)] transition-all duration-300 z-40 shadow-sm`}>
-      <div className="p-4">
-        {/* Sidebar Toggle Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="w-full flex items-center justify-center p-2 mb-4 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-
-        {/* Navigation Items */}
-        <nav className="space-y-2">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors group"
-          >
-            <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Dashboard</span>}
-          </button>
-          
-          <button
-            onClick={() => navigate('/results')}
-            className="w-full flex items-center space-x-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg transition-colors group"
-          >
-            <BarChart3 className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Results</span>}
-          </button>
-        </nav>
-
-        {/* Divider */}
-        {sidebarOpen && (
-          <div className="my-6 border-t border-gray-200">
-            <div className="px-4 py-2 mt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Access</p>
-            </div>
-          </div>
-        )}
-
-        {/* Quick Actions in Sidebar */}
-        {sidebarOpen && (
-          <div className="mt-4 space-y-2">
-            {subjects.length > 0 ? (
-              subjects.slice(0, 5).map((subject) => (
-                <button
-                  key={subject.id}
-                  onClick={() => startAssessment(subject.id, currentPeriod)}
-                  className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-lg transition-colors"
-                >
-                  <BookOpen className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{subject.name}</span>
-                </button>
-              ))
-            ) : (
-              <p className="text-xs text-gray-500 px-4 py-2">No subjects available</p>
-            )}
-          </div>
-        )}
-      </div>
-    </aside>
-  );
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex pt-16">
-          <Sidebar />
+          <StudentSidebar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
           <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
@@ -399,15 +359,24 @@ const ResultsPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
           <Navigation />
           <div className="flex pt-16">
-            <Sidebar />
+            <StudentSidebar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
             <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
               <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{getScoreIcon(basicResults.ritScore)}</div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
-              <p className="text-xl text-gray-600 mb-4">
-                {basicResults.message || 'Your assessment has been completed successfully.'}
-              </p>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+              <div className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="h-10 w-10 text-green-600" />
+                  </div>
+                </div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
+                <p className="text-xl text-gray-600 mb-4">
+                  {basicResults.message || 'Your assessment has been completed successfully.'}
+                </p>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8">
@@ -455,13 +424,75 @@ const ResultsPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex pt-16">
-          <Sidebar />
+          <StudentSidebar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
           <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
             <div className="w-full px-6 py-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Assessment Results</h1>
-            <p className="text-gray-600">View all your completed assessments</p>
-          </div>
+              {/* Header Section */}
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Assessment Results</h1>
+                  <p className="text-gray-600">View all your completed assessments</p>
+                </div>
+
+                {/* Search and Filter Controls */}
+                {!assessmentsLoading && allAssessments.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by assessment name..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
+                      />
+                    </div>
+                    
+                    {/* Subject Filter */}
+                    <div className="relative">
+                      <select
+                        value={selectedSubject}
+                        onChange={(e) => {
+                          setSelectedSubject(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="pl-4 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer"
+                      >
+                        <option value="all">All Subjects</option>
+                        {Array.from(new Set(allAssessments.map((a: any) => a.subjectName || a.subject_name).filter(Boolean))).map((subject: string) => (
+                          <option key={subject} value={subject}>{subject}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                    
+                    {/* Assessment Name Filter */}
+                    <div className="relative">
+                      <select
+                        value={selectedAssessment}
+                        onChange={(e) => {
+                          setSelectedAssessment(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="pl-4 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer"
+                      >
+                        <option value="all">All Assessments</option>
+                        {Array.from(new Set(allAssessments.map((a: any) => a.assignment_name || a.assignmentName || a.subjectName || a.subject_name).filter(Boolean))).map((name: string) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
           {assessmentsLoading ? (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
@@ -471,67 +502,6 @@ const ResultsPage: React.FC = () => {
             </div>
           ) : allAssessments.length > 0 ? (
             <>
-              {/* Search and Filter Bar - Centered and Compact */}
-              <div className="flex justify-center mb-4">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 inline-flex flex-col md:flex-row gap-3 items-center">
-                  {/* Search Bar */}
-                  <div className="w-full md:w-64">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search by assessment name..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setCurrentPage(1); // Reset to first page on search
-                        }}
-                        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Subject Filter */}
-                  <div className="w-full md:w-40">
-                    <div className="relative">
-                      <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <select
-                        value={selectedSubject}
-                        onChange={(e) => {
-                          setSelectedSubject(e.target.value);
-                          setCurrentPage(1); // Reset to first page on filter
-                        }}
-                        className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                      >
-                        <option value="all">All Subjects</option>
-                        {Array.from(new Set(allAssessments.map((a: any) => a.subjectName || a.subject_name).filter(Boolean))).map((subject: string) => (
-                          <option key={subject} value={subject}>{subject}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Assessment Name Filter */}
-                  <div className="w-full md:w-40">
-                    <div className="relative">
-                      <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <select
-                        value={selectedAssessment}
-                        onChange={(e) => {
-                          setSelectedAssessment(e.target.value);
-                          setCurrentPage(1); // Reset to first page on filter
-                        }}
-                        className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                      >
-                        <option value="all">All Assessments</option>
-                        {Array.from(new Set(allAssessments.map((a: any) => a.assignment_name || a.assignmentName || a.subjectName || a.subject_name).filter(Boolean))).map((name: string) => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Filtered and Paginated Assessments Table */}
               {(() => {
@@ -567,25 +537,25 @@ const ResultsPage: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Assessment Name
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Subject
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Period
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Growth Metric
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Score
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Date Completed
                               </th>
-                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
@@ -630,45 +600,45 @@ const ResultsPage: React.FC = () => {
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-50 mr-3">
-                                <TrendingUp className="h-5 w-5 text-purple-600" />
+                              <div className="w-8 h-8 rounded flex items-center justify-center bg-purple-100 mr-3 flex-shrink-0">
+                                <TrendingUp className="h-4 w-4 text-purple-600" />
                               </div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-semibold text-gray-900">
                                 {assignmentName || subjectName}
-                              </div>
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{subjectName}</div>
+                            <span className="text-sm text-gray-900">{subjectName}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-600">{periodDisplay}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <Trophy className="h-4 w-4 text-yellow-600 mr-2" />
-                              <span className="text-sm font-medium text-gray-900">{ritScore}</span>
-                            </div>
+                            <span className="text-sm text-gray-700">{periodDisplay}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <CheckCircle className="h-4 w-4 text-emerald-600 mr-2" />
-                              <span className="text-sm text-gray-900">{correctAnswers}/{totalQuestions}</span>
+                              <Trophy className="h-4 w-4 text-yellow-500 mr-2 flex-shrink-0" />
+                              <span className="text-sm font-semibold text-gray-900">{ritScore}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                              <span className="text-sm text-gray-600">{formattedDate}</span>
+                              <CheckCircle className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+                              <span className="text-sm font-semibold text-gray-900">{correctAnswers}/{totalQuestions}</span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{formattedDate}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 viewAssessmentDetails(assessment.id);
                               }}
-                              className="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                              className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
                             >
                               <Eye className="h-4 w-4" />
                               <span>View Details</span>
@@ -781,16 +751,25 @@ const ResultsPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       <div className="flex pt-16">
-        <Sidebar />
+        <StudentSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
         <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
-          <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="w-full px-6 py-8">
         {/* Results Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{getScoreIcon(results.statistics.currentRIT)}</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
-          <p className="text-xl text-gray-600">
-            {results.assessment.subjectName} • {results.assessment.period} {results.assessment.year}
-          </p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="h-10 w-10 text-green-600" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Complete!</h1>
+            <p className="text-xl text-gray-600">
+              {results.assessment.subjectName} • {results.assessment.period} {results.assessment.year}
+            </p>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -842,7 +821,7 @@ const ResultsPage: React.FC = () => {
         {activeTab === 'assessment' && (
           <>
             {/* Main Score Card */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-8 w-full">
           <div className="text-center mb-8">
             <div className="mb-4">
               <div className={`text-6xl font-bold ${getScoreColor(results.statistics.currentRIT)} mb-2`}>

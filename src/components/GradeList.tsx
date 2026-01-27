@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Grade } from '../types';
 import { gradesAPI } from '../services/api';
 import GradeForm from './GradeForm';
+import { Edit, Trash2, X } from 'lucide-react';
 
 interface GradeListProps {
   onGradeSelected?: (grade: Grade) => void;
@@ -14,6 +15,9 @@ const GradeList: React.FC<GradeListProps> = ({ onGradeSelected }) => {
   const [showGradeForm, setShowGradeForm] = useState(false);
   const [editingGrade, setEditingGrade] = useState<Grade | null>(null);
   const [deletingGrade, setDeletingGrade] = useState<number | null>(null);
+  const [selectedGrades, setSelectedGrades] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const fetchGrades = async () => {
     try {
@@ -49,12 +53,87 @@ const GradeList: React.FC<GradeListProps> = ({ onGradeSelected }) => {
     try {
       setDeletingGrade(gradeId);
       await gradesAPI.delete(gradeId);
+      
+      // Remove from selection if it was selected
+      setSelectedGrades(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(gradeId);
+        return newSet;
+      });
+      
       await fetchGrades();
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to delete grade';
       alert(errorMessage);
     } finally {
       setDeletingGrade(null);
+    }
+  };
+
+  const handleSelectGrade = (gradeId: number) => {
+    setSelectedGrades(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(gradeId)) {
+        newSet.delete(gradeId);
+      } else {
+        newSet.add(gradeId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedGrades.size === grades.length) {
+      setSelectedGrades(new Set());
+    } else {
+      setSelectedGrades(new Set(grades.map(g => g.id)));
+    }
+  };
+
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      // Clear selection when exiting selection mode
+      setSelectedGrades(new Set());
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedGrades.size === 0) return;
+
+    const count = selectedGrades.size;
+    const confirmMessage = `Are you sure you want to delete ${count} grade${count > 1 ? 's' : ''}? This action cannot be undone.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setBulkDeleting(true);
+      const gradeIds = Array.from(selectedGrades);
+      const deletePromises = gradeIds.map(id => gradesAPI.delete(id));
+      
+      // Delete all selected grades
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Check for failures
+      const failures = results.filter(result => result.status === 'rejected');
+      if (failures.length > 0) {
+        const errorMessages = failures.map((failure: any) => 
+          failure.reason?.response?.data?.error || 'Unknown error'
+        ).join(', ');
+        alert(`Failed to delete ${failures.length} grade(s): ${errorMessages}`);
+      } else {
+        // Success - clear selection, exit selection mode, and refresh
+        setSelectedGrades(new Set());
+        setIsSelectionMode(false);
+        await fetchGrades();
+      }
+    } catch (err: any) {
+      alert('An error occurred during bulk deletion. Please try again.');
+      console.error('Bulk delete error:', err);
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -91,16 +170,58 @@ const GradeList: React.FC<GradeListProps> = ({ onGradeSelected }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Grades</h3>
-        <button
-          onClick={handleAddGrade}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add Grade</span>
-        </button>
+        <h2 className="text-2xl font-bold text-gray-900">Grades</h2>
+        <div className="flex items-center gap-3">
+          {!isSelectionMode ? (
+            <>
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete Grade</span>
+              </button>
+              <button
+                onClick={handleAddGrade}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>+ Add Grade</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {selectedGrades.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-md transition-colors"
+                >
+                  {bulkDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Selected ({selectedGrades.size})</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span>Cancel</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -129,82 +250,130 @@ const GradeList: React.FC<GradeListProps> = ({ onGradeSelected }) => {
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {grades.map((grade) => (
-              <li key={grade.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {isSelectionMode && selectedGrades.size > 0 && (
+            <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-blue-900">
+                  {selectedGrades.size} grade{selectedGrades.size > 1 ? 's' : ''} selected
+                </p>
+                <button
+                  onClick={() => setSelectedGrades(new Set())}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-white border-b border-gray-200">
+                <tr>
+                  {isSelectionMode && (
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedGrades.size === grades.length && grades.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </th>
+                  )}
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Grade</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Details</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {grades.map((grade, index) => {
+                  const isSelected = selectedGrades.has(grade.id);
+                  const isEven = index % 2 === 0;
+                  return (
+                    <tr
+                      key={grade.id}
+                      className={`transition-colors ${
+                        isSelected 
+                          ? 'bg-purple-50 border-l-4 border-purple-500' 
+                          : isEven 
+                            ? 'bg-white' 
+                            : 'bg-gray-50'
+                      } hover:bg-gray-100`}
+                    >
+                      {isSelectionMode && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectGrade(grade.id)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </td>
+                      )}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {grade.display_name}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {grade.display_name}
-                          </p>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGradeTypeColor(grade.grade_level)}`}>
-                            {getGradeType(grade.grade_level)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGradeTypeColor(grade.grade_level)}`}>
+                          {getGradeType(grade.grade_level)}
+                        </span>
+                        {!grade.is_active && (
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Inactive
                           </span>
-                          {!grade.is_active && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              Inactive
-                            </span>
-                          )}
-                        </div>
-                                                 <p className="text-sm text-gray-500 truncate">
-                           {grade.grade_level ? `Level ${grade.grade_level} • ` : ''}{grade.name}
-                         </p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-500">
+                          {grade.grade_level ? `Level ${grade.grade_level} • ` : ''}{grade.name}
+                        </p>
                         {grade.description && (
-                          <p className="text-sm text-gray-400 truncate">
+                          <p className="text-sm text-gray-400">
                             {grade.description}
                           </p>
                         )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {onGradeSelected && (
-                      <button
-                        onClick={() => onGradeSelected(grade)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        Select
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleEditGrade(grade)}
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Edit grade"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteGrade(grade.id)}
-                      disabled={deletingGrade === grade.id}
-                      className="text-gray-400 hover:text-red-600 disabled:opacity-50"
-                      title="Delete grade"
-                    >
-                      {deletingGrade === grade.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleEditGrade(grade)}
+                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Edit grade"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGrade(grade.id)}
+                            disabled={deletingGrade === grade.id}
+                            className="text-gray-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            title="Delete grade"
+                          >
+                            {deletingGrade === grade.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Grade, Subject, School, Question } from '../types';
 import { gradesAPI, subjectsAPI, schoolsAPI, adminAPI, assignmentsAPI, studentsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
+import AdminSidebar from '../components/AdminSidebar';
 import { ArrowLeft, Clock, Hash, Save, Zap, List, Info, FileQuestion, Users, ChevronRight, CheckCircle, FileDown, Filter, CheckCircle2, Type, FileText, ArrowLeftRight, Droplets } from 'lucide-react';
 import { exportAssessmentToPDF } from '../utils/pdfExport';
 
@@ -405,9 +406,21 @@ const CreateAssessmentPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        {/* Fixed Navigation */}
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <Navigation />
+        </div>
+        
+        <div className="flex pt-16">
+          {/* Fixed Sidebar */}
+          <AdminSidebar />
+
+          {/* Main Content Area */}
+          <main className="flex-1 ml-64 min-h-[calc(100vh-4rem)] bg-gray-50">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -428,15 +441,25 @@ const CreateAssessmentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <div className="w-[90%] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-          onClick={() => navigate('/admin', { state: { activeTab: 'configs' } })}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Back to Assessments</span>
-        </button>
+      {/* Fixed Navigation */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navigation />
+      </div>
+      
+      <div className="flex pt-16">
+        {/* Fixed Sidebar */}
+        <AdminSidebar />
+
+        {/* Main Content Area */}
+        <main className="flex-1 ml-64 min-h-[calc(100vh-4rem)] bg-gray-50">
+          <div className="w-full px-6 py-8">
+            <button
+              onClick={() => navigate('/admin', { state: { activeTab: 'configs' } })}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Back to Assessments</span>
+            </button>
 
         {/* Mode Selection Section */}
         {!mode && (
@@ -509,11 +532,15 @@ const CreateAssessmentPage: React.FC = () => {
                   
                   return (
                     <React.Fragment key={step}>
-                      <div className="flex items-center flex-1">
+                      <button
+                        onClick={() => setCurrentStep(step)}
+                        className="flex items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                        type="button"
+                      >
                         <div className={`flex items-center space-x-3 ${
                           isActive ? 'text-green-600' : isCompleted ? 'text-gray-600' : 'text-gray-400'
                         }`}>
-                          <div className={`p-2 rounded-lg ${
+                          <div className={`p-2 rounded-lg transition-colors ${
                             isActive ? 'bg-green-100' : isCompleted ? 'bg-gray-100' : 'bg-gray-50'
                           }`}>
                             {isCompleted ? (
@@ -528,9 +555,9 @@ const CreateAssessmentPage: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </button>
                       {index < steps.length - 1 && (
-                        <ChevronRight className="h-5 w-5 text-gray-400 mx-2" />
+                        <ChevronRight className="h-5 w-5 text-gray-400 mx-2 flex-shrink-0" />
                       )}
                     </React.Fragment>
                   );
@@ -1410,6 +1437,8 @@ const CreateAssessmentPage: React.FC = () => {
             </div>
           </>
         )}
+          </div>
+        </main>
       </div>
     </div>
   );

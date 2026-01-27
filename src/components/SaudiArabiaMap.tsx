@@ -72,7 +72,7 @@ const getSchoolTypeFilter = (schoolType?: string): string => {
 
 const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.8);
 
   const filteredSchools = useMemo(() => {
     if (selectedFilter === 'All') return schools;
@@ -110,7 +110,7 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
   };
 
   return (
-    <div className="relative w-full h-[650px] bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 rounded-xl overflow-hidden">
+    <div className="relative w-full h-full min-h-[400px] bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 rounded-xl overflow-hidden">
 
       <div className="absolute left-4 top-4 bottom-4 z-10">
         <div className="h-full flex flex-col gap-3 min-w-[240px] justify-between">
@@ -149,11 +149,11 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
       <div className="absolute inset-0 flex items-center justify-center pl-[260px] pr-4">
         <div className="relative" style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}>
           {/* Map Image */}
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center w-full h-full">
             <img 
               src={mapImage} 
               alt="Saudi Arabia Map" 
-              className="max-w-full max-h-[580px] w-auto h-auto object-contain"
+              className="max-w-full max-h-full w-auto h-auto object-contain"
               style={{ 
                 filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.4))'
               }}

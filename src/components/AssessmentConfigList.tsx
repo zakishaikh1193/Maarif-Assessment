@@ -299,19 +299,19 @@ const AssessmentConfigList: React.FC = () => {
                 {filteredAssignments.map((assignment) => {
                   const mode = getAssignmentMode(assignment);
                   return (
-                    <tr key={assignment.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={assignment.id} 
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setViewingAssignmentId(assignment.id);
+                        setShowViewModal(true);
+                      }}
+                    >
                       <td className="px-6 py-4">
                         <div>
-                          <button
-                            onClick={() => {
-                              setViewingQuestionsAssignmentId(assignment.id);
-                              setShowQuestionsModal(true);
-                            }}
-                            className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors text-left cursor-pointer"
-                            title="Click to view questions"
-                          >
+                          <div className="text-sm font-medium text-gray-900">
                             {assignment.name}
-                          </button>
+                          </div>
                           {assignment.description && (
                             <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">
                               {assignment.description}
@@ -380,18 +380,8 @@ const AssessmentConfigList: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => {
-                              setViewingAssignmentId(assignment.id);
-                              setShowViewModal(true);
-                            }}
-                            className="text-blue-600 hover:text-blue-900 transition-colors"
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
                           <button
                             onClick={() => {
                               setReassigningAssignmentId(assignment.id);

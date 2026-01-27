@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { studentsAPI, schoolsAPI, gradesAPI } from '../services/api';
 import StudentForm from './StudentForm';
-import { Search, Building, GraduationCap, X, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Building, GraduationCap, X, Upload, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 
 interface StudentListProps {
   onStudentSelected?: (student: any) => void;
@@ -29,6 +29,9 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
   const [schools, setSchools] = useState<any[]>([]);
   const [grades, setGrades] = useState<any[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Ensure schools is always an array
   const safeSchools = Array.isArray(schools) ? schools : [];
@@ -72,6 +75,8 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedStudents(new Set()); // Clear selection when filters change
+    setIsSelectionMode(false); // Exit selection mode when filters change
   }, [searchTerm, selectedSchoolId, selectedGradeId]);
 
   // Filter students based on search term, school, and grade
@@ -140,6 +145,14 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     try {
       setDeletingStudent(studentId);
       await studentsAPI.delete(studentId);
+      
+      // Remove from selection if it was selected
+      setSelectedStudents(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(studentId);
+        return newSet;
+      });
+      
       // If current page becomes empty after deletion, go to previous page
       if (filteredStudents.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
@@ -167,7 +180,82 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      setSelectedStudents(new Set()); // Clear selection when page changes
+      setIsSelectionMode(false); // Exit selection mode when page changes
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectStudent = (studentId: number) => {
+    setSelectedStudents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(studentId)) {
+        newSet.delete(studentId);
+      } else {
+        newSet.add(studentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedStudents.size === paginatedStudents.length) {
+      setSelectedStudents(new Set());
+    } else {
+      setSelectedStudents(new Set(paginatedStudents.map(s => s.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedStudents.size === 0) return;
+
+    const count = selectedStudents.size;
+    const confirmMessage = `Are you sure you want to delete ${count} student${count > 1 ? 's' : ''}? This action cannot be undone.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setBulkDeleting(true);
+      const studentIds = Array.from(selectedStudents);
+      const deletePromises = studentIds.map(id => studentsAPI.delete(id));
+      
+      // Delete all selected students
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Check for failures
+      const failures = results.filter(result => result.status === 'rejected');
+      if (failures.length > 0) {
+        const errorMessages = failures.map((failure: any) => 
+          failure.reason?.response?.data?.error || 'Unknown error'
+        ).join(', ');
+        alert(`Failed to delete ${failures.length} student(s): ${errorMessages}`);
+      } else {
+        // Success - clear selection, exit selection mode, and refresh
+        setSelectedStudents(new Set());
+        setIsSelectionMode(false);
+        // If current page becomes empty after deletion, go to previous page
+        const remainingCount = filteredStudents.length - count;
+        if (remainingCount === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        } else {
+          await fetchStudents(currentPage);
+        }
+      }
+    } catch (err: any) {
+      alert('An error occurred during bulk deletion. Please try again.');
+      console.error('Bulk delete error:', err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      // Clear selection when exiting selection mode
+      setSelectedStudents(new Set());
     }
   };
 
@@ -183,28 +271,68 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Students</h2>
           <p className="text-sm text-gray-600 mt-1">Manage all students in the system</p>
         </div>
         <div className="flex items-center gap-3">
-          {onImportCSV && (
-            <button
-              onClick={onImportCSV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 shadow-md"
-            >
-              <Upload className="h-4 w-4" />
-              <span>Import CSV</span>
-            </button>
+          {!isSelectionMode ? (
+            <>
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete Student</span>
+              </button>
+              {onImportCSV && (
+                <button
+                  onClick={onImportCSV}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 shadow-md"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span>Import CSV</span>
+                </button>
+              )}
+              <button
+                onClick={handleAddStudent}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>+ Add Student</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {selectedStudents.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-md transition-colors"
+                >
+                  {bulkDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Selected ({selectedStudents.size})</span>
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleToggleSelectionMode}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2 shadow-md transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span>Cancel</span>
+              </button>
+            </>
           )}
-          <button
-            onClick={handleAddStudent}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 shadow-md"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span>+ Add Student</span>
-          </button>
         </div>
       </div>
 
@@ -358,89 +486,126 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Students</h3>
-          </div>
+          {isSelectionMode && selectedStudents.size > 0 && (
+            <div className="px-6 py-3 border-b border-gray-200 bg-blue-50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-blue-900">
+                  {selectedStudents.size} student{selectedStudents.size > 1 ? 's' : ''} selected
+                </p>
+                <button
+                  onClick={() => setSelectedStudents(new Set())}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="w-full">
+              <thead className="bg-white border-b border-gray-200">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Student Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    School Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Student Grade
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  {isSelectionMode && (
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudents.size === paginatedStudents.length && paginatedStudents.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </th>
+                  )}
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">#</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Full Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Username</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">School</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Grade</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedStudents.map((student) => (
-                  <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mr-3">
-                          <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                          </svg>
+                {paginatedStudents.map((student, index) => {
+                  const isSelected = selectedStudents.has(student.id);
+                  const rowNumber = (currentPage - 1) * studentsPerPage + index + 1;
+                  const isEven = index % 2 === 0;
+                  return (
+                    <tr
+                      key={student.id}
+                      className={`transition-colors ${
+                        isSelected 
+                          ? 'bg-purple-50 border-l-4 border-purple-500' 
+                          : isEven 
+                            ? 'bg-white' 
+                            : 'bg-gray-50'
+                      } hover:bg-gray-100`}
+                    >
+                      {isSelectionMode && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectStudent(student.id)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </td>
+                      )}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {rowNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-semibold text-blue-600">
+                              {student.first_name?.[0]?.toUpperCase() || ''}{student.last_name?.[0]?.toUpperCase() || ''}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-gray-900">
+                                {student.first_name} {student.last_name}
+                              </p>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Student
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {student.first_name} {student.last_name}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {student.school_name || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {student.grade_name || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-3">
-                        {onStudentSelected && (
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        @{student.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {student.school_name || '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {student.grade_name || '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-3">
                           <button
-                            onClick={() => onStudentSelected(student)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            onClick={() => handleEditStudent(student)}
+                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Edit student"
                           >
-                            Select
+                            <Edit className="w-4 h-4" />
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleEditStudent(student)}
-                          className="text-gray-400 hover:text-gray-600"
-                          title="Edit student"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStudent(student.id)}
-                          disabled={deletingStudent === student.id}
-                          className="text-gray-400 hover:text-red-600 disabled:opacity-50"
-                          title="Delete student"
-                        >
-                          {deletingStudent === student.id ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
-                          ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          <button
+                            onClick={() => handleDeleteStudent(student.id)}
+                            disabled={deletingStudent === student.id}
+                            className="text-gray-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            title="Delete student"
+                          >
+                            {deletingStudent === student.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

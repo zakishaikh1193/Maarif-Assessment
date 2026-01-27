@@ -159,6 +159,10 @@ export interface GrowthDataPoint {
   assessmentPeriod: string;
   ritScore: number;
   dateTaken: string;
+  studentId?: number; // Optional: for grouping multiple students
+  student_id?: number; // Optional: alternative property name from backend
+  schoolId?: number; // Optional: for grouping multiple schools
+  school_id?: number; // Optional: alternative property name from backend
 }
 
 export interface ClassAverageDataPoint {
@@ -281,6 +285,7 @@ export interface AdminStats {
   totalQuestions: number;
   totalStudents: number;
   totalAssessments: number;
+  totalSchools?: number;
   difficultyDistribution: Array<{
     difficulty_range: string;
     count: number;
@@ -298,6 +303,24 @@ export interface AdminStats {
     assessment_count: number;
     student_count: number;
   }>;
+  trends?: {
+    questions: {
+      percentage: number;
+      direction: 'up' | 'down';
+    };
+    students: {
+      percentage: number;
+      direction: 'up' | 'down';
+    };
+    assessments: {
+      percentage: number;
+      direction: 'up' | 'down';
+    };
+    schools: {
+      percentage: number;
+      direction: 'up' | 'down';
+    };
+  };
 }
 
 export interface Competency {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrowthOverTimeData } from '../types';
-import { TrendingUp, Users, Target, Building, GraduationCap, User, Download, FileSpreadsheet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Target, Building, GraduationCap, User, Download, FileSpreadsheet, BarChart3 } from 'lucide-react';
 import { exportGrowthTabularToPDF, exportGrowthTabularToCSV } from '../utils/growthReportExport';
 import { exportCompletePerformanceReportToPDF } from '../utils/performanceReportExport';
 
@@ -347,16 +347,41 @@ const GrowthTabularView: React.FC<GrowthTabularViewProps> = ({ data, userRole = 
             <TrendingUp className="h-4 w-4 text-emerald-600" />
             <span className="text-sm font-medium text-emerald-900">Growth Trend</span>
           </div>
-          <div className="text-sm text-emerald-700">
+          <div className="flex items-center space-x-2 text-sm text-emerald-700">
             {data.studentScores && data.studentScores.length >= 2 ? (
               data.studentScores[data.studentScores.length - 1].ritScore > data.studentScores[0].ritScore 
-                ? "📈 Improving" 
-                : "📉 Declining"
+                ? (
+                  <>
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <span>Improving</span>
+                  </>
+                )
+                : (
+                  <>
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <span>Declining</span>
+                  </>
+                )
             ) : data.districtAverages && data.districtAverages.length >= 2 ? (
               data.districtAverages[data.districtAverages.length - 1].averageRITScore > data.districtAverages[0].averageRITScore
-                ? "📈 Improving"
-                : "📉 Declining"
-            ) : "📊 Insufficient data"}
+                ? (
+                  <>
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                    <span>Improving</span>
+                  </>
+                )
+                : (
+                  <>
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <span>Declining</span>
+                  </>
+                )
+            ) : (
+              <>
+                <BarChart3 className="h-4 w-4 text-gray-500" />
+                <span>Insufficient data</span>
+              </>
+            )}
           </div>
         </div>
       </div>
