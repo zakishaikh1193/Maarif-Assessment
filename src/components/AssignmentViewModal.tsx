@@ -302,7 +302,7 @@ const AssignmentViewModal: React.FC<AssignmentViewModalProps> = ({ isOpen, onClo
                                   <Trophy className="h-4 w-4 text-yellow-500 mr-2" />
                                   <div>
                                     <div className="text-sm font-semibold text-gray-900">
-                                      {student.ritScore} RIT
+                                      {student.ritScore} Growth Metric
                                     </div>
                                     {student.correctAnswers !== null && student.totalQuestions !== null && (
                                       <div className="text-xs text-gray-500">
