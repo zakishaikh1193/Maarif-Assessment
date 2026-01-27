@@ -656,76 +656,90 @@ const StudentDashboard: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {completedAssignments.slice(0, 5).map((assignment) => (
-                    <div key={assignment.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                            <CheckCircle className="h-6 w-6 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="text-lg font-semibold text-gray-900">{assignment.name}</h3>
-                              <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full ${
-                                assignment.mode === 'Standard'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-purple-100 text-purple-800'
-                              }`}>
-                                {assignment.mode === 'Standard' ? (
-                                  <>
-                                    <List className="h-3 w-3 mr-1" />
-                                    Standard
-                                  </>
-                                ) : (
-                                  <>
-                                    <Zap className="h-3 w-3 mr-1" />
-                                    Adaptive
-                                  </>
-                                )}
-                              </span>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Assessment Name
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Subject
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Mode
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Completed Date
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Correct
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Score
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {completedAssignments.slice(0, 5).map((assignment) => (
+                        <tr key={assignment.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mr-3">
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {assignment.name || 'N/A'}
+                              </div>
                             </div>
-                            <p className="text-sm text-gray-600">{assignment.subjectName || `Subject ID: ${assignment.subjectId}`}</p>
-                            {assignment.description && (
-                              <p className="text-xs text-gray-500 mt-1">{assignment.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 mb-3">
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          <Target className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium text-gray-900">{assignment.score || 'N/A'}</div>
-                            <div className="text-xs">Score</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          <CheckCircle className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {assignment.correctAnswers !== null && assignment.assessmentTotalQuestions 
-                                ? `${assignment.correctAnswers}/${assignment.assessmentTotalQuestions}`
-                                : 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {assignment.subjectName || `Subject ID: ${assignment.subjectId}` || 'N/A'}
                             </div>
-                            <div className="text-xs">Correct</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          <Clock className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium text-gray-900">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                              assignment.mode === 'Standard'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {assignment.mode === 'Standard' ? (
+                                <>
+                                  <List className="h-3 w-3 mr-1" />
+                                  Standard
+                                </>
+                              ) : (
+                                <>
+                                  <Zap className="h-3 w-3 mr-1" />
+                                  Adaptive
+                                </>
+                              )}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
                               {assignment.completedAt 
                                 ? new Date(assignment.completedAt).toLocaleDateString()
                                 : 'N/A'}
                             </div>
-                            <div className="text-xs">Completed</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {assignment.correctAnswers !== null && assignment.assessmentTotalQuestions 
+                                ? `${assignment.correctAnswers}/${assignment.assessmentTotalQuestions}`
+                                : 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {assignment.score || 'N/A'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
