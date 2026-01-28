@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AssessmentConfiguration, Grade, Subject } from '../types';
 import { assessmentConfigAPI, gradesAPI, subjectsAPI, assignmentsAPI } from '../services/api';
-import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Zap, List, Eye, UserPlus } from 'lucide-react';
+import { Edit, Trash2, Plus, Filter, Clock, Hash, AlertTriangle, Eye, UserPlus } from 'lucide-react';
 import AssessmentConfigForm from './AssessmentConfigForm';
 import AssignmentViewModal from './AssignmentViewModal';
 import AssessmentQuestionsModal from './AssessmentQuestionsModal';
@@ -146,11 +146,6 @@ const AssessmentConfigList: React.FC = () => {
     }
   };
 
-  const getAssignmentMode = (assignment: Assignment): 'Standard' | 'Adaptive' => {
-    // Use mode from backend if available, otherwise infer from questionSequence
-    return assignment.mode || (assignment.questionSequence ? 'Standard' : 'Adaptive');
-  };
-
   const handleFormSubmit = async (configData: any) => {
     try {
       if (editingConfig) {
@@ -273,9 +268,6 @@ const AssessmentConfigList: React.FC = () => {
                     Title
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Subject
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -297,7 +289,6 @@ const AssessmentConfigList: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredAssignments.map((assignment) => {
-                  const mode = getAssignmentMode(assignment);
                   return (
                     <tr 
                       key={assignment.id} 
@@ -318,25 +309,6 @@ const AssessmentConfigList: React.FC = () => {
                             </div>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
-                          mode === 'Standard'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {mode === 'Standard' ? (
-                            <>
-                              <List className="h-3 w-3 mr-1" />
-                              Standard
-                            </>
-                          ) : (
-                            <>
-                              <Zap className="h-3 w-3 mr-1" />
-                              Adaptive
-                            </>
-                          )}
-                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">
