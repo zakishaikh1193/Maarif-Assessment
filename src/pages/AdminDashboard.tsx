@@ -29,6 +29,7 @@ const AdminDashboard: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]); // Store all questions when filters are active
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -1187,6 +1188,7 @@ const AdminDashboard: React.FC = () => {
                     onPageChange={handlePageChange}
                     selectedGrade={selectedGradeFilter}
                     onGradeChange={handleGradeChange}
+                    subjectId={selectedSubject?.id}
                   />
                 </>
               )}

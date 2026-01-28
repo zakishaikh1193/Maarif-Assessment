@@ -11,6 +11,7 @@ interface StudentListProps {
 
 const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTrigger, onImportCSV }) => {
   const [students, setStudents] = useState<any[]>([]);
+  const [allStudents, setAllStudents] = useState<any[]>([]); // Store all students when filters are active
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showStudentForm, setShowStudentForm] = useState(false);
@@ -52,6 +53,20 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     }
   };
 
+  const fetchAllStudents = async () => {
+    try {
+      setLoading(true);
+      // Fetch all students with a large limit
+      const response = await studentsAPI.getAll(1, 10000);
+      const allStudentsData = response.students || [];
+      setAllStudents(allStudentsData);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to fetch all students');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchSchoolsAndGrades = async () => {
     try {
       const [schoolsResponse, gradesData] = await Promise.all([
@@ -67,10 +82,19 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
     }
   };
 
+  // Check if filters are active
+  const hasActiveFilters = searchTerm || selectedSchoolId || selectedGradeId;
+
   useEffect(() => {
-    fetchStudents(currentPage);
+    if (hasActiveFilters) {
+      // When filters are active, fetch all students for client-side filtering
+      fetchAllStudents();
+    } else {
+      // When no filters, use server-side pagination
+      fetchStudents(currentPage);
+    }
     fetchSchoolsAndGrades();
-  }, [refreshTrigger, currentPage]);
+  }, [refreshTrigger, currentPage, hasActiveFilters]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -81,7 +105,10 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
 
   // Filter students based on search term, school, and grade
   const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    // Use allStudents when filters are active, otherwise use students (current page)
+    const studentsToFilter = hasActiveFilters ? allStudents : students;
+    
+    return studentsToFilter.filter((student) => {
       // Search filter (name or username)
       const matchesSearch = !searchTerm || 
         (student.first_name && student.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -97,10 +124,7 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
 
       return matchesSearch && matchesSchool && matchesGrade;
     });
-  }, [students, searchTerm, selectedSchoolId, selectedGradeId]);
-
-  // Check if filters are active
-  const hasActiveFilters = searchTerm || selectedSchoolId || selectedGradeId;
+  }, [students, allStudents, searchTerm, selectedSchoolId, selectedGradeId, hasActiveFilters]);
 
   // Paginate filtered students
   const paginatedStudents = useMemo(() => {
@@ -157,7 +181,11 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
       if (filteredStudents.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       } else {
-        await fetchStudents(currentPage);
+        if (hasActiveFilters) {
+          await fetchAllStudents();
+        } else {
+          await fetchStudents(currentPage);
+        }
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to delete student';
@@ -174,11 +202,16 @@ const StudentList: React.FC<StudentListProps> = ({ onStudentSelected, refreshTri
   };
 
   const handleStudentUpdated = () => {
-    fetchStudents(currentPage);
+    if (hasActiveFilters) {
+      fetchAllStudents();
+    } else {
+      fetchStudents(currentPage);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
+    const maxPages = hasActiveFilters ? filteredTotalPages : totalPages;
+    if (newPage >= 1 && newPage <= maxPages) {
       setCurrentPage(newPage);
       setSelectedStudents(new Set()); // Clear selection when page changes
       setIsSelectionMode(false); // Exit selection mode when page changes

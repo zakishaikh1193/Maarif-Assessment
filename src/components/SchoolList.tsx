@@ -10,6 +10,7 @@ interface SchoolListProps {
 
 const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
   const [schools, setSchools] = useState<School[]>([]);
+  const [allSchools, setAllSchools] = useState<School[]>([]); // Store all schools when search is active
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showSchoolForm, setShowSchoolForm] = useState(false);
@@ -30,28 +31,60 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
     try {
       setLoading(true);
       const response = await schoolsAPI.getAll(page, schoolsPerPage);
-      setSchools(response.schools || []);
+      const schoolsData = response.schools || [];
+      setSchools(schoolsData);
       if (response.pagination) {
         setTotalPages(response.pagination.totalPages);
         setTotalSchools(response.pagination.totalSchools);
       }
+      return schoolsData; // Return the data for use in .then()
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to fetch schools');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAllSchools = async () => {
+    try {
+      setLoading(true);
+      // Fetch all schools with a large limit
+      const response = await schoolsAPI.getAll(1, 10000);
+      const allSchoolsData = response.schools || [];
+      setAllSchools(allSchoolsData);
+      return allSchoolsData; // Return the data for use in .then()
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to fetch all schools');
+      setAllSchools([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check if search is active
+  const hasActiveFilters = !!searchTerm;
+
   useEffect(() => {
-    fetchSchools(currentPage);
-  }, [currentPage]);
+    if (hasActiveFilters) {
+      // When search is active, fetch all schools for client-side filtering
+      fetchAllSchools();
+    } else {
+      // When no search, use server-side pagination
+      fetchSchools(currentPage);
+    }
+  }, [currentPage, hasActiveFilters]);
 
   // Filter schools based on search term
+  // Use allSchools when search is active, otherwise use schools (current page)
   const filteredSchools = useMemo(() => {
     if (!searchTerm) return schools;
     
+    // Use allSchools when search is active, otherwise use schools (current page)
+    const schoolsToFilter = hasActiveFilters ? allSchools : schools;
     const searchLower = searchTerm.toLowerCase();
-    return schools.filter((school) => {
+    return schoolsToFilter.filter((school) => {
       return (
         (school.name && school.name.toLowerCase().includes(searchLower)) ||
         (school.address && school.address.toLowerCase().includes(searchLower)) ||
@@ -60,7 +93,7 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
         (school.school_type && school.school_type.toLowerCase().includes(searchLower))
       );
     });
-  }, [schools, searchTerm]);
+  }, [schools, allSchools, searchTerm, hasActiveFilters]);
 
   // Paginate filtered schools
   const paginatedSchools = useMemo(() => {
@@ -84,8 +117,6 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
     setSearchTerm('');
     setCurrentPage(1);
   };
-
-  const hasActiveFilters = !!searchTerm;
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= (searchTerm ? filteredTotalPages : totalPages)) {
@@ -127,7 +158,11 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
       if (paginatedSchools.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       } else {
-        await fetchSchools(currentPage);
+        if (hasActiveFilters) {
+          await fetchAllSchools();
+        } else {
+          await fetchSchools(currentPage);
+        }
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to delete school';
@@ -140,15 +175,25 @@ const SchoolList: React.FC<SchoolListProps> = ({ onSchoolSelected }) => {
   const handleSchoolCreated = () => {
     // Reset to first page and fetch
     setCurrentPage(1);
-    fetchSchools(1);
+    if (hasActiveFilters) {
+      fetchAllSchools();
+    } else {
+      fetchSchools(1);
+    }
   };
 
   const handleSchoolUpdated = () => {
-    fetchSchools(currentPage);
+    if (hasActiveFilters) {
+      fetchAllSchools();
+    } else {
+      fetchSchools(currentPage);
+    }
     if (selectedSchool) {
       // Refresh selected school data
-      fetchSchools(currentPage).then(() => {
-        const updatedSchool = schools.find(s => s.id === selectedSchool.id);
+      const refreshFn = hasActiveFilters ? fetchAllSchools : () => fetchSchools(currentPage);
+      refreshFn().then((data) => {
+        const schoolsToSearch = hasActiveFilters ? (data || allSchools) : schools;
+        const updatedSchool = schoolsToSearch.find(s => s.id === selectedSchool.id);
         if (updatedSchool) {
           setSelectedSchool(updatedSchool);
         }

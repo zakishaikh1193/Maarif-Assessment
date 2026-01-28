@@ -1,98 +1,144 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { School } from '../types';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { schoolsAPI } from '../services/api';
+import mapImage from '../images/map-patch2.png';
 import bluePinIcon from '../images/blue.png';
 
 interface SaudiArabiaMapProps {
   schools: School[];
 }
 
-// Custom icon creator function
-const createCustomIcon = (iconUrl: string, schoolType?: string) => {
-  // Determine color based on school type
-  let colorFilter = '';
-  switch (schoolType) {
-    case 'National & International':
-      // Blue
-      colorFilter = 'brightness(0.95) saturate(1.3) hue-rotate(-5deg)';
-      break;
-    case 'National':
-      // Green
-      colorFilter = 'brightness(1.15) saturate(1.6) hue-rotate(130deg)';
-      break;
-    case 'International':
-      // Purple
-      colorFilter = 'brightness(1.1) saturate(1.7) hue-rotate(255deg)';
-      break;
-    default:
-      colorFilter = 'brightness(0.8) saturate(0.5)';
-  }
-
-  // Create a custom icon using the blue pin image with color filter
-  const iconHtml = `
-    <div style="
-      width: 40px;
-      height: 50px;
-      background-image: url(${iconUrl});
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      filter: ${colorFilter};
-      transform: translate(-50%, -100%);
-    "></div>
-  `;
-
-  return L.divIcon({
-    html: iconHtml,
-    className: 'custom-school-icon',
-    iconSize: [40, 50],
-    iconAnchor: [20, 50],
-    popupAnchor: [0, -50]
-  });
+const cityCoordinates: { [key: string]: { x: number; y: number } } = {
+  'Riyadh': { x: 50, y: 45 },
+  'Jeddah': { x: 25, y: 35 },
+  'Medina': { x: 30, y: 40 },
+  'Dammam': { x: 55, y: 50 },
+  'Mecca': { x: 28, y: 38 },
+  'Taif': { x: 32, y: 38 },
+  'Abha': { x: 35, y: 20 },
+  'Tabuk': { x: 20, y: 55 },
+  'Buraydah': { x: 45, y: 48 },
+  'Khobar': { x: 58, y: 52 },
+  'Hail': { x: 42, y: 52 },
+  'Jazan': { x: 30, y: 15 },
+  'Najran': { x: 40, y: 18 },
+  'Khamis Mushait': { x: 33, y: 22 },
+  'Al-Madinah': { x: 30, y: 40 },
+  'Al-Madinah Al-Munawarah': { x: 30, y: 40 },
 };
 
-// Component to handle map view changes
-const MapController = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
+const extractCityFromAddress = (address: string): string | null => {
+  if (!address) return null;
+  const addressLower = address.toLowerCase();
+  for (const city of Object.keys(cityCoordinates)) {
+    if (addressLower.includes(city.toLowerCase())) {
+      return city;
+    }
+  }
+  if (addressLower.includes('riyadh')) return 'Riyadh';
+  if (addressLower.includes('jeddah')) return 'Jeddah';
+  if (addressLower.includes('medina') || addressLower.includes('madinah')) return 'Medina';
+  if (addressLower.includes('dammam')) return 'Dammam';
+  if (addressLower.includes('mecca') || addressLower.includes('makkah')) return 'Mecca';
   return null;
 };
 
-// Default center of Saudi Arabia (Riyadh)
-const DEFAULT_CENTER: [number, number] = [24.7136, 46.6753];
-const DEFAULT_ZOOM = 6;
+const getSchoolCoordinates = (school: School): { x: number; y: number } => {
+  // Special case: Saudi International School - place at far southeast region (opposite side)
+  if (school.name && school.name.toLowerCase().includes('saudi international school')) {
+    return { x: 72, y: 33 }; // Far southeast region (opposite from northwest)
+  }
+  
+  // Special case: Manarat Al-Madinah - place on left side (western coast)
+  if (school.name && (school.name.toLowerCase().includes('manarat al-madinah') || school.name.toLowerCase().includes('manarat almadinah'))) {
+    return { x: 4, y: 45 }; // Left side (western coast), middle of coastline
+  }
+  
+  // Special case: Manarat Al-Dammam - place at red mark location (eastern coast, above Saudi International School)
+  if (school.name && (school.name.toLowerCase().includes('manarat al-dammam') || school.name.toLowerCase().includes('manarat aldammam'))) {
+    return { x: 61, y: 21}; // Eastern coast, above Saudi International School (red mark location)
+  }
+  
+  // Special case: Noor Al-Islam National - place exactly to the right of Saudi International School
+  if (school.name && (school.name.toLowerCase().includes('noor al-islam') || school.name.toLowerCase().includes('noor alislam'))) {
+    return { x: 78, y: 33 }; // Right side of Saudi International School (eastern coast)
+  }
+  
+  // Special case: Ajyal International - place exactly above Saudi International School
+  if (school.name && (school.name.toLowerCase().includes('ajyal international') || school.name.toLowerCase().includes('ajyal'))) {
+    return { x: 72, y: 26 }; // Exactly above Saudi International School (same x, lower y)
+  }
+  
+  // Special case: Manarat Al-Khobar - place to the right side of the map
+  if (school.name && (school.name.toLowerCase().includes('manarat al-khobar') || school.name.toLowerCase().includes('manarat alkhobar') || school.name.toLowerCase().includes('manarat khobar'))) {
+    return { x: 84, y: 37}; // Right side of the map (eastern coast)
+  }
+  
+  // Special case: Al-Faisaliah Islamic - place exactly below Manarat Al-Khobar
+  if (school.name && (school.name.toLowerCase().includes('al-faisaliah islamic') || school.name.toLowerCase().includes('faisaliah islamic') || school.name.toLowerCase().includes('faisaliah'))) {
+    return { x: 85, y: 44 }; // Exactly below Manarat Al-Khobar (same x, higher y)
+  }
+  
+  // Special case: Green Hills International - place at lower left side of the map
+  if (school.name && (school.name.toLowerCase().includes('green hills international') || school.name.toLowerCase().includes('green hills'))) {
+    return { x: 12.5, y: 67 }; // Lower left side of the map
+  }
+  
+  // Special case: Sherborne School Jeddah - place exactly above Green Hills International
+  if (school.name && (school.name.toLowerCase().includes('sherborne school jeddah') || school.name.toLowerCase().includes('sherborne'))) {
+    return { x: 9, y: 64 }; // Exactly above Green Hills International (same x, lower y)
+  }
+  
+  // Special case: Manarat Jeddah - place exactly below and to the right of Green Hills International
+  if (school.name && (school.name.toLowerCase().includes('manarat jeddah') || (school.name.toLowerCase().includes('manarat') && !school.name.toLowerCase().includes('ibn khaldun') && !school.name.toLowerCase().includes('khobar') && !school.name.toLowerCase().includes('madinah') && !school.name.toLowerCase().includes('dammam') && !school.name.toLowerCase().includes('riyadh')))) {
+    return { x: 18, y: 68 }; // Below and to the right of Green Hills International (higher x and y)
+  }
+  
+  // Special case: Ibn Khaldun Schools - place in the lower/southern region of the map
+  if (school.name && (school.name.toLowerCase().includes('ibn khaldun') || school.name.toLowerCase().includes('khaldun'))) {
+    return { x: 55, y: 53 }; // Lower/southern region of the map
+  }
+  
+  // Special case: Manarat Al-Riyadh - place exactly below Ibn Khaldun Schools
+  if (school.name && (school.name.toLowerCase().includes('manarat al-riyadh') || school.name.toLowerCase().includes('manarat alriyadh') || school.name.toLowerCase().includes('manarat riyadh'))) {
+    return { x: 60, y: 48 }; // Exactly below Ibn Khaldun Schools (same x, higher y)
+  }
+  
+  const city = extractCityFromAddress(school.address || '');
+  if (city && cityCoordinates[city]) {
+    const base = cityCoordinates[city];
+    const offsetX = ((school.id || 0) % 5) * 0.8 - 1.6;
+    const offsetY = (((school.id || 0) * 3) % 5) * 0.8 - 1.6;
+    return { x: base.x + offsetX, y: base.y + offsetY };
+  }
+  return { x: 50, y: 45 };
+};
 
-// Saudi Arabia geographic bounds
-// North: ~32.0°N, South: ~16.0°N, East: ~55.0°E, West: ~34.0°E
-const SAUDI_BOUNDS: [[number, number], [number, number]] = [
-  [16.0, 34.0], // Southwest corner (South, West)
-  [32.0, 55.0]  // Northeast corner (North, East)
-];
-
-interface SchoolWithCoordinates extends School {
-  latitude?: number;
-  longitude?: number;
-  city?: string | null;
-}
+const getSchoolTypeFilter = (schoolType?: string): string => {
+  switch (schoolType) {
+    case 'National & International': 
+      // Blue - match bg-blue-600 (#2563eb) / bg-blue-500 (#3b82f6)
+      return 'brightness(0.95) saturate(1.3) hue-rotate(-5deg)';
+    case 'National': 
+      // Green - match bg-green-600 (#16a34a) / bg-green-500 (#22c55e) - vibrant green
+      return 'brightness(1.15) saturate(1.6) hue-rotate(130deg)';
+    case 'International': 
+      // Purple - match bg-purple-600 (#9333ea) / bg-purple-500 (#a855f7) - vibrant purple
+      return 'brightness(1.1) saturate(1.7) hue-rotate(255deg)';
+    default: 
+      return 'brightness(0.8) saturate(0.5)';
+  }
+};
 
 const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const [schoolsWithCoords, setSchoolsWithCoords] = useState<SchoolWithCoordinates[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
-  const geocodeCache = useRef<Map<string, { latitude: number; longitude: number }>>(new Map());
+  const [zoom, setZoom] = useState(0.8);
+  const [clickedSchool, setClickedSchool] = useState<School | null>(null);
 
   const filteredSchools = useMemo(() => {
-    if (selectedFilter === 'All') return schoolsWithCoords;
-    return schoolsWithCoords.filter(school => school.school_type === selectedFilter);
-  }, [schoolsWithCoords, selectedFilter]);
+    if (selectedFilter === 'All') return schools;
+    return schools.filter(school => school.school_type === selectedFilter);
+  }, [schools, selectedFilter]);
 
   const schoolTypeCounts = useMemo(() => ({
     'All': schools.length,
@@ -107,122 +153,6 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
     { label: 'National', value: 'National' },
     { label: 'International', value: 'International' },
   ];
-
-  // Extract city from address
-  const extractCity = (address?: string): string | null => {
-    if (!address) return null;
-    const addressLower = address.toLowerCase();
-    const cities = ['riyadh', 'jeddah', 'dammam', 'mecca', 'makkah', 'medina', 'madinah', 
-                    'taif', 'khobar', 'abha', 'tabuk', 'buraydah', 'hail', 'jazan', 'najran'];
-    for (const city of cities) {
-      if (addressLower.includes(city)) {
-        return city.charAt(0).toUpperCase() + city.slice(1);
-      }
-    }
-    return null;
-  };
-
-  // City coordinates fallback
-  const cityCoordinates: { [key: string]: { latitude: number; longitude: number } } = {
-    'Riyadh': { latitude: 24.7136, longitude: 46.6753 },
-    'Jeddah': { latitude: 21.4858, longitude: 39.1925 },
-    'Dammam': { latitude: 26.4207, longitude: 50.0888 },
-    'Mecca': { latitude: 21.3891, longitude: 39.8579 },
-    'Makkah': { latitude: 21.3891, longitude: 39.8579 },
-    'Medina': { latitude: 24.5247, longitude: 39.5692 },
-    'Madinah': { latitude: 24.5247, longitude: 39.5692 },
-    'Taif': { latitude: 21.2703, longitude: 40.4158 },
-    'Khobar': { latitude: 26.2794, longitude: 50.2080 },
-    'Abha': { latitude: 18.2164, longitude: 42.5042 },
-    'Tabuk': { latitude: 28.3998, longitude: 36.5700 },
-    'Buraydah': { latitude: 26.3260, longitude: 43.9750 },
-    'Hail': { latitude: 27.5114, longitude: 41.7208 },
-    'Jazan': { latitude: 16.8894, longitude: 42.5706 },
-    'Najran': { latitude: 17.4924, longitude: 44.1277 }
-  };
-
-  // Geocode schools
-  useEffect(() => {
-    const geocodeSchools = async () => {
-      setLoading(true);
-      const schoolsWithCoordinates: SchoolWithCoordinates[] = [];
-
-      for (const school of schools) {
-        try {
-          // Check cache first
-          const cacheKey = school.address || school.name;
-          if (geocodeCache.current.has(cacheKey)) {
-            const coords = geocodeCache.current.get(cacheKey)!;
-            schoolsWithCoordinates.push({
-              ...school,
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-              city: extractCity(school.address)
-            });
-            continue;
-          }
-
-          // Try to geocode using API
-          if (school.address) {
-            try {
-              const response = await schoolsAPI.geocodeAddress(school.address);
-              if (response.success && response.coordinates) {
-                const coords = response.coordinates;
-                geocodeCache.current.set(cacheKey, coords);
-                schoolsWithCoordinates.push({
-                  ...school,
-                  latitude: coords.latitude,
-                  longitude: coords.longitude,
-                  city: extractCity(school.address)
-                });
-                continue;
-              }
-            } catch (error) {
-              console.warn(`Failed to geocode ${school.name}:`, error);
-            }
-          }
-
-          // Fallback to city-based coordinates
-          const city = extractCity(school.address);
-          if (city && cityCoordinates[city]) {
-            const coords = cityCoordinates[city];
-            schoolsWithCoordinates.push({
-              ...school,
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-              city: city
-            });
-          } else {
-            // Default to Riyadh if no city found
-            schoolsWithCoordinates.push({
-              ...school,
-              latitude: DEFAULT_CENTER[0],
-              longitude: DEFAULT_CENTER[1],
-              city: 'Riyadh'
-            });
-          }
-        } catch (error) {
-          console.error(`Error processing school ${school.name}:`, error);
-          // Add with default coordinates
-          schoolsWithCoordinates.push({
-            ...school,
-            latitude: DEFAULT_CENTER[0],
-            longitude: DEFAULT_CENTER[1],
-            city: 'Riyadh'
-          });
-        }
-      }
-
-      setSchoolsWithCoords(schoolsWithCoordinates);
-      setLoading(false);
-    };
-
-    if (schools.length > 0) {
-      geocodeSchools();
-    } else {
-      setLoading(false);
-    }
-  }, [schools]);
 
   const getFilterButtonStyle = (value: string) => {
     const isActive = selectedFilter === value;
@@ -240,23 +170,10 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
     return baseStyle;
   };
 
-  const handleZoomIn = () => {
-    setMapZoom(prev => Math.min(prev + 1, 18));
-  };
-
-  const handleZoomOut = () => {
-    setMapZoom(prev => Math.max(prev - 1, 3));
-  };
-
-  const handleResetView = () => {
-    setMapCenter(DEFAULT_CENTER);
-    setMapZoom(DEFAULT_ZOOM);
-  };
-
   return (
     <div className="relative w-full h-full min-h-[400px] bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 rounded-xl overflow-hidden">
-      {/* Filter Buttons */}
-      <div className="absolute left-4 top-4 bottom-4 z-[1000]">
+
+      <div className="absolute left-4 top-4 bottom-4 z-10">
         <div className="h-full flex flex-col gap-3 min-w-[240px] justify-between">
           <div className="flex flex-col gap-3">
             {filterOptions.map((option) => (
@@ -290,81 +207,181 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
         </div>
       </div>
 
-      {/* Map Container */}
-      <div className="absolute inset-0 flex items-center justify-center pl-[260px] pr-4">
-        {loading ? (
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="w-full h-full rounded-lg overflow-hidden">
-            <MapContainer
-              center={mapCenter}
-              zoom={mapZoom}
-              style={{ height: '100%', width: '100%', zIndex: 1 }}
-              scrollWheelZoom={true}
-              maxBounds={SAUDI_BOUNDS}
-              maxBoundsViscosity={1.0}
-              minZoom={5}
-              maxZoom={12}
+      <div 
+        className="absolute inset-0 flex items-center justify-center pl-[260px] pr-4"
+        onClick={() => setClickedSchool(null)}
+      >
+        <div className="relative" style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}>
+          {/* Map Image */}
+          <div className="relative flex items-center justify-center w-full h-full">
+            <img 
+              src={mapImage} 
+              alt="Saudi Arabia Map" 
+              className="max-w-full max-h-full w-auto h-auto object-contain"
+              style={{ 
+                filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.4))'
+              }}
+            />
+            
+            {/* School Location Pins Overlay */}
+            <svg 
+              className="absolute top-0 left-0 w-full h-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="xMidYMid meet"
+              style={{ 
+                width: '100%',
+                height: '100%',
+                overflow: 'visible'
+              }}
             >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <MapController center={mapCenter} zoom={mapZoom} />
-              
-              {/* School Markers */}
-              {filteredSchools
-                .filter(school => school.latitude && school.longitude)
-                .map((school) => (
-                  <Marker
-                    key={school.id}
-                    position={[school.latitude!, school.longitude!]}
-                    icon={createCustomIcon(bluePinIcon, school.school_type)}
+              {filteredSchools.map((school, index) => {
+                const coords = getSchoolCoordinates(school);
+                const colorFilter = getSchoolTypeFilter(school.school_type);
+                const isClicked = clickedSchool?.id === school.id;
+                
+                return (
+                  <g 
+                    key={school.id || index} 
+                    className="school-pin group" 
+                    style={{ pointerEvents: 'auto', cursor: 'pointer', overflow: 'visible' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setClickedSchool(isClicked ? null : school);
+                    }}
                   >
-                    <Popup>
-                      <div className="p-2">
-                        <h3 className="font-bold text-gray-900 text-base mb-1">{school.name}</h3>
-                        {school.address && (
-                          <p className="text-sm text-gray-700 mb-1">{school.address}</p>
-                        )}
-                        {school.city && (
-                          <p className="text-xs text-gray-600">{school.city}</p>
-                        )}
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-            </MapContainer>
+                    {/* Pin Icon Image - Using blue.png with color filter based on school type - Much larger size */}
+                    <image
+                      href={bluePinIcon}
+                      x={coords.x - (isClicked ? 11.5 : 10)}
+                      y={coords.y - (isClicked ? 20.75 : 18)}
+                      width={isClicked ? "23" : "20"}
+                      height={isClicked ? "28.75" : "25"}
+                      className="hover:opacity-90 transition-opacity"
+                      style={{ 
+                        filter: `${colorFilter} drop-shadow(0 4px 8px rgba(0,0,0,0.5))`,
+                        pointerEvents: 'auto',
+                        cursor: 'pointer',
+                        opacity: isClicked ? 1 : 0.9,
+                        transition: 'opacity 0.2s ease, width 0.2s ease, height 0.2s ease, x 0.2s ease, y 0.2s ease'
+                      }}
+                    />
+                    
+                    {/* Clicked Overlay - Show school name and address in a card with black background - Positioned above the pin */}
+                    {isClicked && (
+                      <g className="pointer-events-none" style={{ zIndex: 1000 }}>
+                        {/* Calculate card dimensions based on text length */}
+                        {(() => {
+                          const nameLength = school.name?.length || 0;
+                          const addressLength = school.address?.length || 0;
+                          const maxLength = Math.max(nameLength, addressLength);
+                          // Better width calculation: base width + character-based width (increased significantly for longer addresses)
+                          // Use larger multiplier for addresses to ensure they fit completely
+                          const baseWidth = 40;
+                          // For very long addresses, use wider character spacing
+                          const charWidth = addressLength > 40 ? 0.8 : (addressLength > 25 ? 0.7 : 0.65);
+                          // Increased max width to 100 to accommodate very long addresses
+                          const cardWidth = Math.max(45, Math.min(100, baseWidth + (maxLength * charWidth)));
+                          const cardHeight = school.address ? 9 : 5.5;
+                          const padding = 2;
+                          // Position card well above the pin - account for clicked pin height (28.75)
+                          const pinTopY = coords.y - 20.75; // Top of clicked pin
+                          const gap = 2; // Gap between pin and card
+                          let cardY = pinTopY - cardHeight - padding - gap; // Position card above pin
+                          let cardX = coords.x - cardWidth / 2;
+                          
+                          // If card would go above viewBox (y < 3), position it below the pin instead
+                          if (cardY < 3) {
+                            const pinBottomY = coords.y + 5; // Bottom of pin
+                            cardY = pinBottomY + gap;
+                          }
+                          
+                          // Ensure card is within viewBox bounds (0-100)
+                          const finalCardY = Math.max(2, Math.min(95, cardY)); // Keep within y bounds
+                          // Adjust x position to keep card within bounds, but allow it to extend if needed
+                          let finalCardX = cardX;
+                          if (finalCardX - cardWidth/2 < 2) {
+                            finalCardX = cardWidth/2 + 2; // Shift right if too far left
+                          } else if (finalCardX + cardWidth/2 > 98) {
+                            finalCardX = 98 - cardWidth/2; // Shift left if too far right
+                          }
+                          
+                          return (
+                            <>
+                              {/* Black background card with rounded corners and padding */}
+                              <rect
+                                x={finalCardX - padding}
+                                y={finalCardY - padding}
+                                width={cardWidth + (padding * 2)}
+                                height={cardHeight + (padding * 2)}
+                                rx="2"
+                                ry="2"
+                                fill="#000000"
+                                opacity="0.95"
+                                style={{
+                                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
+                                  pointerEvents: 'none'
+                                }}
+                              />
+                              {/* School Name - White text on black background */}
+                              <text
+                                x={coords.x}
+                                y={finalCardY + 3.5}
+                                textAnchor="middle"
+                                fontSize="3.8"
+                                fill="#FFFFFF"
+                                fontWeight="900"
+                                style={{ 
+                                  pointerEvents: 'none',
+                                  fontFamily: 'system-ui, -apple-system, sans-serif'
+                                }}
+                              >
+                                {school.name || 'Unknown School'}
+                              </text>
+                              {/* Address - Light gray text on black background - Full address with no truncation */}
+                              {school.address && (
+                                <text
+                                  x={coords.x}
+                                  y={finalCardY + 7.5}
+                                  textAnchor="middle"
+                                  fontSize="2.4"
+                                  fill="#E5E7EB"
+                                  fontWeight="600"
+                                  style={{ 
+                                    pointerEvents: 'none',
+                                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                                  }}
+                                >
+                                  {school.address}
+                                </text>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </g>
+                    )}
+                    
+                    {/* School Name Tooltip (for accessibility) */}
+                    <title>{school.name} - {school.address || 'No address'} - {school.school_type || 'Unknown type'}</title>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Zoom Controls */}
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
-        <button 
-          onClick={handleZoomIn} 
-          className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" 
-          title="Zoom In"
-        >
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <button onClick={() => setZoom(prev => Math.min(prev + 0.2, 2))} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Zoom In">
           <ZoomIn className="w-5 h-5 text-gray-700" />
         </button>
-        <button 
-          onClick={handleZoomOut} 
-          className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" 
-          title="Zoom Out"
-        >
+        <button onClick={() => setZoom(prev => Math.max(prev - 0.2, 0.5))} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Zoom Out">
           <ZoomOut className="w-5 h-5 text-gray-700" />
         </button>
-        <button 
-          onClick={handleResetView} 
-          className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" 
-          title="Reset View"
-        >
+        <button onClick={() => setZoom(1)} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors" title="Reset View">
           <RotateCcw className="w-5 h-5 text-gray-700" />
         </button>
       </div>
+
     </div>
   );
 };
