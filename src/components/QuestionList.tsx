@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Question, Grade } from '../types';
 import { adminAPI, gradesAPI } from '../services/api';
 import { Edit, Trash2, AlertTriangle, Filter, ChevronLeft, ChevronRight, List, CheckCircle2, Type, FileText, ArrowLeftRight, Droplets, Search, X } from 'lucide-react';
@@ -13,6 +13,7 @@ interface QuestionListProps {
   onPageChange: (page: number) => void;
   selectedGrade: number | null;
   onGradeChange: (gradeId: number | null) => void;
+  subjectId?: number; // Add subjectId to fetch all questions when filters are active
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ 
@@ -24,17 +25,26 @@ const QuestionList: React.FC<QuestionListProps> = ({
   totalQuestions, 
   onPageChange,
   selectedGrade,
-  onGradeChange
+  onGradeChange,
+  subjectId
 }) => {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]); // Store all questions when filters are active
+  const [loadingAllQuestions, setLoadingAllQuestions] = useState(false);
+  const [clientSidePage, setClientSidePage] = useState(1);
+  const questionsPerPage = 20;
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   // Filter states - using arrays for multi-select
   const [searchTerm, setSearchTerm] = useState('');
   const [filterQuestionType, setFilterQuestionType] = useState<string[]>([]);
   const [filterDokLevel, setFilterDokLevel] = useState<number | 'all'>('all');
   const [filterDifficulty, setFilterDifficulty] = useState<string | 'all'>('all'); // 'all' or difficulty range like '100-150'
+  
+  // Check if filters are active
+  const hasActiveFilters = searchTerm || filterQuestionType.length > 0 || filterDokLevel !== 'all' || filterDifficulty !== 'all';
 
   const handleDelete = async (questionId: number) => {
     setDeleting(true);
@@ -83,6 +93,22 @@ const QuestionList: React.FC<QuestionListProps> = ({
     return type;
   };
 
+  // Fetch all questions when filters are active
+  const fetchAllQuestions = async () => {
+    if (!subjectId) return;
+    try {
+      setLoadingAllQuestions(true);
+      // Fetch all questions with a large limit
+      const response = await adminAPI.getQuestions(subjectId, 1, 10000, selectedGrade);
+      setAllQuestions(response.questions || []);
+    } catch (err) {
+      console.error('Failed to fetch all questions:', err);
+      setAllQuestions([]);
+    } finally {
+      setLoadingAllQuestions(false);
+    }
+  };
+
   // Fetch grades on component mount
   useEffect(() => {
     const fetchGrades = async () => {
@@ -96,8 +122,27 @@ const QuestionList: React.FC<QuestionListProps> = ({
     fetchGrades();
   }, []);
 
+  // Fetch all questions when filters are active (debounced for search term)
+  useEffect(() => {
+    if (hasActiveFilters && subjectId) {
+      // Use a timeout to debounce search term changes
+      const timeoutId = setTimeout(() => {
+        fetchAllQuestions();
+        setClientSidePage(1); // Reset to first page when filters change
+      }, searchTerm ? 500 : 0); // 500ms delay for search, immediate for other filters
+      
+      return () => clearTimeout(timeoutId);
+    } else {
+      setAllQuestions([]);
+      setClientSidePage(1);
+    }
+  }, [hasActiveFilters, subjectId, selectedGrade, searchTerm, filterQuestionType, filterDokLevel, filterDifficulty]);
+
   // Filter questions based on selected filters
-  const filteredQuestions = questions.filter((question) => {
+  // Use allQuestions when filters are active, otherwise use questions (current page)
+  const questionsToFilter = hasActiveFilters ? allQuestions : questions;
+  
+  const filteredQuestions = questionsToFilter.filter((question) => {
     // Search Filter - Comprehensive search across all question properties and tags
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase().trim();
@@ -197,9 +242,30 @@ const QuestionList: React.FC<QuestionListProps> = ({
     return true;
   });
 
+  // Client-side pagination for filtered questions
+  const filteredTotalPages = hasActiveFilters ? Math.ceil(filteredQuestions.length / questionsPerPage) : totalPages;
+  const currentPageToUse = hasActiveFilters ? clientSidePage : currentPage;
+  
+  const paginatedFilteredQuestions = useMemo(() => {
+    if (hasActiveFilters) {
+      const startIndex = (currentPageToUse - 1) * questionsPerPage;
+      const endIndex = startIndex + questionsPerPage;
+      return filteredQuestions.slice(startIndex, endIndex);
+    }
+    return filteredQuestions;
+  }, [filteredQuestions, currentPageToUse, hasActiveFilters, questionsPerPage]);
 
+  const handleClientPageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= filteredTotalPages) {
+      setClientSidePage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
-  if (questions.length === 0) {
+  // Show loading state when fetching all questions (but don't replace the entire component)
+  // We'll show a loading indicator in the questions area instead
+
+  if (questions.length === 0 && !hasActiveFilters) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
         <div className="text-gray-400 text-6xl mb-4">📝</div>
@@ -209,17 +275,18 @@ const QuestionList: React.FC<QuestionListProps> = ({
     );
   }
 
-  const displayQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+  const displayQuestions = hasActiveFilters ? paginatedFilteredQuestions : (filteredQuestions.length > 0 ? filteredQuestions : questions);
+  const displayTotal = hasActiveFilters ? filteredQuestions.length : totalQuestions;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Questions ({displayQuestions.length} of {totalQuestions})
-            {filteredQuestions.length !== questions.length && (
+            Questions ({displayQuestions.length} of {displayTotal})
+            {hasActiveFilters && (
               <span className="text-sm font-normal text-gray-500 ml-2">
-                (Showing {filteredQuestions.length} of {questions.length} after filters)
+                (Filtered from {totalQuestions} total)
               </span>
             )}
           </h3>
@@ -253,11 +320,20 @@ const QuestionList: React.FC<QuestionListProps> = ({
           </div>
           <div className="relative">
             <input
+              ref={searchInputRef}
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onBlur={(e) => {
+                // Maintain focus if user is still typing
+                if (e.relatedTarget !== null) {
+                  // Only blur if clicking outside, not if it's a programmatic blur
+                  return;
+                }
+              }}
               placeholder="Search by difficulty (220), grade (Grade 1), type (Short Answer), DOK (DOK 2), tags, or question text..."
               className="w-full pl-10 pr-10 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              autoFocus={false}
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             {searchTerm && (
@@ -383,28 +459,43 @@ const QuestionList: React.FC<QuestionListProps> = ({
           )}
         </div>
         <div className="space-y-4">
-          {displayQuestions.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-gray-400 text-4xl mb-3">🔍</div>
-              <h4 className="text-lg font-medium text-gray-900 mb-2">No Questions Found</h4>
-              <p className="text-gray-600">
+          {/* Show loading indicator when fetching all questions */}
+          {hasActiveFilters && loadingAllQuestions && allQuestions.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h4 className="text-lg font-medium text-gray-900 mb-2">Loading Questions...</h4>
+              <p className="text-gray-600">Searching through all questions...</p>
+            </div>
+          ) : displayQuestions.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Search className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">No Questions Found</h4>
+              <p className="text-gray-600 mb-6">
                 {filteredQuestions.length === 0 && questions.length > 0
-                  ? 'No questions match the selected filters. Try adjusting your filter criteria or clear all filters.'
+                  ? 'No questions match your search criteria. Try adjusting your filters or search term.'
                   : selectedGrade 
                     ? `No questions found for the selected grade. Try selecting a different grade or "All Grades".`
                     : 'No questions available for the current filter.'
                 }
               </p>
-              {filteredQuestions.length === 0 && questions.length > 0 && (
+              {(hasActiveFilters || selectedGrade) && (
                 <button
                   onClick={() => {
+                    setSearchTerm('');
                     setFilterQuestionType([]);
                     setFilterDokLevel('all');
                     setFilterDifficulty('all');
+                    if (selectedGrade) {
+                      onGradeChange(null);
+                    }
                   }}
-                  className="mt-4 text-sm text-blue-600 hover:text-blue-700 underline"
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  Clear all filters
+                  Clear All Filters
                 </button>
               )}
             </div>
@@ -651,15 +742,15 @@ const QuestionList: React.FC<QuestionListProps> = ({
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {(hasActiveFilters ? filteredTotalPages > 1 : totalPages > 1) && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {((currentPage - 1) * 20) + 1} to {Math.min(currentPage * 20, totalQuestions)} of {totalQuestions} questions
+              Showing {((currentPageToUse - 1) * questionsPerPage) + 1} to {Math.min(currentPageToUse * questionsPerPage, displayTotal)} of {displayTotal} questions
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => onPageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+                onClick={() => hasActiveFilters ? handleClientPageChange(currentPageToUse - 1) : onPageChange(currentPageToUse - 1)}
+                disabled={currentPageToUse === 1}
                 className="p-2 text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -667,24 +758,24 @@ const QuestionList: React.FC<QuestionListProps> = ({
               
               {/* Page numbers */}
               <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                {Array.from({ length: Math.min(5, filteredTotalPages) }, (_, i) => {
                   let pageNum;
-                  if (totalPages <= 5) {
+                  if (filteredTotalPages <= 5) {
                     pageNum = i + 1;
-                  } else if (currentPage <= 3) {
+                  } else if (currentPageToUse <= 3) {
                     pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
+                  } else if (currentPageToUse >= filteredTotalPages - 2) {
+                    pageNum = filteredTotalPages - 4 + i;
                   } else {
-                    pageNum = currentPage - 2 + i;
+                    pageNum = currentPageToUse - 2 + i;
                   }
                   
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => onPageChange(pageNum)}
+                      onClick={() => hasActiveFilters ? handleClientPageChange(pageNum) : onPageChange(pageNum)}
                       className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                        pageNum === currentPage
+                        pageNum === currentPageToUse
                           ? 'bg-blue-600 text-white'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
@@ -696,8 +787,8 @@ const QuestionList: React.FC<QuestionListProps> = ({
               </div>
               
               <button
-                onClick={() => onPageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                onClick={() => hasActiveFilters ? handleClientPageChange(currentPageToUse + 1) : onPageChange(currentPageToUse + 1)}
+                disabled={currentPageToUse === filteredTotalPages}
                 className="p-2 text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed rounded-lg hover:bg-gray-100"
               >
                 <ChevronRight className="h-5 w-5" />
