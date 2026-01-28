@@ -56,7 +56,26 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
+// API base – so /api returns 200 and lists endpoints (avoids 404 when checking "is the API up?")
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Maarif Assessment Portal API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      subjects: '/api/subjects',
+      admin: '/api/admin',
+      student: '/api/student',
+      schools: '/api/schools',
+      grades: '/api/grades',
+      health: '/health'
+    }
+  });
+});
+
+// API routes – auth rate limit applied before auth routes
+app.use('/api/auth', authRateLimit);
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', subjectsRoutes);
 app.use('/api/admin', adminRoutes);
@@ -86,8 +105,6 @@ app.get('/', (req, res) => {
     documentation: 'API documentation coming soon'
   });
 });
-
-app.use('api/auth', authRateLimit);
 
 // Error handling middleware (must be last)
 app.use(notFoundHandler);
