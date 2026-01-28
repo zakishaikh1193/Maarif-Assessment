@@ -1,0 +1,361 @@
+Subject,Grade,QuestionText,Description,questionType,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+English,Grade 1,What is the main idea of a story? Explain in one or two sentences.,State the main idea in your own words.,ShortAnswer,120,1,CCSS.ELA-LITERACY.RL.1.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 1,Who is the main character in the story? Describe them briefly.,Name and describe the character.,ShortAnswer,115,1,CCSS.ELA-LITERACY.RL.1.3,Characters,CCSS.ELA.CCR.R.3
+English,Grade 1,What happened at the beginning of the story?,Retell the beginning in your own words.,ShortAnswer,110,1,CCSS.ELA-LITERACY.RL.1.2,Story sequence,CCSS.ELA.CCR.R.2
+English,Grade 1,What is your favorite part of the story? Why?,Give a reason in one or two sentences.,ShortAnswer,118,2,CCSS.ELA-LITERACY.W.1.1,Opinion writing,CCSS.ELA.CCR.W.1
+English,Grade 1,What does the word big mean? Use it in a sentence.,Define and use the word.,ShortAnswer,105,1,CCSS.ELA-LITERACY.L.1.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 1,How are these two characters the same? How are they different?,Compare and contrast in a few sentences.,ShortAnswer,125,2,CCSS.ELA-LITERACY.RL.1.9,Compare and contrast,CCSS.ELA.CCR.R.9
+English,Grade 1,What do you think will happen next in the story? Why?,Make a prediction and explain.,ShortAnswer,122,2,CCSS.ELA-LITERACY.RL.1.1,Prediction,CCSS.ELA.CCR.R.1
+English,Grade 1,What is the setting of the story? Where and when does it take place?,Describe the setting.,ShortAnswer,112,1,CCSS.ELA-LITERACY.RL.1.3,Setting,CCSS.ELA.CCR.R.3
+English,Grade 1,Why did the character do that? Explain in one sentence.,Give a reason from the story.,ShortAnswer,128,2,CCSS.ELA-LITERACY.RL.1.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 1,What is the problem in the story? What is the solution?,Identify problem and solution.,ShortAnswer,130,2,CCSS.ELA-LITERACY.RL.1.2,Problem and solution,CCSS.ELA.CCR.R.2
+English,Grade 2,What is the central message of this story? Explain in two sentences.,State the lesson or message.,ShortAnswer,135,2,CCSS.ELA-LITERACY.RL.2.2,Central message,CCSS.ELA.CCR.R.2
+English,Grade 2,How does the author show that the character is brave? Give examples.,Cite evidence from the text.,ShortAnswer,140,2,CCSS.ELA-LITERACY.RL.2.3,Character traits,CCSS.ELA.CCR.R.3
+English,Grade 2,What is the difference between fact and opinion? Give one example of each.,Define and give examples.,ShortAnswer,138,2,CCSS.ELA-LITERACY.RI.2.8,Fact and opinion,CCSS.ELA.CCR.R.8
+English,Grade 2,Describe the beginning middle and end of the story in one sentence each.,Summarize the plot.,ShortAnswer,132,2,CCSS.ELA-LITERACY.RL.2.5,Story structure,CCSS.ELA.CCR.R.5
+English,Grade 2,What does the word enormous mean? How did you figure it out?,Use context clues to explain.,ShortAnswer,142,2,CCSS.ELA-LITERACY.L.2.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 2,Why did the author write this text? What was their purpose?,Identify author purpose.,ShortAnswer,145,2,CCSS.ELA-LITERACY.RI.2.6,Author purpose,CCSS.ELA.CCR.R.6
+English,Grade 2,Compare the two stories. How are they alike? How are they different?,Compare two texts.,ShortAnswer,148,2,CCSS.ELA-LITERACY.RL.2.9,Compare texts,CCSS.ELA.CCR.R.9
+English,Grade 2,What is the main topic of this paragraph? List two supporting details.,Main idea and details.,ShortAnswer,136,2,CCSS.ELA-LITERACY.RI.2.2,Main topic,CCSS.ELA.CCR.R.2
+English,Grade 2,Describe how the character changes from the beginning to the end.,Character development.,ShortAnswer,150,2,CCSS.ELA-LITERACY.RL.2.3,Character change,CCSS.ELA.CCR.R.3
+English,Grade 2,What would you do if you were this character? Explain why.,Connect to the text.,ShortAnswer,144,2,CCSS.ELA-LITERACY.RL.2.1,Text connection,CCSS.ELA.CCR.R.1
+English,Grade 3,What is the theme of this story? Use evidence from the text to support your answer.,Identify theme and cite evidence.,ShortAnswer,160,2,CCSS.ELA-LITERACY.RL.3.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 3,How does the author help you understand the story? Give two examples from the text.,Explain how the text supports meaning.,ShortAnswer,155,2,CCSS.ELA-LITERACY.RL.3.7,Text and meaning,CCSS.ELA.CCR.R.7
+English,Grade 3,What is the point of view of this story? How do you know?,Identify narrator and explain.,ShortAnswer,162,2,CCSS.ELA-LITERACY.RL.3.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 3,Summarize this passage in three or four sentences. Include the main idea and key details.,Write a summary.,ShortAnswer,158,2,CCSS.ELA-LITERACY.RI.3.2,Summarize,CCSS.ELA.CCR.R.2
+English,Grade 3,What does the word determine mean in this sentence? How did you figure it out?,Use context to determine meaning.,ShortAnswer,165,2,CCSS.ELA-LITERACY.L.3.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 3,Why do you think the author used bold print for that word? Explain.,Author craft and structure.,ShortAnswer,168,2,CCSS.ELA-LITERACY.RI.3.5,Text features,CCSS.ELA.CCR.R.5
+English,Grade 3,What is the difference between the two characters' opinions? Use evidence.,Compare perspectives.,ShortAnswer,170,3,CCSS.ELA-LITERACY.RL.3.9,Compare and contrast,CCSS.ELA.CCR.R.9
+English,Grade 3,Describe the steps in the process explained in this text.,Sequence and explain.,ShortAnswer,156,2,CCSS.ELA-LITERACY.RI.3.3,Sequence,CCSS.ELA.CCR.R.3
+English,Grade 3,What is the author's message? Do you agree? Explain.,Evaluate and respond.,ShortAnswer,172,3,CCSS.ELA-LITERACY.RI.3.8,Author message,CCSS.ELA.CCR.R.8
+English,Grade 3,How does the character's action affect the plot? Explain cause and effect.,Cause and effect in plot.,ShortAnswer,164,2,CCSS.ELA-LITERACY.RL.3.3,Plot and character,CCSS.ELA.CCR.R.3
+English,Grade 4,What is the theme of this story? Provide at least two pieces of evidence from the text.,Theme with evidence.,ShortAnswer,185,2,CCSS.ELA-LITERACY.RL.4.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 4,Describe the overall structure of this text (e.g. chronology comparison cause/effect).,Identify text structure.,ShortAnswer,182,2,CCSS.ELA-LITERACY.RI.4.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 4,What is the difference between first-person and third-person narration? Which does this story use?,Point of view and narration.,ShortAnswer,188,2,CCSS.ELA-LITERACY.RL.4.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 4,Summarize this text in your own words. Include the main idea and the most important details.,Summarize informational text.,ShortAnswer,180,2,CCSS.ELA-LITERACY.RI.4.2,Summary,CCSS.ELA.CCR.R.2
+English,Grade 4,What does the phrase mean in this context? How do context clues help you?,Interpret phrases and context.,ShortAnswer,190,2,CCSS.ELA-LITERACY.L.4.4,Word meaning,CCSS.ELA.CCR.L.4
+English,Grade 4,Explain how the author uses reasons and evidence to support a point.,Analyze argument.,ShortAnswer,192,3,CCSS.ELA-LITERACY.RI.4.8,Reasons and evidence,CCSS.ELA.CCR.R.8
+English,Grade 4,Compare and contrast the treatment of the same theme in two texts.,Compare themes across texts.,ShortAnswer,195,3,CCSS.ELA-LITERACY.RL.4.9,Compare themes,CCSS.ELA.CCR.R.9
+English,Grade 4,What is the main idea of the first paragraph? How does it connect to the rest of the passage?,Main idea and connections.,ShortAnswer,178,2,CCSS.ELA-LITERACY.RI.4.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 4,Describe how the character responds to the challenge. What does this show about them?,Character response to events.,ShortAnswer,186,2,CCSS.ELA-LITERACY.RL.4.3,Character and events,CCSS.ELA.CCR.R.3
+English,Grade 4,Why might the author have chosen to write this as a poem rather than a paragraph? Explain.,Author choice of form.,ShortAnswer,198,3,CCSS.ELA-LITERACY.RL.4.5,Form and structure,CCSS.ELA.CCR.R.5
+English,Grade 5,Determine the theme of this story. How is it developed through the characters and plot?,Theme development.,ShortAnswer,210,3,CCSS.ELA-LITERACY.RL.5.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 5,Compare and contrast the narrator's point of view with another character's point of view.,Multiple points of view.,ShortAnswer,208,3,CCSS.ELA-LITERACY.RL.5.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 5,Explain how the author uses reasons and evidence to support particular points. Which evidence is strongest?,Evaluate evidence.,ShortAnswer,212,3,CCSS.ELA-LITERACY.RI.5.8,Reasons and evidence,CCSS.ELA.CCR.R.8
+English,Grade 5,Summarize the text. What is the main idea and how do the key details support it?,Summarize with main idea.,ShortAnswer,205,2,CCSS.ELA-LITERACY.RI.5.2,Summary,CCSS.ELA.CCR.R.2
+English,Grade 5,What does this metaphor mean? How does it affect the meaning of the passage?,Interpret figurative language.,ShortAnswer,215,3,CCSS.ELA-LITERACY.L.5.5,Figurative language,CCSS.ELA.CCR.L.5
+English,Grade 5,How do the chapters or sections contribute to the overall structure and development of ideas?,Structure and development.,ShortAnswer,218,3,CCSS.ELA-LITERACY.RI.5.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 5,Analyze how the author develops the character through thoughts words and actions.,Character development.,ShortAnswer,220,3,CCSS.ELA-LITERACY.RL.5.3,Character analysis,CCSS.ELA.CCR.R.3
+English,Grade 5,What is the relationship between two or more ideas in the text? Explain.,Idea relationships.,ShortAnswer,213,3,CCSS.ELA-LITERACY.RI.5.3,Ideas and concepts,CCSS.ELA.CCR.R.3
+English,Grade 5,How does the author's use of dialogue affect the tone and meaning?,Author craft.,ShortAnswer,222,3,CCSS.ELA-LITERACY.RL.5.4,Tone and meaning,CCSS.ELA.CCR.R.4
+English,Grade 5,Draw on information from multiple sources to explain a topic. What do the sources agree or disagree on?,Integrate multiple sources.,ShortAnswer,225,3,CCSS.ELA-LITERACY.RI.5.9,Multiple sources,CCSS.ELA.CCR.R.9
+English,Grade 6,Determine a theme and how it is conveyed through details. Cite evidence from the text.,Theme and evidence.,ShortAnswer,235,3,CCSS.ELA-LITERACY.RL.6.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 6,Describe how the author develops the point of view of the narrator or speaker.,Point of view development.,ShortAnswer,238,3,CCSS.ELA-LITERACY.RL.6.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 6,Trace how the author develops the central idea. What details support it?,Central idea development.,ShortAnswer,232,3,CCSS.ELA-LITERACY.RI.6.2,Central idea,CCSS.ELA.CCR.R.2
+English,Grade 6,What is the author's purpose? How does the author's style or structure support that purpose?,Author purpose and craft.,ShortAnswer,240,3,CCSS.ELA-LITERACY.RI.6.6,Author purpose,CCSS.ELA.CCR.R.6
+English,Grade 6,Determine the meaning of a word as it is used in the text. What context clues did you use?,Word meaning in context.,ShortAnswer,236,2,CCSS.ELA-LITERACY.L.6.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 6,Compare and contrast how different genres approach the same theme or topic.,Genre and theme.,ShortAnswer,245,3,CCSS.ELA-LITERACY.RL.6.9,Compare genres,CCSS.ELA.CCR.R.9
+English,Grade 6,How does the author distinguish their position from that of others? Explain.,Author position.,ShortAnswer,242,3,CCSS.ELA-LITERACY.RI.6.6,Author perspective,CCSS.ELA.CCR.R.6
+English,Grade 6,Analyze how a particular section fits into the overall structure and contributes to the development of ideas.,Structure and development.,ShortAnswer,248,3,CCSS.ELA-LITERACY.RI.6.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 6,What can you infer about the character from their actions and words? Support with evidence.,Inference and evidence.,ShortAnswer,244,3,CCSS.ELA-LITERACY.RL.6.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 6,Evaluate the argument. Are the claims supported by reasons and evidence? Explain.,Evaluate argument.,ShortAnswer,250,3,CCSS.ELA-LITERACY.RI.6.8,Argument evaluation,CCSS.ELA.CCR.R.8
+English,Grade 7,Analyze how the author develops and contrasts the points of view of different characters or narrators.,Multiple perspectives.,ShortAnswer,260,3,CCSS.ELA-LITERACY.RL.7.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 7,Determine the theme. How is it developed over the course of the text? Cite evidence.,Theme development.,ShortAnswer,255,3,CCSS.ELA-LITERACY.RL.7.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 7,Trace the argument. How does the author acknowledge and respond to conflicting viewpoints?,Argument and counterargument.,ShortAnswer,262,3,CCSS.ELA-LITERACY.RI.7.8,Argument,CCSS.ELA.CCR.R.8
+English,Grade 7,Analyze how the form or structure of a text contributes to its meaning and style.,Form and meaning.,ShortAnswer,258,3,CCSS.ELA-LITERACY.RL.7.5,Form and structure,CCSS.ELA.CCR.R.5
+English,Grade 7,What is the central idea? How do two or more ideas interact and develop over the course of the text?,Central idea and interaction.,ShortAnswer,265,3,CCSS.ELA-LITERACY.RI.7.2,Central idea,CCSS.ELA.CCR.R.2
+English,Grade 7,Compare a written story to its filmed version. What is the effect of the techniques used in each medium?,Compare media.,ShortAnswer,268,3,CCSS.ELA-LITERACY.RL.7.7,Multimedia,CCSS.ELA.CCR.R.7
+English,Grade 7,Determine the meaning of words and phrases including figurative and connotative. How do they affect tone?,Word meaning and tone.,ShortAnswer,270,3,CCSS.ELA-LITERACY.L.7.5,Figurative language,CCSS.ELA.CCR.L.5
+English,Grade 7,How does the author develop the claim? What evidence is used? Is it sufficient?,Claim and evidence.,ShortAnswer,272,3,CCSS.ELA-LITERACY.RI.7.8,Claim development,CCSS.ELA.CCR.R.8
+English,Grade 7,Analyze how particular elements of a story interact (e.g. setting shapes character).,Story elements.,ShortAnswer,266,3,CCSS.ELA-LITERACY.RL.7.3,Story elements,CCSS.ELA.CCR.R.3
+English,Grade 7,Compare and contrast a fictional portrayal with a historical account of the same period.,Fiction and history.,ShortAnswer,275,3,CCSS.ELA-LITERACY.RL.7.9,Compare fiction and history,CCSS.ELA.CCR.R.9
+English,Grade 8,Analyze how differences in points of view create effects such as suspense or humor.,Point of view effects.,ShortAnswer,285,3,CCSS.ELA-LITERACY.RL.8.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 8,Determine a theme and analyze its development including its relationship to characters setting and plot.,Theme analysis.,ShortAnswer,282,3,CCSS.ELA-LITERACY.RL.8.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 8,Delineate and evaluate the argument. Assess whether the reasoning is sound and the evidence is relevant.,Evaluate argument.,ShortAnswer,288,3,CCSS.ELA-LITERACY.RI.8.8,Argument evaluation,CCSS.ELA.CCR.R.8
+English,Grade 8,Analyze how a text makes connections among ideas. How does the structure contribute to the ideas?,Ideas and structure.,ShortAnswer,278,3,CCSS.ELA-LITERACY.RI.8.3,Ideas and structure,CCSS.ELA.CCR.R.3
+English,Grade 8,Interpret figures of speech in context. How do they affect meaning and tone?,Figurative language.,ShortAnswer,290,3,CCSS.ELA-LITERACY.L.8.5,Figurative language,CCSS.ELA.CCR.L.5
+English,Grade 8,Compare and contrast the structure of two texts and analyze how the structure contributes to meaning.,Compare structure.,ShortAnswer,292,3,CCSS.ELA-LITERACY.RI.8.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 8,Analyze how particular lines of dialogue or incidents propel the action or reveal character.,Dialogue and plot.,ShortAnswer,286,3,CCSS.ELA-LITERACY.RL.8.3,Plot and character,CCSS.ELA.CCR.R.3
+English,Grade 8,Determine the central idea and analyze its development. Include a summary of the text.,Central idea and summary.,ShortAnswer,284,3,CCSS.ELA-LITERACY.RI.8.2,Central idea,CCSS.ELA.CCR.R.2
+English,Grade 8,Analyze the extent to which a filmed version stays faithful to the text. What is the effect of any changes?,Text and film.,ShortAnswer,295,3,CCSS.ELA-LITERACY.RL.8.7,Text and film,CCSS.ELA.CCR.R.7
+English,Grade 8,Analyze how a modern work of fiction draws on themes or patterns from myths or traditional stories.,Modern and traditional.,ShortAnswer,298,3,CCSS.ELA-LITERACY.RL.8.9,Theme patterns,CCSS.ELA.CCR.R.9
+English,Grade 9,Analyze how the author unfolds an analysis or series of ideas. What is the order and how does it build?,Analysis development.,ShortAnswer,308,3,CCSS.ELA-LITERACY.RI.9-10.3,Ideas development,CCSS.ELA.CCR.R.3
+English,Grade 9,Determine the theme. Analyze how it is refined by specific details. Cite evidence.,Theme and details.,ShortAnswer,305,3,CCSS.ELA-LITERACY.RL.9-10.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 9,Analyze how the author's choices concerning structure create effects such as mystery or tension.,Structure and effect.,ShortAnswer,310,3,CCSS.ELA-LITERACY.RL.9-10.5,Structure,CCSS.ELA.CCR.R.5
+English,Grade 9,Analyze how the author develops a point of view or purpose. What rhetoric is used?,Author purpose and rhetoric.,ShortAnswer,312,3,CCSS.ELA-LITERACY.RI.9-10.6,Author purpose,CCSS.ELA.CCR.R.6
+English,Grade 9,Determine the meaning of words and phrases including figurative connotative and technical. How do they shape meaning?,Word meaning.,ShortAnswer,315,3,CCSS.ELA-LITERACY.L.9-10.5,Vocabulary,CCSS.ELA.CCR.L.5
+English,Grade 9,Analyze how an author draws on and transforms source material. What is the effect?,Source material.,ShortAnswer,318,3,CCSS.ELA-LITERACY.RL.9-10.9,Source material,CCSS.ELA.CCR.R.9
+English,Grade 9,Delineate and evaluate the argument. Assess whether the reasoning is valid and the evidence is sufficient.,Argument evaluation.,ShortAnswer,320,3,CCSS.ELA-LITERACY.RI.9-10.8,Argument,CCSS.ELA.CCR.R.8
+English,Grade 9,Analyze how complex characters develop and interact with others. How do they advance the plot or theme?,Character and plot.,ShortAnswer,314,3,CCSS.ELA-LITERACY.RL.9-10.3,Character,CCSS.ELA.CCR.R.3
+English,Grade 9,Determine the central idea. Analyze how it is developed and refined by specific details.,Central idea analysis.,ShortAnswer,306,3,CCSS.ELA-LITERACY.RI.9-10.2,Central idea,CCSS.ELA.CCR.R.2
+English,Grade 9,Analyze the representation of a subject in two different artistic mediums. What is emphasized or absent?,Multiple mediums.,ShortAnswer,322,3,CCSS.ELA-LITERACY.RL.9-10.7,Multiple mediums,CCSS.ELA.CCR.R.7
+English,Grade 10,Analyze how an author's ideas or claims are developed and refined by particular sentences paragraphs or larger portions of a text.,Claims development.,ShortAnswer,330,3,CCSS.ELA-LITERACY.RI.9-10.5,Claims,CCSS.ELA.CCR.R.5
+English,Grade 10,Analyze how the author unfolds an analysis. What is the order and how does it build?,Analysis structure.,ShortAnswer,328,3,CCSS.ELA-LITERACY.RI.9-10.3,Analysis,CCSS.ELA.CCR.R.3
+English,Grade 10,Determine the theme. Analyze how it emerges and is shaped by specific details. Cite evidence.,Theme emergence.,ShortAnswer,332,3,CCSS.ELA-LITERACY.RL.9-10.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 10,Analyze how point of view or purpose shapes content and style. What rhetoric is used?,Point of view and rhetoric.,ShortAnswer,335,3,CCSS.ELA-LITERACY.RI.9-10.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 10,Analyze the impact of the author's choices regarding how to develop and relate elements of a story.,Author choices.,ShortAnswer,338,3,CCSS.ELA-LITERACY.RL.9-10.5,Author choices,CCSS.ELA.CCR.R.5
+English,Grade 10,Determine the meaning of words and phrases as they are used in the text including figurative and connotative.,Word meaning in text.,ShortAnswer,340,3,CCSS.ELA-LITERACY.L.9-10.5,Vocabulary,CCSS.ELA.CCR.L.5
+English,Grade 10,Analyze how the author structures the text. How do the sections contribute to the whole?,Text structure.,ShortAnswer,336,3,CCSS.ELA-LITERACY.RI.9-10.5,Structure,CCSS.ELA.CCR.R.5
+English,Grade 10,Analyze how complex characters develop and interact. How do they advance plot or theme?,Character development.,ShortAnswer,334,3,CCSS.ELA-LITERACY.RL.9-10.3,Character,CCSS.ELA.CCR.R.3
+English,Grade 10,Delineate and evaluate the argument. Assess the validity of reasoning and relevance of evidence.,Evaluate argument.,ShortAnswer,342,3,CCSS.ELA-LITERACY.RI.9-10.8,Argument,CCSS.ELA.CCR.R.8
+English,Grade 10,Analyze how an author draws on and transforms source material. What is emphasized or left out?,Transformation of sources.,ShortAnswer,345,3,CCSS.ELA-LITERACY.RL.9-10.9,Sources,CCSS.ELA.CCR.R.9
+English,Grade 11,Analyze the impact of the author's choices regarding how to order events and manipulate time.,Narrative technique.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.3,Narrative,CCSS.ELA.CCR.R.3
+English,Grade 11,Determine two or more themes and analyze their development. How do they interact and build?,Multiple themes.,ShortAnswer,348,4,CCSS.ELA-LITERACY.RL.11-12.2,Theme,CCSS.ELA.CCR.R.2
+English,Grade 11,Delineate and evaluate the reasoning in seminal texts. Assess the premises claims and reasoning.,Evaluate reasoning.,ShortAnswer,352,4,CCSS.ELA-LITERACY.RI.11-12.8,Reasoning,CCSS.ELA.CCR.R.8
+English,Grade 11,Analyze how the author's point of view or purpose shapes content and style. What rhetoric is used?,Rhetoric and purpose.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RI.11-12.6,Author purpose,CCSS.ELA.CCR.R.6
+English,Grade 11,Determine the meaning of words and phrases including figurative connotative and technical. How do they shape tone?,Word meaning and tone.,ShortAnswer,348,3,CCSS.ELA-LITERACY.L.11-12.5,Vocabulary,CCSS.ELA.CCR.L.5
+English,Grade 11,Analyze how the author structures the text. How do the sections contribute to the development of ideas?,Structure and ideas.,ShortAnswer,354,4,CCSS.ELA-LITERACY.RI.11-12.5,Structure,CCSS.ELA.CCR.R.5
+English,Grade 11,Analyze the author's choices regarding how to develop and relate elements of a story or drama.,Author choices in drama.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.5,Drama and story,CCSS.ELA.CCR.R.5
+English,Grade 11,Analyze a complex set of ideas. How does the author develop and refine the central idea?,Complex ideas.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RI.11-12.2,Central idea,CCSS.ELA.CCR.R.2
+English,Grade 11,Analyze multiple interpretations of a story drama or poem. How does each interpret the source?,Multiple interpretations.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.7,Interpretation,CCSS.ELA.CCR.R.7
+English,Grade 11,Demonstrate knowledge of foundational works. How does the author draw on a theme or pattern?,Foundational works.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.9,Foundational works,CCSS.ELA.CCR.R.9
+English,Grade 12,Analyze how the author's choices concerning structure create aesthetic impact and advance the plot or theme.,Structure and aesthetic.,ShortAnswer,348,4,CCSS.ELA-LITERACY.RL.11-12.5,Structure,CCSS.ELA.CCR.R.5
+English,Grade 12,Determine two or more central ideas and analyze their development. Provide an objective summary.,Central ideas.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RI.11-12.2,Central ideas,CCSS.ELA.CCR.R.2
+English,Grade 12,Delineate and evaluate the argument. Assess whether the reasoning is valid and the evidence is sufficient and relevant.,Argument evaluation.,ShortAnswer,352,4,CCSS.ELA-LITERACY.RI.11-12.8,Argument,CCSS.ELA.CCR.R.8
+English,Grade 12,Analyze how the author unfolds an analysis or series of ideas. What is the order and how does it build?,Analysis unfolding.,ShortAnswer,345,4,CCSS.ELA-LITERACY.RI.11-12.3,Analysis,CCSS.ELA.CCR.R.3
+English,Grade 12,Determine the meaning of words and phrases including figurative connotative and technical. How do they shape meaning and tone?,Word meaning.,ShortAnswer,348,4,CCSS.ELA-LITERACY.L.11-12.5,Vocabulary,CCSS.ELA.CCR.L.5
+English,Grade 12,Analyze how an author draws on and transforms source material. What is the effect of the transformation?,Source transformation.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.9,Sources,CCSS.ELA.CCR.R.9
+English,Grade 12,Analyze how the author's point of view or purpose shapes content and style. What rhetorical strategies are used?,Rhetorical analysis.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RI.11-12.6,Rhetoric,CCSS.ELA.CCR.R.6
+English,Grade 12,Analyze the impact of the author's choices regarding how to develop and relate elements of a story.,Author development.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RL.11-12.3,Development,CCSS.ELA.CCR.R.3
+English,Grade 12,Integrate and evaluate multiple sources of information. How do they address a question or solve a problem?,Multiple sources.,ShortAnswer,350,4,CCSS.ELA-LITERACY.RI.11-12.7,Multiple sources,CCSS.ELA.CCR.R.7
+English,Grade 12,Analyze how the author structures the text. How do the sections contribute to the whole?,Text structure.,ShortAnswer,354,4,CCSS.ELA-LITERACY.RI.11-12.5,Structure,CCSS.ELA.CCR.R.5
+Maths,Grade 1,How do you know that 3 + 2 equals 5? Explain your thinking in words.,Describe your reasoning.,ShortAnswer,115,2,CGSA,Operations and Algebraic Thinking,CCSS.MATH.DOM.OA
+Maths,Grade 1,If you have 4 apples and get 2 more how many do you have? Show how you figured it out.,Explain your strategy.,ShortAnswer,110,2,CGSA,Addition within 10,CCSS.MATH.DOM.OA
+Maths,Grade 1,What does the equals sign mean? Give an example.,Define and give an example.,ShortAnswer,108,1,CGSA,Equality,CCSS.MATH.DOM.OA
+Maths,Grade 1,How can you tell which number is greater: 7 or 9? Explain.,Compare numbers.,ShortAnswer,112,1,CGSA,Comparing numbers,CCSS.MATH.DOM.NBT
+Maths,Grade 1,Count to 20. What number comes after 15? How do you know?,Number sequence.,ShortAnswer,105,1,CGSA,Counting,CCSS.MATH.DOM.CC
+Maths,Grade 1,If you have 5 blocks and take away 2 how many are left? Explain how you know.,Subtraction reasoning.,ShortAnswer,118,2,CGSA,Subtraction,CCSS.MATH.DOM.OA
+Maths,Grade 1,What is a shape with 3 sides called? How is it different from a shape with 4 sides?,Name and compare shapes.,ShortAnswer,120,1,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 1,How do you measure how long something is? What do you use?,Measurement idea.,ShortAnswer,116,1,CGSA,Measurement,CCSS.MATH.DOM.MD
+Maths,Grade 1,Sort these into two groups: 2 4 6 8 and 3 5 7. What is the rule for each group?,Sorting and pattern.,ShortAnswer,122,2,CGSA,Patterns,CCSS.MATH.DOM.OA
+Maths,Grade 1,Why do we need to know how to add and subtract? Give one real-life example.,Application.,ShortAnswer,125,2,CGSA,Word problems,CCSS.MATH.MP.2
+Maths,Grade 2,Explain how you would add 24 + 37. What strategy did you use?,Explain addition strategy.,ShortAnswer,135,2,CGSA,Addition within 100,CCSS.MATH.DOM.NBT
+Maths,Grade 2,What does it mean when we say a number is even? Give two examples.,Define even and give examples.,ShortAnswer,132,1,CGSA,Even and odd,CCSS.MATH.DOM.OA
+Maths,Grade 2,How do you know that 5 × 2 is the same as 2 + 2 + 2 + 2 + 2? Explain.,Repeated addition.,ShortAnswer,138,2,CGSA,Multiplication concept,CCSS.MATH.DOM.OA
+Maths,Grade 2,Describe how to measure the length of your desk. What unit would you use?,Measurement process.,ShortAnswer,136,2,CGSA,Measurement,CCSS.MATH.DOM.MD
+Maths,Grade 2,What is the value of the 3 in 34? What about the 3 in 43? Explain.,Place value.,ShortAnswer,140,2,CGSA,Place value,CCSS.MATH.DOM.NBT
+Maths,Grade 2,How would you solve 50 - 28? Show your thinking in words.,Subtraction strategy.,ShortAnswer,142,2,CGSA,Subtraction,CCSS.MATH.DOM.NBT
+Maths,Grade 2,What is a rectangle? How is it different from a square?,Define and compare.,ShortAnswer,134,1,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 2,Why can we use a number line to add? Explain in one or two sentences.,Number line reasoning.,ShortAnswer,144,2,CGSA,Number line,CCSS.MATH.DOM.MD
+Maths,Grade 2,If you have 3 groups of 4 how many do you have? Explain two ways to find the answer.,Multiplication and grouping.,ShortAnswer,146,2,CGSA,Multiplication,CCSS.MATH.DOM.OA
+Maths,Grade 2,What is a fraction? When do we use fractions in real life? Give one example.,Fraction concept.,ShortAnswer,148,2,CGSA,Fractions intro,CCSS.MATH.DOM.NF
+Maths,Grade 3,Explain how to find 6 × 7. What strategy did you use and why?,Multiplication strategy.,ShortAnswer,160,2,CGSA,Multiplication,CCSS.MATH.DOM.OA
+Maths,Grade 3,What is the relationship between multiplication and division? Give an example.,Multiplication and division.,ShortAnswer,162,2,CGSA,Division,CCSS.MATH.DOM.OA
+Maths,Grade 3,How do you find the area of a rectangle? Why does that formula work?,Area concept.,ShortAnswer,165,2,CGSA,Area,CCSS.MATH.DOM.MD
+Maths,Grade 3,Explain what 3/4 means. Draw or describe a situation that shows 3/4.,Fraction meaning.,ShortAnswer,158,2,CGSA,Fractions,CCSS.MATH.DOM.NF
+Maths,Grade 3,Why do we need to round numbers? Give one real-life example.,Rounding.,ShortAnswer,155,2,CGSA,Rounding,CCSS.MATH.DOM.NBT
+Maths,Grade 3,Describe how to tell time to the nearest minute. What do the hands mean?,Time.,ShortAnswer,168,2,CGSA,Time,CCSS.MATH.DOM.MD
+Maths,Grade 3,What is the perimeter of a shape? How do you find it for a rectangle?,Perimeter.,ShortAnswer,170,2,CGSA,Perimeter,CCSS.MATH.DOM.MD
+Maths,Grade 3,How do you know if two fractions are equivalent? Give an example.,Equivalent fractions.,ShortAnswer,172,2,CGSA,Equivalent fractions,CCSS.MATH.DOM.NF
+Maths,Grade 3,Explain the steps to solve 248 + 375. Why do we regroup?,Addition with regrouping.,ShortAnswer,164,2,CGSA,Addition,CCSS.MATH.DOM.NBT
+Maths,Grade 3,What is the difference between the area and the perimeter of a rectangle? Explain.,Area vs perimeter.,ShortAnswer,175,2,CGSA,Measurement,CCSS.MATH.DOM.MD
+Maths,Grade 4,Explain how to multiply 23 × 4. Why does the standard algorithm work?,Multiplication algorithm.,ShortAnswer,185,2,CGSA,Multiplication,CCSS.MATH.DOM.NBT
+Maths,Grade 4,What is a factor? What is a multiple? Give an example of each.,Factors and multiples.,ShortAnswer,182,2,CGSA,Factors,CCSS.MATH.DOM.OA
+Maths,Grade 4,How do you compare two fractions with different denominators? Explain your method.,Comparing fractions.,ShortAnswer,188,2,CGSA,Fractions,CCSS.MATH.DOM.NF
+Maths,Grade 4,Describe how to find the area of a shape that is not a rectangle. Give an example.,Area of irregular shapes.,ShortAnswer,190,2,CGSA,Area,CCSS.MATH.DOM.MD
+Maths,Grade 4,What does it mean for a number to be prime? Is 9 prime? Explain.,Prime numbers.,ShortAnswer,192,2,CGSA,Number properties,CCSS.MATH.DOM.OA
+Maths,Grade 4,Explain how to add 2/3 + 1/4. Why do we need a common denominator?,Adding fractions.,ShortAnswer,195,2,CGSA,Adding fractions,CCSS.MATH.DOM.NF
+Maths,Grade 4,What are angles? How do we measure them? What unit do we use?,Angles.,ShortAnswer,178,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 4,Describe the steps to divide 84 by 6. What does the quotient mean?,Division.,ShortAnswer,198,2,CGSA,Division,CCSS.MATH.DOM.NBT
+Maths,Grade 4,What is the difference between a line a ray and a line segment? Draw or describe.,Lines and rays.,ShortAnswer,200,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 4,Why is it useful to decompose a number? Give an example.,Number decomposition.,ShortAnswer,184,2,CGSA,Place value,CCSS.MATH.DOM.NBT
+Maths,Grade 5,Explain how to multiply 0.4 × 0.3. Why does the product have two decimal places?,Decimal multiplication.,ShortAnswer,212,2,CGSA,Decimals,CCSS.MATH.DOM.NBT
+Maths,Grade 5,What is the volume of a rectangular prism? How do you find it? Why does that formula work?,Volume.,ShortAnswer,215,2,CGSA,Volume,CCSS.MATH.DOM.MD
+Maths,Grade 5,How do you divide a fraction by a whole number? Give an example and explain.,Dividing fractions.,ShortAnswer,218,2,CGSA,Fractions,CCSS.MATH.DOM.NF
+Maths,Grade 5,What is the difference between the GCF and the LCM? Give an example of when you use each.,GCF and LCM.,ShortAnswer,220,2,CGSA,Number theory,CCSS.MATH.DOM.OA
+Maths,Grade 5,Explain how to add 2.5 + 1.73. Why do we align the decimal points?,Adding decimals.,ShortAnswer,208,2,CGSA,Decimals,CCSS.MATH.DOM.NBT
+Maths,Grade 5,Describe how to plot the point (3 4) on a coordinate plane. What do the numbers mean?,Coordinate plane.,ShortAnswer,222,2,CGSA,Coordinate plane,CCSS.MATH.DOM.G
+Maths,Grade 5,What is a mixed number? How do you convert it to an improper fraction? Explain.,Mixed numbers.,ShortAnswer,225,2,CGSA,Fractions,CCSS.MATH.DOM.NF
+Maths,Grade 5,Why do we use the order of operations? Give an example where the order matters.,Order of operations.,ShortAnswer,228,2,CGSA,Expressions,CCSS.MATH.DOM.OA
+Maths,Grade 5,Explain how to find 30% of 80. What does percent mean?,Percent.,ShortAnswer,230,2,CGSA,Percent,CCSS.MATH.DOM.RP
+Maths,Grade 5,What is the relationship between multiplication and division of fractions? Give an example.,Fraction operations.,ShortAnswer,232,2,CGSA,Fractions,CCSS.MATH.DOM.NF
+Maths,Grade 6,Explain how to solve the equation 2x + 5 = 15. What does the solution mean?,Solve equations.,ShortAnswer,242,2,CGSA,Equations,CCSS.MATH.DOM.EE
+Maths,Grade 6,What is the ratio of 6 to 4? How is it different from the fraction 6/4? Explain.,Ratio and fraction.,ShortAnswer,238,2,CGSA,Ratios,CCSS.MATH.DOM.RP
+Maths,Grade 6,Describe how to find the GCF of 24 and 36. Why is the GCF useful?,GCF.,ShortAnswer,245,2,CGSA,Number system,CCSS.MATH.DOM.NS
+Maths,Grade 6,What is absolute value? Why is it always non-negative? Give an example.,Absolute value.,ShortAnswer,248,2,CGSA,Number system,CCSS.MATH.DOM.NS
+Maths,Grade 6,Explain how to find the area of a triangle. Why do we multiply by 1/2?,Area of triangle.,ShortAnswer,250,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 6,What is the difference between an expression and an equation? Give an example of each.,Expression vs equation.,ShortAnswer,235,2,CGSA,Expressions,CCSS.MATH.DOM.EE
+Maths,Grade 6,How do you find the unit rate? Why is it useful? Give a real-life example.,Unit rate.,ShortAnswer,252,2,CGSA,Ratios,CCSS.MATH.DOM.RP
+Maths,Grade 6,Describe how to find the surface area of a rectangular prism. What does surface area mean?,Surface area.,ShortAnswer,255,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 6,What is the distributive property? Give an example and explain why it works.,Distributive property.,ShortAnswer,258,2,CGSA,Properties,CCSS.MATH.DOM.EE
+Maths,Grade 6,Explain how to divide 3/4 by 2/5. Why do we multiply by the reciprocal?,Dividing fractions.,ShortAnswer,260,2,CGSA,Fractions,CCSS.MATH.DOM.NS
+Maths,Grade 7,Explain how to solve 3x - 7 = 20. What properties do you use?,Solving equations.,ShortAnswer,272,2,CGSA,Equations,CCSS.MATH.DOM.EE
+Maths,Grade 7,What is the difference between a proportional and a non-proportional relationship? Give an example of each.,Proportional relationships.,ShortAnswer,268,2,CGSA,Proportionality,CCSS.MATH.DOM.RP
+Maths,Grade 7,Describe how to find the circumference of a circle. What is pi and why do we use it?,Circumference.,ShortAnswer,275,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 7,What is the probability of an event? How do you find it when outcomes are equally likely?,Probability.,ShortAnswer,278,2,CGSA,Probability,CCSS.MATH.DOM.SP
+Maths,Grade 7,Explain how to add -5 + 3 using a number line. What does the answer mean?,Adding integers.,ShortAnswer,265,2,CGSA,Integers,CCSS.MATH.DOM.NS
+Maths,Grade 7,What is scale factor? How does it affect area and volume?,Scale factor.,ShortAnswer,280,2,CGSA,Scale drawings,CCSS.MATH.DOM.G
+Maths,Grade 7,Describe how to solve a two-step inequality. How is it different from an equation?,Inequalities.,ShortAnswer,282,2,CGSA,Inequalities,CCSS.MATH.DOM.EE
+Maths,Grade 7,What is the formula for the area of a circle? Where does it come from?,Area of circle.,ShortAnswer,285,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 7,Explain what a constant of proportionality is. How do you find it from a table?,Constant of proportionality.,ShortAnswer,288,2,CGSA,Proportionality,CCSS.MATH.DOM.RP
+Maths,Grade 7,How do you find the percent of change? Give an example of percent increase and decrease.,Percent change.,ShortAnswer,290,2,CGSA,Percent,CCSS.MATH.DOM.RP
+Maths,Grade 8,Explain how to solve the system of equations: x + y = 10 and 2x - y = 2. What does the solution represent?,Systems of equations.,ShortAnswer,302,2,CGSA,Systems,CCSS.MATH.DOM.EE
+Maths,Grade 8,What is the Pythagorean theorem? When can you use it? Prove or explain why it works.,Pythagorean theorem.,ShortAnswer,305,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 8,Describe how to graph a linear equation. What do the slope and y-intercept tell you?,Linear equations.,ShortAnswer,298,2,CGSA,Linear equations,CCSS.MATH.DOM.EE
+Maths,Grade 8,What is a function? How is it different from a relation? Give an example.,Functions.,ShortAnswer,308,2,CGSA,Functions,CCSS.MATH.DOM.F
+Maths,Grade 8,Explain how to simplify a square root. When is the square root of a number irrational?,Square roots.,ShortAnswer,310,2,CGSA,Number system,CCSS.MATH.DOM.NS
+Maths,Grade 8,What is the slope of a line? How do you find it from two points? From an equation?,Slope.,ShortAnswer,300,2,CGSA,Slope,CCSS.MATH.DOM.EE
+Maths,Grade 8,Describe how to solve 2(x + 3) = 10. What property do you use first?,Linear equations.,ShortAnswer,295,2,CGSA,Equations,CCSS.MATH.DOM.EE
+Maths,Grade 8,What is the difference between linear and nonlinear? Give an example of each.,Linear vs nonlinear.,ShortAnswer,312,2,CGSA,Functions,CCSS.MATH.DOM.F
+Maths,Grade 8,Explain how to find the volume of a cylinder. How is it related to the volume of a prism?,Volume of cylinder.,ShortAnswer,315,2,CGSA,Geometry,CCSS.MATH.DOM.G
+Maths,Grade 8,What is scientific notation? When is it useful? Convert 3400000 to scientific notation.,Scientific notation.,ShortAnswer,318,2,CGSA,Number system,CCSS.MATH.DOM.EE
+Maths,Grade 9,Explain how to solve a quadratic equation by factoring. When does this method work?,Quadratic equations.,ShortAnswer,328,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 9,What is the quadratic formula? When do you use it instead of factoring?,Quadratic formula.,ShortAnswer,332,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 9,Describe the transformations that take y = x² to y = (x - 2)² + 3. What is the vertex?,Transformations.,ShortAnswer,330,2,CGSA,Functions,CCSS.MATH.DOM.F
+Maths,Grade 9,What is the difference between an arithmetic and a geometric sequence? Give an example of each.,Sequences.,ShortAnswer,335,2,CGSA,Sequences,CCSS.MATH.CONTENT.A
+Maths,Grade 9,Explain how to solve an inequality with absolute value. Why do you get two inequalities?,Absolute value inequalities.,ShortAnswer,338,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 9,What is the domain and range of a function? How do you find them from a graph?,Domain and range.,ShortAnswer,340,2,CGSA,Functions,CCSS.MATH.CONTENT.F
+Maths,Grade 9,Describe how to factor x² + 5x + 6. What is the connection to solving x² + 5x + 6 = 0?,Factoring.,ShortAnswer,325,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 9,What is an exponent? What do negative and zero exponents mean? Explain.,Exponent rules.,ShortAnswer,322,2,CGSA,Number and quantity,CCSS.MATH.CONTENT.N
+Maths,Grade 9,Explain how to find the equation of a line given two points. What form do you use?,Equation of a line.,ShortAnswer,336,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 9,What is the relationship between the graph of f(x) and f(x) + k? What about f(x + k)?,Graph transformations.,ShortAnswer,342,2,CGSA,Functions,CCSS.MATH.CONTENT.F
+Maths,Grade 10,Explain how to solve a system of linear equations in three variables. What does the solution represent?,Systems in 3 variables.,ShortAnswer,348,3,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 10,What is a logarithm? How is it related to exponents? Give an example.,Logarithms.,ShortAnswer,350,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 10,Describe how to find the inverse of a function. When does a function have an inverse?,Inverse functions.,ShortAnswer,352,2,CGSA,Functions,CCSS.MATH.CONTENT.F
+Maths,Grade 10,What is the unit circle? How is it used to define sine and cosine?,Unit circle.,ShortAnswer,350,2,CGSA,Trigonometry,CCSS.MATH.CONTENT.N
+Maths,Grade 10,Explain the law of sines. When do you use it instead of the Pythagorean theorem?,Law of sines.,ShortAnswer,350,2,CGSA,Trigonometry,CCSS.MATH.CONTENT.N
+Maths,Grade 10,What is the difference between permutation and combination? Give an example of each.,Permutations and combinations.,ShortAnswer,345,2,CGSA,Probability,CCSS.MATH.DOM.SP
+Maths,Grade 10,Describe how to complete the square. Why is it useful for solving quadratic equations?,Completing the square.,ShortAnswer,348,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 10,What is the binomial theorem? How do you expand (a + b)^3?,Binomial theorem.,ShortAnswer,352,2,CGSA,Algebra,CCSS.MATH.CONTENT.A
+Maths,Grade 10,Explain how to find the sum of an infinite geometric series. When does it have a finite sum?,Geometric series.,ShortAnswer,350,2,CGSA,Sequences,CCSS.MATH.CONTENT.A
+Maths,Grade 10,What is radian measure? How do you convert between radians and degrees?,Radians.,ShortAnswer,350,2,CGSA,Trigonometry,CCSS.MATH.CONTENT.N
+Maths,Grade 11,Explain how to find the derivative of x^2 using the limit definition. What does the derivative represent?,Derivative.,ShortAnswer,348,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,What is the chain rule? When do you use it? Give an example.,Chain rule.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,Describe how to find the critical points of a function. What do they tell you about the graph?,Critical points.,ShortAnswer,352,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,What is the definite integral? How is it related to area under a curve?,Definite integral.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,Explain the fundamental theorem of calculus. Why is it important?,Fundamental theorem.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,What is the difference between a sequence and a series? When does a series converge?,Sequences and series.,ShortAnswer,345,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.A
+Maths,Grade 11,Describe how to integrate by substitution. When do you use it?,Integration by substitution.,ShortAnswer,348,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,What is the meaning of the second derivative? How does it relate to concavity?,Second derivative.,ShortAnswer,352,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,Explain how to find the volume of a solid of revolution. What method do you use?,Volumes of revolution.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 11,What is Euler's formula? How does it connect exponential and trigonometric functions?,Euler's formula.,ShortAnswer,350,3,HS-CALC,Precalculus,CCSS.MATH.CONTENT.N
+Maths,Grade 12,Explain how to find the Taylor series for a function. What is the interval of convergence?,Taylor series.,ShortAnswer,348,4,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,What is a vector? How do you add and subtract vectors? What about scalar multiplication?,Vectors.,ShortAnswer,350,3,HS-CALC,Precalculus,CCSS.MATH.CONTENT.N
+Maths,Grade 12,Describe how to solve a differential equation of the form dy/dx = ky. What is the solution?,Differential equations.,ShortAnswer,352,4,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,What is the dot product of two vectors? What does it tell you about the angle between them?,Dot product.,ShortAnswer,350,3,HS-CALC,Precalculus,CCSS.MATH.CONTENT.N
+Maths,Grade 12,Explain how to find the area between two curves. What if the curves intersect?,Area between curves.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,What is the cross product? How is it different from the dot product? Give an application.,Cross product.,ShortAnswer,350,3,HS-CALC,Precalculus,CCSS.MATH.CONTENT.N
+Maths,Grade 12,Describe how to use integration by parts. When do you choose it?,Integration by parts.,ShortAnswer,348,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,What is a limit? How do you evaluate limits at infinity?,Limits.,ShortAnswer,345,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,Explain the concept of continuity. What does it mean for a function to be continuous at a point?,Continuity.,ShortAnswer,350,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Maths,Grade 12,What is the gradient of a function of two variables? How do you use it?,Gradient.,ShortAnswer,352,3,HS-CALC,Calculus,CCSS.MATH.CONTENT.F
+Science,Grade 1,What do plants need to grow? List and briefly explain each.,Name the needs and give a short explanation.,ShortAnswer,118,1,1-LS1-1,Life science,NGSS.SEP.1, NGSS.DCI.LS1
+Science,Grade 1,How are animals and plants different? How are they the same?,Compare and contrast.,ShortAnswer,115,1,1-LS1-1,Living things,NGSS.SEP.4, NGSS.DCI.LS1
+Science,Grade 1,What happens when you push something? What happens when you pull?,Forces.,ShortAnswer,112,1,K-PS2-1,Forces,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 1,Describe day and night. What do you see in the sky during each?,Day and night.,ShortAnswer,110,1,1-ESS1-1,Earth and space,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 1,What do we use our five senses for? Give one example for each sense.,Senses.,ShortAnswer,105,1,K-PS2-1,Senses,NGSS.SEP.4, NGSS.DCI.PS4
+Science,Grade 1,Why do we need to take care of plants and animals? Give two reasons.,Care for living things.,ShortAnswer,120,2,K-ESS3-1,Environment,NGSS.SEP.6, NGSS.DCI.ESS3
+Science,Grade 1,What is weather? Name three types of weather.,Weather.,ShortAnswer,108,1,K-ESS2-1,Weather,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 1,What makes something living? How can you tell if something is not living?,Living vs nonliving.,ShortAnswer,122,1,1-LS1-1,Life science,NGSS.SEP.7, NGSS.DCI.LS1
+Science,Grade 1,What happens when you put an ice cube in the sun? Why?,Heating and cooling.,ShortAnswer,125,2,K-PS3-1,Matter,NGSS.SEP.2, NGSS.DCI.PS3
+Science,Grade 1,Describe the four seasons. What is different about each one?,Seasons.,ShortAnswer,128,1,K-ESS2-1,Seasons,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 2,What is the difference between a solid a liquid and a gas? Give an example of each.,States of matter.,ShortAnswer,138,2,2-PS1-1,Matter,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 2,How do plants get what they need? Where do they get water and light?,Plant needs.,ShortAnswer,135,2,2-LS2-1,Life science,NGSS.SEP.1, NGSS.DCI.LS2
+Science,Grade 2,Describe the life cycle of a butterfly. What are the stages?,Life cycles.,ShortAnswer,140,2,2-LS2-1,Life cycles,NGSS.SEP.7, NGSS.DCI.LS1
+Science,Grade 2,What causes erosion? How can we slow it down?,Erosion.,ShortAnswer,142,2,2-ESS2-1,Earth science,NGSS.SEP.6, NGSS.DCI.ESS2
+Science,Grade 2,How does a magnet work? What does it attract?,Magnets.,ShortAnswer,136,1,K-PS2-2,Forces,NGSS.SEP.3, NGSS.DCI.PS2
+Science,Grade 2,What is a habitat? Why do different animals live in different habitats?,Habitats.,ShortAnswer,145,2,2-LS4-1,Ecosystems,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 2,Where does light come from? Name two sources of light.,Light.,ShortAnswer,132,1,1-PS4-2,Light,NGSS.SEP.4, NGSS.DCI.PS4
+Science,Grade 2,What happens when we recycle? Why is it important?,Recycling.,ShortAnswer,148,2,K-ESS3-3,Conservation,NGSS.SEP.8, NGSS.DCI.ESS3
+Science,Grade 2,Describe how seeds travel. Name two ways.,Seed dispersal.,ShortAnswer,150,2,2-LS2-2,Plants,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 2,What is the water cycle? Name the main steps.,Water cycle.,ShortAnswer,144,2,2-ESS2-3,Water cycle,NGSS.SEP.2, NGSS.DCI.ESS2
+Science,Grade 3,What is the difference between inherited traits and learned behaviors? Give an example of each.,Inheritance.,ShortAnswer,165,2,3-LS3-1,Heredity,NGSS.SEP.7, NGSS.DCI.LS3
+Science,Grade 3,Describe the roles of producers consumers and decomposers in a food chain.,Food chains.,ShortAnswer,168,2,3-LS2-1,Ecosystems,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 3,What are fossils? How do they form? What can we learn from them?,Fossils.,ShortAnswer,162,2,3-LS4-1,Fossils,NGSS.SEP.4, NGSS.DCI.LS4
+Science,Grade 3,Explain the water cycle. What causes evaporation and precipitation?,Water cycle.,ShortAnswer,160,2,2-ESS2-3,Water cycle,NGSS.SEP.2, NGSS.DCI.ESS2
+Science,Grade 3,What is the difference between renewable and nonrenewable resources? Give two examples of each.,Resources.,ShortAnswer,172,2,3-ESS3-1,Resources,NGSS.SEP.6, NGSS.DCI.ESS3
+Science,Grade 3,How do animals adapt to their environment? Give two examples of adaptations.,Adaptations.,ShortAnswer,170,2,3-LS4-2,Adaptations,NGSS.SEP.6, NGSS.DCI.LS4
+Science,Grade 3,What are the different types of energy? Give an example of how we use each.,Energy.,ShortAnswer,158,2,3-PS2-2,Energy,NGSS.SEP.4, NGSS.DCI.PS3
+Science,Grade 3,Describe the climate in different parts of the world. What affects climate?,Climate.,ShortAnswer,175,2,3-ESS2-1,Climate,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 3,What is a simple machine? Name three and say what they do.,Simple machines.,ShortAnswer,178,2,3-PS2-1,Forces,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 3,How do magnets attract or repel? What does it depend on?,Magnetic force.,ShortAnswer,164,2,3-PS2-2,Magnets,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 4,Describe the function of the heart lungs and brain. How do they work together?,Body systems.,ShortAnswer,192,2,4-LS1-1,Human body,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 4,What are the layers of the Earth? Describe each layer briefly.,Earth structure.,ShortAnswer,195,2,4-ESS2-2,Earth science,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 4,Explain the difference between conduction convection and radiation. Give an example of each.,Heat transfer.,ShortAnswer,198,2,4-PS3-2,Heat,NGSS.SEP.5, NGSS.DCI.PS3
+Science,Grade 4,How do igneous sedimentary and metamorphic rocks form? What is the rock cycle?,Rock cycle.,ShortAnswer,200,2,4-ESS1-1,Rocks,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 4,What is the difference between a conductor and an insulator? Give two examples of each.,Electricity.,ShortAnswer,190,2,4-PS3-2,Electricity,NGSS.SEP.3, NGSS.DCI.PS3
+Science,Grade 4,Describe the roles of herbivores carnivores and omnivores in an ecosystem.,Consumer types.,ShortAnswer,202,2,4-LS1-1,Ecosystems,NGSS.SEP.2, NGSS.DCI.LS2
+Science,Grade 4,What is reflection? What is refraction? How are they different?,Light.,ShortAnswer,205,2,4-PS4-2,Light,NGSS.SEP.3, NGSS.DCI.PS4
+Science,Grade 4,Describe a forest ecosystem and an ocean ecosystem. How are they different?,Ecosystems.,ShortAnswer,208,2,4-LS2-1,Ecosystems,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 4,How does the moon appear to change shape? What are the phases?,Moon phases.,ShortAnswer,185,2,4-ESS1-1,Space,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 4,What is erosion? What causes it? How can we prevent it?,Erosion.,ShortAnswer,196,2,4-ESS2-1,Erosion,NGSS.SEP.6, NGSS.DCI.ESS2
+Science,Grade 5,What is the difference between a chemical change and a physical change? Give two examples of each.,Chemical vs physical change.,ShortAnswer,218,2,5-PS1-4,Matter,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 5,Explain the greenhouse effect. Why is it important for life on Earth?,Greenhouse effect.,ShortAnswer,222,2,5-ESS3-1,Climate,NGSS.SEP.6, NGSS.DCI.ESS3
+Science,Grade 5,What are the phases of the moon? Why does the moon appear to change shape?,Moon phases.,ShortAnswer,215,2,5-ESS1-2,Space,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 5,What is conservation of matter? Give an example that shows matter is not created or destroyed.,Conservation of matter.,ShortAnswer,225,2,5-PS1-2,Matter,NGSS.SEP.5, NGSS.DCI.PS1
+Science,Grade 5,Describe the role of decomposers in an ecosystem. Why are they important?,Decomposers.,ShortAnswer,228,2,5-LS2-1,Ecosystems,NGSS.SEP.2, NGSS.DCI.LS2
+Science,Grade 5,What is gravity? How does it affect objects on Earth and in space?,Gravity.,ShortAnswer,220,2,5-PS2-1,Forces,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 5,What is the difference between a homogeneous and a heterogeneous mixture? Give an example of each.,Mixtures.,ShortAnswer,230,2,5-PS1-3,Matter,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 5,What are sustainable practices? Name three and explain why they matter.,Sustainability.,ShortAnswer,232,2,5-ESS3-1,Sustainability,NGSS.SEP.8, NGSS.DCI.ESS3
+Science,Grade 5,Describe the water cycle. What drives evaporation and precipitation?,Water cycle.,ShortAnswer,212,2,5-ESS2-1,Water cycle,NGSS.SEP.2, NGSS.DCI.ESS2
+Science,Grade 5,What is the difference between mass and weight? Where would your weight change?,Mass vs weight.,ShortAnswer,235,2,5-PS2-1,Forces,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 6,Describe the difference between a planet an asteroid and a comet. Where are they found?,Solar system.,ShortAnswer,248,2,MS-ESS1-2,Solar system,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 6,What are convergent divergent and transform plate boundaries? What happens at each?,Plate tectonics.,ShortAnswer,252,2,MS-ESS2-2,Plate tectonics,NGSS.SEP.6, NGSS.DCI.ESS2
+Science,Grade 6,Explain the function of the nucleus mitochondria and chloroplast in a cell.,Cell organelles.,ShortAnswer,245,2,MS-LS1-2,Cell structure,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 6,What is the difference between kinetic and potential energy? Give an example of each.,Energy types.,ShortAnswer,242,2,MS-PS3-1,Energy,NGSS.SEP.2, NGSS.DCI.PS3
+Science,Grade 6,Describe the process of photosynthesis. What are the inputs and outputs?,Photosynthesis.,ShortAnswer,255,2,MS-LS1-6,Photosynthesis,NGSS.SEP.6, NGSS.DCI.LS1
+Science,Grade 6,What are wavelength frequency and amplitude? How do they relate to waves?,Wave properties.,ShortAnswer,258,2,MS-PS4-1,Waves,NGSS.SEP.2, NGSS.DCI.PS4
+Science,Grade 6,What evidence do we have for evolution? Describe at least two types of evidence.,Evolution evidence.,ShortAnswer,260,2,MS-LS4-1,Evolution,NGSS.SEP.7, NGSS.DCI.LS4
+Science,Grade 6,What are the signs of a chemical reaction? Give an example and explain.,Chemical reactions.,ShortAnswer,262,2,MS-PS1-2,Chemistry,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 6,Describe how to interpret data from a graph. What can you learn from the pattern?,Data analysis.,ShortAnswer,250,2,MS-LS2-1,Data,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 6,What is the difference between a physical and chemical property? Give two examples of each.,Properties of matter.,ShortAnswer,265,2,MS-PS1-2,Matter,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 7,What are renewable and nonrenewable energy sources? Give two examples of each and explain the difference.,Energy resources.,ShortAnswer,278,2,MS-ESS3-1,Energy,NGSS.SEP.6, NGSS.DCI.ESS3
+Science,Grade 7,Explain natural selection. How does it lead to evolution over time?,Natural selection.,ShortAnswer,282,2,MS-LS4-4,Evolution,NGSS.SEP.7, NGSS.DCI.LS4
+Science,Grade 7,Describe the difference between gravity friction and magnetic force. What causes each?,Forces.,ShortAnswer,275,2,MS-PS2-1,Forces,NGSS.SEP.2, NGSS.DCI.PS2
+Science,Grade 7,What is energy transformation? Give an example of chemical energy being converted to kinetic energy.,Energy transfer.,ShortAnswer,285,2,MS-PS3-2,Energy,NGSS.SEP.5, NGSS.DCI.PS3
+Science,Grade 7,What factors affect the rate of a chemical reaction? Explain how each factor affects the rate.,Reaction rate.,ShortAnswer,288,2,MS-PS1-4,Chemistry,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 7,Describe the layers of the atmosphere. What happens in each layer?,Atmosphere.,ShortAnswer,290,2,MS-ESS2-4,Atmosphere,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 7,What causes genetic variation? How does it affect offspring?,Genetic variation.,ShortAnswer,292,2,MS-LS3-2,Genetics,NGSS.SEP.6, NGSS.DCI.LS3
+Science,Grade 7,Describe the rock cycle. How do igneous sedimentary and metamorphic rocks form?,Rock cycle.,ShortAnswer,295,2,MS-ESS2-1,Rock cycle,NGSS.SEP.6, NGSS.DCI.ESS2
+Science,Grade 7,What is the difference between weather and climate? What factors affect each?,Weather and climate.,ShortAnswer,272,2,MS-ESS2-5,Climate,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 7,How do fossils provide evidence for past life and environmental change?,Fossils as evidence.,ShortAnswer,298,2,MS-LS4-1,Fossils,NGSS.SEP.7, NGSS.DCI.LS4
+Science,Grade 8,What is the difference between a physical and chemical change at the particle level?,Particle model.,ShortAnswer,308,2,MS-PS1-1,Matter,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 8,State Newton's three laws of motion. Give an example that illustrates each law.,Newton's laws.,ShortAnswer,312,2,MS-PS2-1,Forces,NGSS.SEP.6, NGSS.DCI.PS2
+Science,Grade 8,How do human activities affect the environment? Give two positive and two negative effects.,Human impact.,ShortAnswer,315,2,MS-ESS3-3,Human impact,NGSS.SEP.7, NGSS.DCI.ESS3
+Science,Grade 8,Explain how DNA bases pair. What is the role of DNA in heredity?,DNA.,ShortAnswer,318,2,MS-LS3-1,Genetics,NGSS.SEP.2, NGSS.DCI.LS3
+Science,Grade 8,Describe the carbon cycle. How do photosynthesis respiration and decomposition play a role?,Carbon cycle.,ShortAnswer,320,2,MS-LS2-3,Biogeochemical cycles,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 8,What threatens biodiversity? What can we do to protect it?,Biodiversity.,ShortAnswer,322,2,MS-LS2-4,Biodiversity,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 8,What is the difference between electromagnetic waves and mechanical waves? Give an example of each.,Wave types.,ShortAnswer,305,2,MS-PS4-1,Waves,NGSS.SEP.2, NGSS.DCI.PS4
+Science,Grade 8,Explain how the tilt of Earth's axis causes seasons.,Seasons.,ShortAnswer,310,2,MS-ESS1-1,Earth and space,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 8,Describe the steps in the engineering design process. Why is iteration important?,Engineering design.,ShortAnswer,325,2,MS-ETS1-1,Engineering,NGSS.SEP.1, NGSS.DCI.ETS1
+Science,Grade 8,What is the law of conservation of energy? Give an example.,Conservation of energy.,ShortAnswer,315,2,MS-PS3-5,Energy,NGSS.SEP.5, NGSS.DCI.PS3
+Science,Grade 9,Describe the structure of the periodic table. How are elements organized?,Periodic table.,ShortAnswer,332,2,HS-PS1-1,Chemistry,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 9,What is the difference between ionic and covalent bonding? Give an example of each.,Chemical bonding.,ShortAnswer,335,2,HS-PS1-2,Bonding,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 9,Explain plate tectonics. What are the three types of plate boundaries and what happens at each?,Plate tectonics.,ShortAnswer,338,2,HS-ESS2-1,Earth science,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 9,Describe the flow of energy and matter in an ecosystem. How do producers consumers and decomposers interact?,Ecosystems.,ShortAnswer,340,2,HS-LS2-1,Ecosystems,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 9,What causes climate change? Explain the role of greenhouse gases and human activities.,Climate change.,ShortAnswer,342,2,HS-ESS3-5,Climate,NGSS.SEP.7, NGSS.DCI.ESS3
+Science,Grade 9,What is the difference between mitosis and meiosis? When does each occur?,Cell division.,ShortAnswer,345,2,HS-LS1-4,Cell division,NGSS.SEP.6, NGSS.DCI.LS1
+Science,Grade 9,State the law of conservation of mass. How does it apply to chemical equations?,Conservation of mass.,ShortAnswer,328,2,HS-PS1-7,Chemistry,NGSS.SEP.5, NGSS.DCI.PS1
+Science,Grade 9,What evidence supports the Big Bang theory? Describe at least two pieces of evidence.,Big Bang.,ShortAnswer,348,2,HS-ESS1-2,Cosmology,NGSS.SEP.4, NGSS.DCI.ESS1
+Science,Grade 9,What is the difference between an acid and a base? What is pH?,Acids and bases.,ShortAnswer,330,2,HS-PS1-2,Chemistry,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 9,What is the role of enzymes in chemical reactions? What affects their activity?,Enzymes.,ShortAnswer,335,2,HS-LS1-6,Biochemistry,NGSS.SEP.3, NGSS.DCI.LS1
+Science,Grade 10,Describe the phases of the cell cycle. What happens in interphase and mitosis?,Cell cycle.,ShortAnswer,348,2,HS-LS1-4,Cell cycle,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 10,State the first and second laws of thermodynamics. What do they mean?,Thermodynamics.,ShortAnswer,350,2,HS-PS3-1,Thermodynamics,NGSS.SEP.6, NGSS.DCI.PS3
+Science,Grade 10,What is the difference between predation symbiosis and competition? Give an example of each.,Ecological relationships.,ShortAnswer,352,2,HS-LS2-6,Ecology,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 10,Describe alpha beta and gamma radiation. How do they differ in penetrating power?,Radiation.,ShortAnswer,350,2,HS-PS1-8,Nuclear,NGSS.SEP.2, NGSS.DCI.PS1
+Science,Grade 10,What evidence supports evolution? Describe fossil anatomical and molecular evidence.,Evolution evidence.,ShortAnswer,345,2,HS-LS4-1,Evolution,NGSS.SEP.7, NGSS.DCI.LS4
+Science,Grade 10,What factors affect enzyme activity? How do temperature and pH affect enzyme function?,Enzymes.,ShortAnswer,342,2,HS-LS1-6,Biochemistry,NGSS.SEP.3, NGSS.DCI.LS1
+Science,Grade 10,Describe the four Earth systems: geosphere hydrosphere biosphere atmosphere. How do they interact?,Earth systems.,ShortAnswer,338,2,HS-ESS2-4,Earth systems,NGSS.SEP.2, NGSS.DCI.ESS2
+Science,Grade 10,What is the relationship between voltage current and resistance? State Ohm's law.,Electric circuits.,ShortAnswer,335,2,HS-PS2-5,Circuits,NGSS.SEP.5, NGSS.DCI.PS3
+Science,Grade 10,Explain how natural selection leads to adaptation. Give an example.,Natural selection.,ShortAnswer,352,2,HS-LS4-4,Evolution,NGSS.SEP.7, NGSS.DCI.LS4
+Science,Grade 10,What is the carbon cycle? How do human activities affect it?,Carbon cycle.,ShortAnswer,348,2,HS-LS2-3,Biogeochemical cycles,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 11,Explain the concept of wave-particle duality. What does it mean for light and electrons?,Quantum.,ShortAnswer,350,2,HS-PS4-1,Quantum physics,NGSS.SEP.6, NGSS.DCI.PS4
+Science,Grade 11,Describe the steps of cellular respiration. Where does each step occur?,Cellular respiration.,ShortAnswer,350,2,HS-LS1-7,Cellular respiration,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 11,What are the four levels of protein structure? How do they relate to function?,Protein structure.,ShortAnswer,352,2,HS-LS1-1,Biochemistry,NGSS.SEP.4, NGSS.DCI.LS1
+Science,Grade 11,Describe the nitrogen cycle. What roles do bacteria play?,Nitrogen cycle.,ShortAnswer,348,2,HS-LS2-3,Nitrogen cycle,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 11,What is chemical equilibrium? What factors can shift the equilibrium?,Equilibrium.,ShortAnswer,350,2,HS-PS1-6,Chemistry,NGSS.SEP.3, NGSS.DCI.PS1
+Science,Grade 11,Explain time dilation and length contraction in special relativity. When do they become significant?,Relativity.,ShortAnswer,350,2,HS-PS2-4,Physics,NGSS.SEP.7, NGSS.DCI.PS2
+Science,Grade 11,What is CRISPR? How is it used in genetic engineering?,Genetic engineering.,ShortAnswer,348,2,HS-LS3-2,Genetics,NGSS.SEP.1, NGSS.DCI.LS3
+Science,Grade 11,What are the components of a climate model? How do scientists validate predictions?,Climate models.,ShortAnswer,345,2,HS-ESS3-5,Climate,NGSS.SEP.5, NGSS.DCI.ESS3
+Science,Grade 11,Describe thermohaline circulation and upwelling. How do they affect ocean life?,Ocean systems.,ShortAnswer,342,2,HS-ESS2-6,Oceanography,NGSS.SEP.4, NGSS.DCI.ESS2
+Science,Grade 11,What is E=mc²? What does it tell us about mass and energy?,Relativity.,ShortAnswer,350,2,HS-PS2-4,Physics,NGSS.SEP.7, NGSS.DCI.PS2
+Science,Grade 12,Describe the roles of T cells B cells and antibodies in the immune response.,Immune system.,ShortAnswer,348,2,HS-LS1-2,Immunology,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 12,What are the impacts of climate change on sea level biodiversity and weather?,Climate impacts.,ShortAnswer,350,2,HS-ESS3-5,Climate,NGSS.SEP.7, NGSS.DCI.ESS3
+Science,Grade 12,What is the difference between nuclear fission and fusion? Where does each occur?,Nuclear reactions.,ShortAnswer,352,2,HS-PS1-8,Nuclear physics,NGSS.SEP.6, NGSS.DCI.PS1
+Science,Grade 12,Describe the carbon cycle and how human activities have altered it.,Carbon cycle.,ShortAnswer,345,2,HS-LS2-5,Biogeochemical cycles,NGSS.SEP.4, NGSS.DCI.LS2
+Science,Grade 12,What are ecosystem services? Give three examples and explain their value.,Ecosystem services.,ShortAnswer,350,2,HS-LS2-7,Ecology,NGSS.SEP.8, NGSS.DCI.LS2
+Science,Grade 12,What strategies can promote sustainability? Compare renewable energy conservation and restoration.,Sustainability.,ShortAnswer,350,2,HS-ESS3-4,Sustainability,NGSS.SEP.7, NGSS.DCI.ESS3
+Science,Grade 12,Describe the biogeochemical cycles of carbon nitrogen and phosphorus. How do they differ?,Biogeochemical cycles.,ShortAnswer,348,2,HS-LS2-3,Biogeochemistry,NGSS.SEP.6, NGSS.DCI.LS2
+Science,Grade 12,How do neurons communicate? What is the role of neurotransmitters?,Neuroscience.,ShortAnswer,350,2,HS-LS1-2,Nervous system,NGSS.SEP.2, NGSS.DCI.LS1
+Science,Grade 12,Why are informed consent and peer review important in science? What is scientific ethics?,Science ethics.,ShortAnswer,352,3,HS-ETS1-1,Science ethics,NGSS.SEP.8, NGSS.DCI.ETS1
+Science,Grade 12,What is the greenhouse effect? How does it relate to climate change and human activity?,Greenhouse effect.,ShortAnswer,350,2,HS-ESS3-5,Climate,NGSS.SEP.7, NGSS.DCI.ESS3
