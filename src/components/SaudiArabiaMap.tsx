@@ -117,7 +117,7 @@ const getSchoolCoordinates = (school: School): { x: number; y: number } => {
 const getSchoolTypeFilter = (schoolType?: string): string => {
   switch (schoolType) {
     case 'National & International': 
-      // Blue - convert red icon to blue (#2563eb / #3b82f6)
+      // Blue - convert red icon to blue (#2563eb / #3b82f6)git 
       // Red (0deg) to Blue (240deg) = rotate by 240deg
       return 'brightness(1.0) saturate(1.4) hue-rotate(240deg)';
     case 'National': 
