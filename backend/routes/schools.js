@@ -5,7 +5,8 @@ import {
   createSchool, 
   updateSchool, 
   deleteSchool,
-  getSchoolStats
+  getSchoolStats,
+  geocodeSchoolAddress
 } from '../controllers/schoolsController.js';
 import { authenticateToken, adminOnly } from '../middleware/auth.js';
 import { validateId } from '../middleware/validation.js';
@@ -16,6 +17,9 @@ const router = express.Router();
 router.get('/', authenticateToken, getAllSchools);
 router.get('/:id', authenticateToken, validateId, getSchoolById);
 router.get('/:id/stats', authenticateToken, validateId, getSchoolStats);
+
+// Geocoding route
+router.post('/geocode', authenticateToken, geocodeSchoolAddress);
 
 // Admin-only routes
 router.post('/', authenticateToken, adminOnly, createSchool);

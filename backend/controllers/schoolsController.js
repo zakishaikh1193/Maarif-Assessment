@@ -1,4 +1,5 @@
 import { executeQuery } from '../config/database.js';
+import { geocodeAddress } from '../utils/geminiService.js';
 
 // Get all schools
 export const getAllSchools = async (req, res) => {
@@ -294,6 +295,34 @@ export const getSchoolStats = async (req, res) => {
     res.status(500).json({
       error: 'Failed to fetch school statistics',
       code: 'FETCH_SCHOOL_STATS_ERROR'
+    });
+  }
+};
+
+// Geocode an address to get coordinates
+export const geocodeSchoolAddress = async (req, res) => {
+  try {
+    const { address } = req.body;
+    
+    if (!address || !address.trim()) {
+      return res.status(400).json({
+        error: 'Address is required',
+        code: 'ADDRESS_REQUIRED'
+      });
+    }
+    
+    const coordinates = await geocodeAddress(address);
+    
+    res.json({
+      success: true,
+      coordinates
+    });
+  } catch (error) {
+    console.error('Error geocoding address:', error);
+    res.status(500).json({
+      error: 'Failed to geocode address',
+      code: 'GEOCODE_ERROR',
+      message: error.message
     });
   }
 };

@@ -844,3 +844,152 @@ Respond with ONLY the feedback text. No markdown, no quotes, no JSON, just the p
     }
   }
 }
+
+/**
+ * Geocode an address to get latitude and longitude using Gemini API
+ * @param {string} address - The address to geocode (e.g., "Riyadh, Saudi Arabia")
+ * @returns {Promise<{latitude: number, longitude: number}>} - Coordinates
+ */
+export async function geocodeAddress(address) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured in environment variables');
+  }
+
+  if (!apiKey.trim()) {
+    throw new Error('GEMINI_API_KEY is empty. Please add your Gemini API key to the .env file');
+  }
+
+  if (!address || !address.trim()) {
+    throw new Error('Address is required for geocoding');
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    const prompt = `You are a geocoding assistant. Convert the following address to precise latitude and longitude coordinates.
+
+**Address:** ${address}
+
+**Requirements:**
+- The address is in Saudi Arabia
+- Provide the most accurate coordinates possible
+- If the address is vague, use the city center coordinates
+- Return ONLY a valid JSON object in this exact format:
+{
+  "latitude": 24.7136,
+  "longitude": 46.6753
+}
+
+**Important:**
+- Latitude must be between 16.0 and 32.0 (Saudi Arabia's latitude range)
+- Longitude must be between 34.0 and 55.0 (Saudi Arabia's longitude range)
+- Use decimal degrees format
+- Be as precise as possible based on the address provided
+
+Now provide the coordinates for: ${address}`;
+
+    // Try gemini-2.5-flash-lite first, then fallback to other models
+    let model;
+    let result;
+    let response;
+    let text;
+    
+    try {
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (flashLiteError) {
+      if (flashLiteError.message?.includes('not found') || flashLiteError.message?.includes('404')) {
+        console.log('gemini-2.5-flash-lite not available, trying gemini-1.5-pro...');
+        try {
+          model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+          result = await model.generateContent(prompt);
+          response = await result.response;
+          text = response.text();
+        } catch (proError) {
+          if (proError.message?.includes('not found') || proError.message?.includes('404')) {
+            console.log('gemini-1.5-pro not available, trying gemini-1.5-flash...');
+            try {
+              model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              result = await model.generateContent(prompt);
+              response = await result.response;
+              text = response.text();
+            } catch (flashError) {
+              throw new Error('None of the Gemini models are available. Please check your API key and model access.');
+            }
+          } else {
+            throw proError;
+          }
+        }
+      } else {
+        throw flashLiteError;
+      }
+    }
+
+    // Parse the JSON response
+    let jsonText = text.trim();
+    
+    // Remove markdown code blocks if present
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    // Try to extract JSON object if there's extra text
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[0];
+    }
+    
+    const parsed = JSON.parse(jsonText);
+    
+    // Validate coordinates
+    if (typeof parsed.latitude !== 'number' || typeof parsed.longitude !== 'number') {
+      throw new Error('Invalid coordinate format');
+    }
+    
+    // Validate Saudi Arabia bounds
+    if (parsed.latitude < 16.0 || parsed.latitude > 32.0 || 
+        parsed.longitude < 34.0 || parsed.longitude > 55.0) {
+      // If out of bounds, use Riyadh as default
+      console.warn(`Coordinates ${parsed.latitude}, ${parsed.longitude} are outside Saudi Arabia bounds. Using Riyadh default.`);
+      return { latitude: 24.7136, longitude: 46.6753 };
+    }
+    
+    return {
+      latitude: parsed.latitude,
+      longitude: parsed.longitude
+    };
+  } catch (error) {
+    console.error('Error geocoding address:', error);
+    
+    // Fallback to city-based coordinates
+    const cityCoordinates = {
+      'riyadh': { latitude: 24.7136, longitude: 46.6753 },
+      'jeddah': { latitude: 21.4858, longitude: 39.1925 },
+      'dammam': { latitude: 26.4207, longitude: 50.0888 },
+      'mecca': { latitude: 21.3891, longitude: 39.8579 },
+      'makkah': { latitude: 21.3891, longitude: 39.8579 },
+      'medina': { latitude: 24.5247, longitude: 39.5692 },
+      'madinah': { latitude: 24.5247, longitude: 39.5692 },
+      'taif': { latitude: 21.2703, longitude: 40.4158 },
+      'khobar': { latitude: 26.2794, longitude: 50.2080 },
+      'abha': { latitude: 18.2164, longitude: 42.5042 },
+      'tabuk': { latitude: 28.3998, longitude: 36.5700 },
+      'buraydah': { latitude: 26.3260, longitude: 43.9750 },
+      'hail': { latitude: 27.5114, longitude: 41.7208 },
+      'jazan': { latitude: 16.8894, longitude: 42.5706 },
+      'najran': { latitude: 17.4924, longitude: 44.1277 }
+    };
+    
+    const addressLower = address.toLowerCase();
+    for (const [city, coords] of Object.entries(cityCoordinates)) {
+      if (addressLower.includes(city)) {
+        return coords;
+      }
+    }
+    
+    // Default to Riyadh if no match
+    return { latitude: 24.7136, longitude: 46.6753 };
+  }
+}

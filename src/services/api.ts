@@ -278,6 +278,11 @@ export const schoolsAPI = {
   getStats: async (id: number) => {
     const response = await api.get(`/schools/${id}/stats`);
     return response.data;
+  },
+
+  geocodeAddress: async (address: string) => {
+    const response = await api.post('/schools/geocode', { address });
+    return response.data;
   }
 };
 
