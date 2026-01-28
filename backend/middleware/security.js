@@ -40,17 +40,22 @@ export const corsOptions = {
           origin.startsWith('http://localhost:') || 
           origin.startsWith('http://127.0.0.1:') ||
           origin.includes('localhost')) {
-        console.log(`CORS: Allowing origin in development: ${origin || 'no origin'}`);
         return callback(null, true);
       }
     }
     
     // In production, check against allowed origins
     const allowedOrigins = process.env.CORS_ORIGIN 
-      ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+      ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
       : [];
     
-    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    // Allow: no origin (same-origin/curl), or in allowed list, or production host (legatolxp)
+    const allowed =
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      (origin && (origin.includes('legatolxp.online') || origin.includes('legatolxp.com')));
+    
+    if (allowed) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked origin: ${origin}`);
