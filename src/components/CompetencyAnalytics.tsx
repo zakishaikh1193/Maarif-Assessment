@@ -166,29 +166,6 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
   };
 
   // Get earned competencies (strong performance - typically >= 80% or feedbackType === 'strong')
-  const getEarnedCompetencies = () => {
-    return currentScores.filter(score => {
-      const finalScore = Number(score.finalScore) || 0;
-      // Consider competency earned if score >= 80% or feedbackType is 'strong'
-      return finalScore >= 80 || score.feedbackType === 'strong';
-    });
-  };
-
-  // Format competency name to achievement message
-  const formatAchievementMessage = (competencyName: string): string => {
-    // Convert competency name to achievement format
-    // Examples: "Empowered Learner" -> "You are an Empowered Learner"
-    // "Digital Citizen" -> "You are a Digital Citizen"
-    // "Knowledge Constructor" -> "You are a Knowledge Constructor"
-    
-    // Check if it starts with a vowel sound for proper article
-    const vowels = ['a', 'e', 'i', 'o', 'u'];
-    const firstLetter = competencyName.charAt(0).toLowerCase();
-    const article = vowels.includes(firstLetter) ? 'an' : 'a';
-    
-    return `You are ${article} ${competencyName}`;
-  };
-
   const chartData = currentScores.map(score => ({
     name: score.competencyName,
     score: Number(score.finalScore) || 0,
@@ -270,66 +247,6 @@ const CompetencyAnalytics: React.FC<CompetencyAnalyticsProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Achievement Badges - Earned Competencies */}
-      {getEarnedCompetencies().length > 0 && (
-        <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-orange-50 rounded-xl shadow-sm border-2 border-purple-200 p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Award className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Competency Achievements</h3>
-              <p className="text-sm text-gray-600">
-                Congratulations! You've earned these competency badges
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {getEarnedCompetencies().map((score) => (
-              <div
-                key={score.id}
-                className="bg-white rounded-lg shadow-md border-2 border-purple-300 p-4 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex-shrink-0">
-                    <Award className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-900 text-sm">
-                        {formatAchievementMessage(score.competencyName)}
-                      </h4>
-                      <span className="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded">
-                        {score.finalScore}%
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">{score.competencyCode}</p>
-                    <div className="mt-2 flex items-center space-x-1">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-xs text-green-700 font-medium">Competency Mastered</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {getEarnedCompetencies().length > 0 && (
-            <div className="mt-4 p-3 bg-white bg-opacity-70 rounded-lg border border-purple-200">
-              <p className="text-sm text-gray-700 text-center">
-                <span className="font-semibold text-purple-700">
-                  {getEarnedCompetencies().length}
-                </span>
-                {' '}
-                {getEarnedCompetencies().length === 1 ? 'competency' : 'competencies'} earned! 
-                Keep up the excellent work! 🎉
-              </p>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Competency Performance Chart */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
