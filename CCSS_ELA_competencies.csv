@@ -1,0 +1,38 @@
+Comp Code,Comp Name,Description,Parent Competency
+CCSS.ELA,CCSS ELA/Literacy,Top-level grouping for Common Core ELA/Literacy competencies (CCR Anchor Standards),
+CCSS.ELA.CCR.R,Reading (CCR Anchor Standards),Parent for CCSS ELA CCR Reading Anchor Standards (R1–R10).,CCSS.ELA
+CCSS.ELA.CCR.W,Writing (CCR Anchor Standards),Parent for CCSS ELA CCR Writing Anchor Standards (W1–W10).,CCSS.ELA
+CCSS.ELA.CCR.SL,Speaking & Listening (CCR Anchor Standards),Parent for CCSS ELA CCR Speaking & Listening Anchor Standards (SL1–SL6).,CCSS.ELA
+CCSS.ELA.CCR.L,Language (CCR Anchor Standards),Parent for CCSS ELA CCR Language Anchor Standards (L1–L6).,CCSS.ELA
+CCSS.ELA.CCR.R.1,Read closely & cite evidence,R.1: Read closely to determine what the text says explicitly and to make logical inferences; cite evidence.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.2,Central ideas/themes & summarize,R.2: Determine central ideas or themes and analyze their development; summarize key supporting details and ideas.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.3,Analyze individuals/events/ideas,R.3: Analyze how and why individuals events and ideas develop and interact over the course of a text.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.4,Interpret words/phrases; analyze meaning,R.4: Interpret words and phrases; analyze how word choice shapes meaning or tone.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.5,Analyze text structure,R.5: Analyze the structure of texts including how parts relate to each other and to the whole.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.6,Point of view/purpose,R.6: Assess how point of view or purpose shapes content and style.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.7,Integrate/evaluate diverse media,R.7: Integrate and evaluate content in diverse media and formats.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.8,Evaluate arguments & reasoning,R.8: Delineate and evaluate arguments and specific claims reasoning and evidence.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.9,Analyze multiple texts,R.9: Analyze how two or more texts address similar themes/topics to build knowledge or compare approaches.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.R.10,Complex text comprehension,R.10: Read and comprehend complex literary and informational texts independently and proficiently.,CCSS.ELA.CCR.R
+CCSS.ELA.CCR.W.1,Argument writing,W.1: Write arguments to support claims with reasons and evidence.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.2,Informative/explanatory writing,W.2: Write informative/explanatory texts to examine and convey ideas clearly and accurately.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.3,Narrative writing,W.3: Write narratives to develop real or imagined experiences using effective technique and structure.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.4,Clear writing (task/audience/purpose),W.4: Produce clear and coherent writing appropriate to task purpose and audience.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.5,Develop & strengthen writing,W.5: Develop and strengthen writing through planning revising editing rewriting or trying a new approach.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.6,Use technology to produce/publish,W.6: Use technology to produce and publish writing and collaborate with others.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.7,Research to build knowledge,W.7: Conduct short and sustained research projects to answer questions or solve problems.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.8,Gather/evaluate sources; cite evidence,W.8: Gather relevant information from multiple sources assess credibility and integrate while avoiding plagiarism.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.9,Draw evidence from texts,W.9: Draw evidence from literary or informational texts to support analysis reflection and research.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.W.10,Routine writing range,W.10: Write routinely over extended and shorter time frames for a range of tasks and purposes.,CCSS.ELA.CCR.W
+CCSS.ELA.CCR.SL.1,Collaborative discussions,SL.1: Prepare for and participate effectively in collaborative discussions.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.SL.2,Integrate/evaluate presented information,SL.2: Integrate and evaluate information presented in diverse media and formats.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.SL.3,Evaluate speaker reasoning/evidence,SL.3: Evaluate a speaker's point of view reasoning and use of evidence and rhetoric.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.SL.4,Present information clearly,SL.4: Present information findings and supporting evidence clearly and logically.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.SL.5,Use digital media/visual displays,SL.5: Make strategic use of digital media and visual displays to enhance understanding.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.SL.6,Adapt speech to context,SL.6: Adapt speech to a variety of contexts and tasks demonstrating command of formal English when appropriate.,CCSS.ELA.CCR.SL
+CCSS.ELA.CCR.L.1,Grammar and usage conventions,L.1: Demonstrate command of the conventions of standard English grammar and usage.,CCSS.ELA.CCR.L
+CCSS.ELA.CCR.L.2,Capitalization/punctuation/spelling,L.2: Demonstrate command of the conventions of capitalization punctuation and spelling.,CCSS.ELA.CCR.L
+CCSS.ELA.CCR.L.3,Effective language use/style,L.3: Apply knowledge of language to understand how language functions in different contexts and to improve writing/speaking.,CCSS.ELA.CCR.L
+CCSS.ELA.CCR.L.4,Vocabulary acquisition strategies,L.4: Determine or clarify the meaning of unknown and multiple-meaning words and phrases.,CCSS.ELA.CCR.L
+CCSS.ELA.CCR.L.5,Figurative language & nuances,L.5: Demonstrate understanding of figurative language word relationships and nuances in word meanings.,CCSS.ELA.CCR.L
+CCSS.ELA.CCR.L.6,Academic/domain vocabulary,L.6: Acquire and use general academic and domain-specific words and phrases.,CCSS.ELA.CCR.L

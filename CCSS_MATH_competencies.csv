@@ -1,0 +1,50 @@
+Comp Code,Comp Name,Description,Parent Competency
+CCSS.MATH,CCSS Mathematics,Top-level grouping for Common Core Mathematics competencies (Mathematical Practices + Content Categories),
+CCSS.MATH.MP,Mathematical Practice Standards (MP1–MP8),Parent for CCSS Standards for Mathematical Practice (cross-grade).,CCSS.MATH
+CCSS.MATH.MP.1,Make sense of problems & persevere,MP.1: Make sense of problems and persevere in solving them.,CCSS.MATH.MP
+CCSS.MATH.MP.2,Reason abstractly and quantitatively,MP.2: Reason abstractly and quantitatively.,CCSS.MATH.MP
+CCSS.MATH.MP.3,Construct arguments & critique reasoning,MP.3: Construct viable arguments and critique the reasoning of others.,CCSS.MATH.MP
+CCSS.MATH.MP.4,Model with mathematics,MP.4: Model with mathematics.,CCSS.MATH.MP
+CCSS.MATH.MP.5,Use tools strategically,MP.5: Use appropriate tools strategically.,CCSS.MATH.MP
+CCSS.MATH.MP.6,Attend to precision,MP.6: Attend to precision.,CCSS.MATH.MP
+CCSS.MATH.MP.7,Look for structure,MP.7: Look for and make use of structure.,CCSS.MATH.MP
+CCSS.MATH.MP.8,Regularity in repeated reasoning,MP.8: Look for and express regularity in repeated reasoning.,CCSS.MATH.MP
+CCSS.MATH.K8.DOM,K–8 Domain Families (non-grade-specific),Parent for CCSS K–8 domain families without grade numbering (for content analytics).,CCSS.MATH
+CCSS.MATH.DOM.CC,Counting & Cardinality,CCSS K–8 domain family: Counting & Cardinality (CC).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.OA,Operations & Algebraic Thinking,CCSS K–8 domain family: Operations & Algebraic Thinking (OA).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.NBT,Number & Operations in Base Ten,CCSS K–8 domain family: Number & Operations in Base Ten (NBT).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.NF,Number & Operations—Fractions,CCSS K–8 domain family: Number & Operations—Fractions (NF).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.MD,Measurement & Data,CCSS K–8 domain family: Measurement & Data (MD).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.G,Geometry,CCSS K–8 domain family: Geometry (G).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.RP,Ratios & Proportional Relationships,CCSS K–8 domain family: Ratios & Proportional Relationships (RP).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.NS,The Number System,CCSS K–8 domain family: The Number System (NS).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.EE,Expressions & Equations,CCSS K–8 domain family: Expressions & Equations (EE).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.SP,Statistics & Probability (K–8),CCSS K–8 domain family: Statistics & Probability (SP).,CCSS.MATH.K8.DOM
+CCSS.MATH.DOM.F,Functions (K–8),CCSS K–8 domain family: Functions (F).,CCSS.MATH.K8.DOM
+CCSS.MATH.CONTENT.N,High School Category: Number & Quantity,Parent for CCSS HS Number & Quantity domains.,CCSS.MATH
+CCSS.MATH.CONTENT.A,High School Category: Algebra,Parent for CCSS HS Algebra domains.,CCSS.MATH
+CCSS.MATH.CONTENT.F,High School Category: Functions,Parent for CCSS HS Functions domains.,CCSS.MATH
+CCSS.MATH.CONTENT.G,High School Category: Geometry,Parent for CCSS HS Geometry domains.,CCSS.MATH
+CCSS.MATH.CONTENT.S,High School Category: Statistics & Probability,Parent for CCSS HS Statistics & Probability domains.,CCSS.MATH
+CCSS.MATH.N-RN,The Real Number System,CCSS HS domain: The Real Number System (N-RN).,CCSS.MATH.CONTENT.N
+CCSS.MATH.N-Q,Quantities,CCSS HS domain: Quantities (N-Q).,CCSS.MATH.CONTENT.N
+CCSS.MATH.N-CN,The Complex Number System,CCSS HS domain: The Complex Number System (N-CN).,CCSS.MATH.CONTENT.N
+CCSS.MATH.N-VM,Vector & Matrix Quantities,CCSS HS domain: Vector & Matrix Quantities (N-VM).,CCSS.MATH.CONTENT.N
+CCSS.MATH.A-SSE,Seeing Structure in Expressions,CCSS HS domain: Seeing Structure in Expressions (A-SSE).,CCSS.MATH.CONTENT.A
+CCSS.MATH.A-APR,Arithmetic with Polynomials & Rational Expressions,CCSS HS domain: Arithmetic with Polynomials & Rational Expressions (A-APR).,CCSS.MATH.CONTENT.A
+CCSS.MATH.A-CED,Creating Equations,CCSS HS domain: Creating Equations (A-CED).,CCSS.MATH.CONTENT.A
+CCSS.MATH.A-REI,Reasoning with Equations & Inequalities,CCSS HS domain: Reasoning with Equations & Inequalities (A-REI).,CCSS.MATH.CONTENT.A
+CCSS.MATH.F-IF,Interpreting Functions,CCSS HS domain: Interpreting Functions (F-IF).,CCSS.MATH.CONTENT.F
+CCSS.MATH.F-BF,Building Functions,CCSS HS domain: Building Functions (F-BF).,CCSS.MATH.CONTENT.F
+CCSS.MATH.F-LE,Linear Quadratic & Exponential Models,CCSS HS domain: Linear Quadratic & Exponential Models (F-LE).,CCSS.MATH.CONTENT.F
+CCSS.MATH.F-TF,Trigonometric Functions,CCSS HS domain: Trigonometric Functions (F-TF).,CCSS.MATH.CONTENT.F
+CCSS.MATH.G-CO,Congruence,CCSS HS domain: Congruence (G-CO).,CCSS.MATH.CONTENT.G
+CCSS.MATH.G-SRT,Similarity Right Triangles & Trigonometry,CCSS HS domain: Similarity Right Triangles & Trigonometry (G-SRT).,CCSS.MATH.CONTENT.G
+CCSS.MATH.G-C,Circles,CCSS HS domain: Circles (G-C).,CCSS.MATH.CONTENT.G
+CCSS.MATH.G-GPE,Expressing Geometric Properties with Equations,CCSS HS domain: Expressing Geometric Properties with Equations (G-GPE).,CCSS.MATH.CONTENT.G
+CCSS.MATH.G-GMD,Geometric Measurement & Dimension,CCSS HS domain: Geometric Measurement & Dimension (G-GMD).,CCSS.MATH.CONTENT.G
+CCSS.MATH.G-MG,Modeling with Geometry,CCSS HS domain: Modeling with Geometry (G-MG).,CCSS.MATH.CONTENT.G
+CCSS.MATH.S-ID,Interpreting Categorical & Quantitative Data,CCSS HS domain: Interpreting Categorical & Quantitative Data (S-ID).,CCSS.MATH.CONTENT.S
+CCSS.MATH.S-IC,Making Inferences & Justifying Conclusions,CCSS HS domain: Making Inferences & Justifying Conclusions (S-IC).,CCSS.MATH.CONTENT.S
+CCSS.MATH.S-CP,Conditional Probability & Rules of Probability,CCSS HS domain: Conditional Probability & Rules of Probability (S-CP).,CCSS.MATH.CONTENT.S
+CCSS.MATH.S-MD,Using Probability to Make Decisions,CCSS HS domain: Using Probability to Make Decisions (S-MD).,CCSS.MATH.CONTENT.S

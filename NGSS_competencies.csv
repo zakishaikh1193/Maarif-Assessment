@@ -1,0 +1,36 @@
+Comp Code,Comp Name,Description,Parent Competency
+NGSS,NGSS Science,Top-level grouping for Next Generation Science Standards competencies (SEPs CCCs DCIs),
+NGSS.SEP,Science & Engineering Practices (SEPs),Parent for NGSS Science & Engineering Practices (8).,NGSS
+NGSS.SEP.1,Asking Questions / Defining Problems,NGSS SEP 1: Asking questions (science) and defining problems (engineering).,NGSS.SEP
+NGSS.SEP.2,Developing & Using Models,NGSS SEP 2: Developing and using models.,NGSS.SEP
+NGSS.SEP.3,Planning & Carrying Out Investigations,NGSS SEP 3: Planning and carrying out investigations.,NGSS.SEP
+NGSS.SEP.4,Analyzing & Interpreting Data,NGSS SEP 4: Analyzing and interpreting data.,NGSS.SEP
+NGSS.SEP.5,Using Math & Computational Thinking,NGSS SEP 5: Using mathematics and computational thinking.,NGSS.SEP
+NGSS.SEP.6,Constructing Explanations / Designing Solutions,NGSS SEP 6: Constructing explanations (science) and designing solutions (engineering).,NGSS.SEP
+NGSS.SEP.7,Engaging in Argument from Evidence,NGSS SEP 7: Engaging in argument from evidence.,NGSS.SEP
+NGSS.SEP.8,Obtaining Evaluating & Communicating Information,NGSS SEP 8: Obtaining evaluating and communicating information.,NGSS.SEP
+NGSS.CCC,Crosscutting Concepts (CCCs),Parent for NGSS Crosscutting Concepts (7).,NGSS
+NGSS.CCC.1,Patterns,NGSS CCC 1: Patterns.,NGSS.CCC
+NGSS.CCC.2,Cause & Effect,NGSS CCC 2: Cause and effect.,NGSS.CCC
+NGSS.CCC.3,Scale Proportion & Quantity,NGSS CCC 3: Scale proportion and quantity.,NGSS.CCC
+NGSS.CCC.4,Systems & System Models,NGSS CCC 4: Systems and system models.,NGSS.CCC
+NGSS.CCC.5,Energy & Matter,NGSS CCC 5: Energy and matter.,NGSS.CCC
+NGSS.CCC.6,Structure & Function,NGSS CCC 6: Structure and function.,NGSS.CCC
+NGSS.CCC.7,Stability & Change,NGSS CCC 7: Stability and change.,NGSS.CCC
+NGSS.DCI,Disciplinary Core Ideas (DCIs),Parent for NGSS Disciplinary Core Ideas (PS LS ESS ETS).,NGSS
+NGSS.DCI.PS,Physical Science (DCI Family),Parent for NGSS Physical Science DCIs (PS1–PS4).,NGSS.DCI
+NGSS.DCI.PS1,Matter & Its Interactions,NGSS DCI PS1: Matter and its interactions.,NGSS.DCI.PS
+NGSS.DCI.PS2,Motion & Stability: Forces & Interactions,NGSS DCI PS2: Motion and stability: forces and interactions.,NGSS.DCI.PS
+NGSS.DCI.PS3,Energy,NGSS DCI PS3: Energy.,NGSS.DCI.PS
+NGSS.DCI.PS4,Waves & Their Applications in Technologies for Information Transfer,NGSS DCI PS4: Waves and their applications in technologies for information transfer.,NGSS.DCI.PS
+NGSS.DCI.LS,Life Science (DCI Family),Parent for NGSS Life Science DCIs (LS1–LS4).,NGSS.DCI
+NGSS.DCI.LS1,From Molecules to Organisms: Structures & Processes,NGSS DCI LS1: From molecules to organisms: structures and processes.,NGSS.DCI.LS
+NGSS.DCI.LS2,Ecosystems: Interactions Energy & Dynamics,NGSS DCI LS2: Ecosystems: interactions energy and dynamics.,NGSS.DCI.LS
+NGSS.DCI.LS3,Heredity: Inheritance & Variation of Traits,NGSS DCI LS3: Heredity: inheritance and variation of traits.,NGSS.DCI.LS
+NGSS.DCI.LS4,Biological Evolution: Unity & Diversity,NGSS DCI LS4: Biological evolution: unity and diversity.,NGSS.DCI.LS
+NGSS.DCI.ESS,Earth & Space Science (DCI Family),Parent for NGSS Earth & Space Science DCIs (ESS1–ESS3).,NGSS.DCI
+NGSS.DCI.ESS1,Earth's Place in the Universe,NGSS DCI ESS1: Earth's place in the universe.,NGSS.DCI.ESS
+NGSS.DCI.ESS2,Earth's Systems,NGSS DCI ESS2: Earth's systems.,NGSS.DCI.ESS
+NGSS.DCI.ESS3,Earth & Human Activity,NGSS DCI ESS3: Earth and human activity.,NGSS.DCI.ESS
+NGSS.DCI.ETS,Engineering/Technology (DCI Family),Parent for NGSS Engineering/Technology DCIs (ETS1).,NGSS.DCI
+NGSS.DCI.ETS1,Engineering Design,NGSS DCI ETS1: Engineering design.,NGSS.DCI.ETS

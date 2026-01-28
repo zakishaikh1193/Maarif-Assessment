@@ -1,0 +1,120 @@
+Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Science,Grade 1,Plants need sunlight and water to grow.,What plants need to live.,TrueFalse,TRUE,105,1,1-LS1-1,Basic needs of plants,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 1,The Sun gives us light during the day.,Day and night pattern.,TrueFalse,TRUE,100,1,1-ESS1-1,Sun and daylight,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 1,Animals can live without air.,What animals need to breathe.,TrueFalse,FALSE,108,1,1-LS1-1,Basic needs of animals,NGSS.SEP.2 NGSS.DCI.LS1
+Science,Grade 1,Pushing an object can make it move.,Effect of a push.,TrueFalse,TRUE,102,1,K-PS2-1,Pushes and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 1,All living things need food to stay alive.,Needs of living things.,TrueFalse,TRUE,110,1,1-LS1-1,Needs of living things,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 1,"A butterfly goes through stages before it becomes an adult. {sci_tf_g1_q6.png}",Image shows life cycle stages; statement about metamorphosis.,TrueFalse,TRUE,125,2,1-LS1-2,Life cycle stages,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.4
+Science,Grade 1,The Moon gives off its own light.,Source of moonlight.,TrueFalse,FALSE,115,1,1-ESS1-1,Night sky and Moon,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 1,"In the experiment, seeds in the sunny cup grew more than seeds in the dark cup.",Claim from described dataset: sun vs dark.,TrueFalse,TRUE,132,2,K-ESS2-2,Data and plant growth,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 1,Rocks are living things.,Living vs nonliving.,TrueFalse,FALSE,118,1,K-ESS2-1,Living and nonliving,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 1,"The table showed that the plant with water grew taller; the statement ""plants need water to grow"" is supported.",Claim from described dataset.,TrueFalse,TRUE,128,2,1-LS1-1,Data claim about plant needs,NGSS.SEP.5 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 2,A habitat is where an animal lives.,Definition of habitat.,TrueFalse,TRUE,115,1,2-LS4-1,Habitats,NGSS.SEP.6 NGSS.DCI.LS2
+Science,Grade 2,Matter can be solid or liquid.,States of matter.,TrueFalse,TRUE,108,1,2-PS1-1,Solid and liquid,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 2,Gravity pulls things toward Earth.,Effect of gravity.,TrueFalse,TRUE,120,1,K-PS2-1,Gravity,NGSS.SEP.6 NGSS.DCI.PS2
+Science,Grade 2,Plants get water from the soil through their roots.,Plant parts and function.,TrueFalse,TRUE,112,1,2-LS2-1,Plant structure and function,NGSS.SEP.4 NGSS.DCI.LS2
+Science,Grade 2,Rocks can be different sizes.,Property of Earth materials.,TrueFalse,TRUE,105,1,2-ESS2-1,Properties of rocks,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 2,"The graph showed that more plants grew with light than in the dark. {sci_tf_g2_q6.png}",Image: bar graph of plant growth in light vs dark.,TrueFalse,TRUE,140,2,2-LS2-1,Data and plant growth,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.3
+Science,Grade 2,When we heat ice it stays as ice.,Effect of heating ice.,TrueFalse,FALSE,125,1,2-PS1-4,Heating and melting,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 2,Animals get energy from food.,Source of energy for animals.,TrueFalse,TRUE,118,1,2-LS2-1,Energy and food,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 2,"From the data table, the warmest place was outside in the sun and the coolest was in the shade.",Claim from described temperature data.,TrueFalse,TRUE,135,2,2-ESS2-3,Weather and temperature data,NGSS.SEP.5 NGSS.DCI.ESS2
+Science,Grade 2,"The data showed that the plant without water did not grow; the claim ""plants need water"" is correct.",Claim from described dataset.,TrueFalse,TRUE,130,2,2-LS2-1,Data claim about plant needs,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 3,A food chain shows how energy moves from one living thing to another.,Definition of food chain.,TrueFalse,TRUE,135,1,3-LS2-1,Food chains,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 3,Magnets have a north pole and a south pole.,Magnetic poles.,TrueFalse,TRUE,120,1,3-PS2-3,Magnetic poles,NGSS.SEP.6 NGSS.DCI.PS2
+Science,Grade 3,Rocks are made of minerals.,Composition of rocks.,TrueFalse,TRUE,115,1,3-ESS2-1,Earth materials,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 3,A force can make an object speed up or slow down.,Forces and motion.,TrueFalse,TRUE,125,1,3-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 3,All plants have flowers.,Plant structures.,TrueFalse,FALSE,130,1,3-LS1-1,Plant life cycles,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 3,"Fossils in lower rock layers are older than fossils in higher layers. {sci_tf_g3_q6.png}",Image: rock layer cross-section with fossils.,TrueFalse,TRUE,155,2,3-LS4-1,Fossils and rock layers,NGSS.SEP.4 NGSS.DCI.LS4 NGSS.CCC.1
+Science,Grade 3,Weather is the same in all places on Earth.,Weather and climate.,TrueFalse,FALSE,128,1,3-ESS2-2,Weather patterns,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 3,"In the experiment, the plant that got more light had more leaves; the claim ""light helps plants grow"" is supported.",Claim from described dataset.,TrueFalse,TRUE,142,2,3-LS2-1,Data claim about light and growth,NGSS.SEP.5 NGSS.DCI.LS2
+Science,Grade 3,Animals that look like their parents inherited traits.,Heredity.,TrueFalse,TRUE,138,1,3-LS3-1,Inheritance of traits,NGSS.SEP.4 NGSS.DCI.LS3
+Science,Grade 3,"The data table showed that the magnet picked up more paper clips when it was closer; the claim ""closer means stronger pull"" is correct.",Claim from described dataset.,TrueFalse,TRUE,148,2,3-PS2-2,Magnetic force and distance,NGSS.SEP.4 NGSS.DCI.PS2 NGSS.CCC.2
+Science,Grade 4,Energy can move from one object to another.,Transfer of energy.,TrueFalse,TRUE,130,1,4-PS3-2,Energy transfer,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 4,Plants use sunlight to make their own food.,Photosynthesis concept.,TrueFalse,TRUE,125,1,4-LS1-1,Plant energy and food,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 4,Rocks can be broken down by wind and water.,Weathering.,TrueFalse,TRUE,132,1,4-ESS2-1,Weathering and erosion,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 4,Sound travels faster through air than through water.,Speed of sound.,TrueFalse,FALSE,145,1,4-PS4-1,Waves and sound,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 4,Animals have structures that help them survive in their environment.,Structures and function.,TrueFalse,TRUE,128,1,4-LS1-1,Animal structures,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 4,"The diagram shows how water evaporates, forms clouds, and falls as rain. {sci_tf_g4_q6.png}",Image: water cycle diagram.,TrueFalse,TRUE,150,2,4-ESS2-1,Water cycle,NGSS.SEP.4 NGSS.DCI.ESS2 NGSS.CCC.4
+Science,Grade 4,Fossils tell us about organisms that lived long ago.,What fossils show.,TrueFalse,TRUE,118,1,4-ESS1-1,Fossils and past life,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 4,"When the data showed that the ball rolled farther on the smooth surface than on the rough surface, the claim ""smoother surface means less friction"" is supported.",Claim from described dataset.,TrueFalse,TRUE,155,2,4-PS3-1,Friction and motion,NGSS.SEP.5 NGSS.DCI.PS3
+Science,Grade 4,"The table showed that the plant with fertilizer grew taller; the claim ""fertilizer helps plants grow"" is correct.",Claim from described dataset.,TrueFalse,TRUE,140,2,4-LS1-1,Data claim about plant growth,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 5,Matter is made of particles too small to see.,Particle model of matter.,TrueFalse,TRUE,135,1,5-PS1-1,Structure of matter,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 5,The amount of matter stays the same when it changes form.,Conservation of matter.,TrueFalse,TRUE,142,1,5-PS1-2,Conservation of matter,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 5,Organisms in an ecosystem depend on each other for food and shelter.,Ecosystem interactions.,TrueFalse,TRUE,138,1,5-LS2-1,Ecosystems,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 5,Earth's surface has changed over millions of years.,Earth history.,TrueFalse,TRUE,128,1,5-ESS2-1,Earth systems,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 5,Gravity is a force that pulls objects toward each other.,Definition of gravity.,TrueFalse,TRUE,125,1,5-PS2-1,Gravity,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 5,"The food web diagram shows that the hawk eats the snake. {sci_tf_g5_q6.png}",Image: simple food web.,TrueFalse,TRUE,148,2,5-LS2-1,Food webs,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.4
+Science,Grade 5,The Sun is a star.,Nature of the Sun.,TrueFalse,TRUE,115,1,5-ESS1-1,Sun and stars,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 5,"When the data showed that the plant in the warm room grew faster than the one in the cold room, the claim ""warmer temperature increases growth rate"" is supported.",Claim from described dataset.,TrueFalse,TRUE,158,2,5-LS1-1,Data claim about temperature and growth,NGSS.SEP.5 NGSS.DCI.LS1
+Science,Grade 5,Plants get carbon dioxide from the soil.,Source of carbon dioxide for plants.,TrueFalse,FALSE,145,1,5-LS1-1,Photosynthesis inputs,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 5,"The experiment showed that the dissolved sugar increased as temperature increased; the claim ""higher temperature increases solubility"" is correct.",Claim from described dataset.,TrueFalse,TRUE,165,2,5-PS1-2,Data claim about solubility,NGSS.SEP.4 NGSS.DCI.PS1 NGSS.CCC.2
+Science,Grade 6,Atoms are the smallest units of matter.,Structure of matter.,TrueFalse,TRUE,140,1,MS-PS1-1,Atoms and matter,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 6,Chemical reactions can form new substances.,Chemical reactions.,TrueFalse,TRUE,135,1,MS-PS1-2,Chemical reactions,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 6,Living things are made of cells.,Cell theory.,TrueFalse,TRUE,125,1,MS-LS1-1,Cells and organisms,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 6,Energy cannot be created or destroyed only transferred or transformed.,Conservation of energy.,TrueFalse,TRUE,155,1,MS-PS3-1,Conservation of energy,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 6,Climate is the average weather over a long time.,Climate vs weather.,TrueFalse,TRUE,130,1,MS-ESS2-5,Climate and weather,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 6,"The diagram shows a simple circuit with a battery and a bulb. {sci_tf_g6_q6.png}",Image: simple closed circuit.,TrueFalse,TRUE,150,2,MS-PS2-3,Electric circuits,NGSS.SEP.4 NGSS.DCI.PS2 NGSS.CCC.4
+Science,Grade 6,Organisms with beneficial traits are more likely to survive and reproduce.,Natural selection.,TrueFalse,TRUE,160,1,MS-LS4-4,Natural selection,NGSS.SEP.6 NGSS.DCI.LS4
+Science,Grade 6,"When the data showed that the reaction was faster at higher temperature, the claim ""temperature affects reaction rate"" is supported.",Claim from described dataset.,TrueFalse,TRUE,165,2,MS-PS1-2,Data claim about reaction rate,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 6,The Moon orbits Earth.,Earth-Moon system.,TrueFalse,TRUE,118,1,MS-ESS1-1,Earth-Moon motion,NGSS.SEP.4 NGSS.DCI.ESS1
+Science,Grade 6,"The table showed that biodiversity was higher in the protected area; the claim ""protection supports more species"" is correct.",Claim from described dataset.,TrueFalse,TRUE,170,2,MS-LS2-4,Data claim about ecosystems,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 7,The periodic table organizes elements by their properties.,Periodic table.,TrueFalse,TRUE,138,1,MS-PS1-1,Periodic table,NGSS.SEP.6 NGSS.DCI.PS1
+Science,Grade 7,For every action force there is an equal and opposite reaction force.,Newton's third law.,TrueFalse,TRUE,165,1,MS-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 7,Photosynthesis converts light energy into chemical energy.,Photosynthesis.,TrueFalse,TRUE,145,1,MS-LS1-6,Photosynthesis,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 7,Ecosystems can be disrupted by natural events or human activity.,Ecosystem stability.,TrueFalse,TRUE,152,1,MS-LS2-4,Ecosystem disruption,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 7,Earth's layers have different compositions and properties.,Earth's structure.,TrueFalse,TRUE,140,1,MS-ESS2-2,Earth's layers,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 7,"The food chain diagram shows grass to rabbit to fox. {sci_tf_g7_q6.png}",Image: three-level food chain.,TrueFalse,TRUE,155,2,MS-LS2-3,Food chains and energy,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.5
+Science,Grade 7,Waves transfer energy without transferring matter.,Waves and energy.,TrueFalse,TRUE,158,1,MS-PS4-1,Wave properties,NGSS.SEP.2 NGSS.DCI.PS4
+Science,Grade 7,"When the data showed that the population of prey decreased when the predator population increased, the claim ""predator and prey populations are linked"" is supported.",Claim from described dataset.,TrueFalse,TRUE,175,2,MS-LS2-2,Predator-prey dynamics,NGSS.SEP.5 NGSS.DCI.LS2
+Science,Grade 7,Genetic information is passed from parents to offspring.,Heredity.,TrueFalse,TRUE,135,1,MS-LS3-1,Heredity,NGSS.SEP.6 NGSS.DCI.LS3
+Science,Grade 7,"The graph showed that dissolved oxygen decreased as water temperature increased; the claim ""warmer water holds less oxygen"" is correct.",Claim from described dataset.,TrueFalse,TRUE,172,2,MS-ESS2-6,Data claim about water and oxygen,NGSS.SEP.4 NGSS.DCI.ESS2 NGSS.CCC.2
+Science,Grade 8,Mass is conserved in a chemical reaction.,Conservation of mass.,TrueFalse,TRUE,150,1,MS-PS1-5,Conservation of mass,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 8,The force of gravity between two objects depends on their masses and distance.,Gravity.,TrueFalse,TRUE,165,1,MS-PS2-4,Gravitational force,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 8,Natural selection can lead to changes in a species over time.,Evolution.,TrueFalse,TRUE,160,1,MS-LS4-4,Natural selection and evolution,NGSS.SEP.6 NGSS.DCI.LS4
+Science,Grade 8,Human activities can affect Earth's climate.,Human impact on climate.,TrueFalse,TRUE,155,1,MS-ESS3-5,Human impact and climate,NGSS.SEP.2 NGSS.DCI.ESS3
+Science,Grade 8,Light can be reflected refracted or absorbed.,Behavior of light.,TrueFalse,TRUE,145,1,MS-PS4-2,Light and matter,NGSS.SEP.4 NGSS.DCI.PS4
+Science,Grade 8,"The weather map shows a front moving from west to east. {sci_tf_g8_q6.png}",Image: simple weather map with front.,TrueFalse,TRUE,168,2,MS-ESS2-5,Weather systems,NGSS.SEP.4 NGSS.DCI.ESS2 NGSS.CCC.1
+Science,Grade 8,Engineers use criteria and constraints to design solutions.,Engineering design.,TrueFalse,TRUE,142,1,MS-ETS1-1,Engineering design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 8,"When the data showed that the pendulum's period increased with longer string length, the claim ""longer string means longer period"" is supported.",Claim from described dataset.,TrueFalse,TRUE,178,2,MS-PS2-2,Data claim about pendulums,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 8,Fossil evidence supports the idea that life has changed over time.,Evidence for evolution.,TrueFalse,TRUE,148,1,MS-LS4-1,Fossil evidence,NGSS.SEP.4 NGSS.DCI.LS4
+Science,Grade 8,"The table showed that the insulated cup kept the drink warm longer; the claim ""insulation reduces heat loss"" is correct.",Claim from described dataset.,TrueFalse,TRUE,170,2,MS-PS3-3,Data claim about insulation,NGSS.SEP.4 NGSS.DCI.PS3 NGSS.CCC.2
+Science,Grade 9,The nucleus of an atom contains protons and neutrons.,Atomic structure.,TrueFalse,TRUE,145,1,HS-PS1-1,Atomic structure,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 9,Chemical bonds form when atoms share or transfer electrons.,Chemical bonding.,TrueFalse,TRUE,160,1,HS-PS1-2,Chemical bonding,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 9,DNA carries genetic information.,Role of DNA.,TrueFalse,TRUE,135,1,HS-LS1-1,DNA and heredity,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 9,Energy is conserved in physical and chemical processes.,Conservation of energy.,TrueFalse,TRUE,170,1,HS-PS3-1,Conservation of energy,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 9,Plate tectonics explains the movement of Earth's lithosphere.,Plate tectonics.,TrueFalse,TRUE,155,1,HS-ESS2-1,Plate tectonics,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 9,"The diagram shows the carbon cycle with reservoirs and flows. {sci_tf_g9_q6.png}",Image: carbon cycle diagram.,TrueFalse,TRUE,180,2,HS-ESS2-6,Carbon cycle,NGSS.SEP.4 NGSS.DCI.ESS2 NGSS.CCC.4
+Science,Grade 9,Ecosystems have carrying capacities that limit population size.,Ecosystem limits.,TrueFalse,TRUE,165,1,HS-LS2-1,Ecosystem dynamics,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 9,"When the data showed that the rate of reaction doubled when concentration doubled, the claim ""reaction rate depends on concentration"" is supported.",Claim from described dataset.,TrueFalse,TRUE,185,2,HS-PS1-5,Data claim about reaction rate,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 9,The Big Bang theory describes the origin of the universe.,Cosmology.,TrueFalse,TRUE,150,1,HS-ESS1-2,Origin of universe,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 9,"The graph showed that enzyme activity increased with temperature up to a point then decreased; the claim ""enzymes have an optimal temperature"" is correct.",Claim from described dataset.,TrueFalse,TRUE,190,2,HS-LS1-3,Data claim about enzymes,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 10,Elements in the same group of the periodic table have similar chemical properties.,Periodic table patterns.,TrueFalse,TRUE,155,1,HS-PS1-1,Periodic table,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 10,Newton's second law states that force equals mass times acceleration.,Newton's second law.,TrueFalse,TRUE,165,1,HS-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 10,Cellular respiration releases energy from glucose.,Cellular respiration.,TrueFalse,TRUE,150,1,HS-LS1-7,Cellular respiration,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 10,Biodiversity contributes to ecosystem stability.,Biodiversity and ecosystems.,TrueFalse,TRUE,168,1,HS-LS2-2,Biodiversity,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 10,Earth's climate has changed over geologic time.,Climate change over time.,TrueFalse,TRUE,160,1,HS-ESS2-2,Earth's climate history,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 10,"The diagram shows a feedback loop in climate system. {sci_tf_g10_q6.png}",Image: climate feedback diagram.,TrueFalse,TRUE,182,2,HS-ESS3-5,Climate feedbacks,NGSS.SEP.4 NGSS.DCI.ESS3 NGSS.CCC.4
+Science,Grade 10,Radioactive decay occurs at a predictable rate.,Radioactive decay.,TrueFalse,TRUE,158,1,HS-PS1-8,Nuclear processes,NGSS.SEP.6 NGSS.DCI.PS1
+Science,Grade 10,"When the data showed that the electric current increased when voltage increased with constant resistance, the claim ""current is proportional to voltage"" is supported.",Claim from described dataset.,TrueFalse,TRUE,188,2,HS-PS2-5,Ohm's law and data,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 10,Mutations can introduce new genetic variation.,Sources of variation.,TrueFalse,TRUE,162,1,HS-LS3-2,Mutations and variation,NGSS.SEP.4 NGSS.DCI.LS3
+Science,Grade 10,"The table showed that species richness was higher in the restored habitat; the claim ""restoration increased biodiversity"" is correct.",Claim from described dataset.,TrueFalse,TRUE,192,2,HS-LS2-6,Data claim about restoration,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 11,The rate of a chemical reaction can be affected by temperature and concentration.,Reaction kinetics.,TrueFalse,TRUE,170,1,HS-PS1-5,Reaction rate factors,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 11,Electromagnetic waves can travel through a vacuum.,EM waves.,TrueFalse,TRUE,155,1,HS-PS4-1,Electromagnetic waves,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 11,Homeostasis helps organisms maintain stable internal conditions.,Homeostasis.,TrueFalse,TRUE,160,1,HS-LS1-3,Homeostasis,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 11,Evolution is supported by evidence from fossils genetics and comparative anatomy.,Evidence for evolution.,TrueFalse,TRUE,178,1,HS-LS4-1,Evidence for evolution,NGSS.SEP.2 NGSS.DCI.LS4
+Science,Grade 11,Human activities have increased the concentration of greenhouse gases in the atmosphere.,Human impact on atmosphere.,TrueFalse,TRUE,172,1,HS-ESS3-5,Greenhouse gases,NGSS.SEP.4 NGSS.DCI.ESS3
+Science,Grade 11,"The diagram shows rock layers with an intrusion. {sci_tf_g11_q6.png}",Image: geologic cross-section with intrusion.,TrueFalse,TRUE,195,2,HS-ESS1-5,Relative dating,NGSS.SEP.4 NGSS.DCI.ESS1 NGSS.CCC.1
+Science,Grade 11,Engineering design involves defining problems and developing solutions.,Engineering design.,TrueFalse,TRUE,148,1,HS-ETS1-1,Engineering design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 11,"When the data showed that the half-life was constant regardless of initial amount, the claim ""half-life is independent of initial quantity"" is supported.",Claim from described dataset.,TrueFalse,TRUE,198,2,HS-PS1-8,Data claim about half-life,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 11,Energy flows through ecosystems while matter is cycled.,Energy and matter in ecosystems.,TrueFalse,TRUE,175,1,HS-LS2-3,Ecosystem energy and matter,NGSS.SEP.4 NGSS.DCI.LS2
+Science,Grade 11,"The graph showed that pH affected enzyme activity with an optimum near pH 7; the claim ""enzymes have an optimal pH"" is correct.",Claim from described dataset.,TrueFalse,TRUE,200,2,HS-LS1-3,Data claim about enzyme pH,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 12,Entropy of an isolated system tends to increase over time.,Second law of thermodynamics.,TrueFalse,TRUE,195,1,HS-PS3-4,Thermodynamics,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 12,Quantum theory describes the behavior of matter and energy at very small scales.,Quantum mechanics.,TrueFalse,TRUE,210,1,HS-PS4-3,Quantum theory,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 12,Gene expression can be regulated by the cell.,Gene regulation.,TrueFalse,TRUE,180,1,HS-LS1-1,Gene expression,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 12,Climate models use scientific data to project future climate conditions.,Climate modeling.,TrueFalse,TRUE,185,1,HS-ESS3-5,Climate models,NGSS.SEP.2 NGSS.DCI.ESS3
+Science,Grade 12,The universe is expanding.,Cosmic expansion.,TrueFalse,TRUE,175,1,HS-ESS1-2,Expanding universe,NGSS.SEP.4 NGSS.DCI.ESS1
+Science,Grade 12,"The diagram shows energy flow through trophic levels with decreasing energy at each level. {sci_tf_g12_q6.png}",Image: energy pyramid.,TrueFalse,TRUE,205,2,HS-LS2-4,Energy flow in ecosystems,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.5
+Science,Grade 12,Sustainable design considers environmental and social impacts.,Sustainable engineering.,TrueFalse,TRUE,168,1,HS-ETS1-3,Sustainable design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 12,"When the data showed that the period of oscillation depended on spring constant and mass, the claim ""period depends on k and m"" is supported.",Claim from described dataset.,TrueFalse,TRUE,215,2,HS-PS2-1,Data claim about simple harmonic motion,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 12,Natural selection acts on heritable variation in a population.,Mechanism of evolution.,TrueFalse,TRUE,190,1,HS-LS4-2,Natural selection,NGSS.SEP.4 NGSS.DCI.LS4
+Science,Grade 12,"The table showed that coral bleaching increased with rising sea surface temperature; the claim ""warming oceans affect coral health"" is correct.",Claim from described dataset.,TrueFalse,TRUE,220,2,HS-ESS3-5,Data claim about climate and ecosystems,NGSS.SEP.4 NGSS.DCI.ESS3 NGSS.CCC.2

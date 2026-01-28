@@ -1,0 +1,121 @@
+Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+English,Grade 1,A sentence begins with a capital letter.,Capitalization rule.,TrueFalse,TRUE,100,1,CCSS.ELA-LITERACY.L.1.2,Capitalization,CCSS.ELA.CCR.L.2
+English,Grade 1,A sentence ends with a period question mark or exclamation point.,End punctuation.,TrueFalse,TRUE,102,1,CCSS.ELA-LITERACY.L.1.2,End punctuation,CCSS.ELA.CCR.L.2
+English,Grade 1,The word "cat" has three sounds.,Phonemic awareness.,TrueFalse,TRUE,105,1,CCSS.ELA-LITERACY.RF.1.2,Phonemic awareness,CCSS.ELA.CCR.R.2
+English,Grade 1,"In the sentence ""The dog runs"" the word ""runs"" tells what the dog does.",Verb identification.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.1.1,Verbs,CCSS.ELA.CCR.L.1
+English,Grade 1,The word "I" is always written with a capital letter.,Capital I rule.,TrueFalse,TRUE,108,1,CCSS.ELA-LITERACY.L.1.2,Capital I,CCSS.ELA.CCR.L.2
+English,Grade 1,"The sentence ""The sun is hot"" has correct capitalization. {eng_tf_g1_q6.png}",Image: sentence with capitalization.,TrueFalse,TRUE,120,2,CCSS.ELA-LITERACY.L.1.2,Capitalization in sentence,CCSS.ELA.CCR.L.2
+English,Grade 1,"In the story a girl finds a red ball. The ball is red. So the main thing she found is a ball.",Main idea from short text.,TrueFalse,TRUE,118,2,CCSS.ELA-LITERACY.RL.1.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 1,Two words can have the same meaning.,Synonyms concept.,TrueFalse,TRUE,112,1,CCSS.ELA-LITERACY.L.1.5,Word relationships,CCSS.ELA.CCR.L.5
+English,Grade 1,"We write ""the dog"" not ""the Dog"" when it is not at the start of a sentence.",Capitalization rule.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.1.2,Capitalization,CCSS.ELA.CCR.L.2
+English,Grade 1,A question must end with a period.,End punctuation.,TrueFalse,FALSE,108,1,CCSS.ELA-LITERACY.L.1.2,Question punctuation,CCSS.ELA.CCR.L.2
+English,Grade 2,A noun names a person place or thing.,Definition of noun.,TrueFalse,TRUE,105,1,CCSS.ELA-LITERACY.L.2.1,Nouns,CCSS.ELA.CCR.L.1
+English,Grade 2,An adjective describes a noun.,Definition of adjective.,TrueFalse,TRUE,108,1,CCSS.ELA-LITERACY.L.2.1,Adjectives,CCSS.ELA.CCR.L.1
+English,Grade 2,"In ""The cats play"" the subject and verb agree.",Subject-verb agreement.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.2.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 2,"The word ""unhappy"" has a prefix that means ""not.""",Prefix meaning.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.2.4,Prefixes,CCSS.ELA.CCR.L.4
+English,Grade 2,"In the passage ""It was a rainy day. We stayed inside."" the two sentences are correctly separated.",Sentence boundaries.,TrueFalse,TRUE,118,2,CCSS.ELA-LITERACY.L.2.2,Sentence punctuation,CCSS.ELA.CCR.L.2
+English,Grade 2,"The sign says ""No running."" So we should walk. {eng_tf_g2_q6.png}",Image: sign with rule; infer behavior.,TrueFalse,TRUE,128,2,CCSS.ELA-LITERACY.RI.2.1,Inference from text,CCSS.ELA.CCR.R.1
+English,Grade 2,"In ""She runs fast"" the word ""fast"" tells how she runs.",Adverb function.,TrueFalse,TRUE,112,1,CCSS.ELA-LITERACY.L.2.1,Adverbs,CCSS.ELA.CCR.L.1
+English,Grade 2,A comma is used between the day and year in a date.,Comma in date.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.L.2.2,Commas in dates,CCSS.ELA.CCR.L.2
+English,Grade 2,"The sentence ""The boy and the girl plays"" has correct subject-verb agreement.",Subject-verb agreement.,TrueFalse,FALSE,125,2,CCSS.ELA-LITERACY.L.2.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 2,"In the short text the fox hid under a bush. So the fox was hiding.",Inference from short text.,TrueFalse,TRUE,130,2,CCSS.ELA-LITERACY.RL.2.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 3,The subject of a sentence tells who or what the sentence is about.,Definition of subject.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.3.1,Sentence parts,CCSS.ELA.CCR.L.1
+English,Grade 3,A paragraph can have more than one main idea.,Paragraph structure.,TrueFalse,FALSE,125,1,CCSS.ELA-LITERACY.RI.3.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 3,Quotation marks are used around the exact words someone said.,Quotation marks.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.3.2,Quotation marks,CCSS.ELA.CCR.L.2
+English,Grade 3,"The word ""reread"" contains a prefix meaning ""again.""",Prefix meaning.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.L.3.4,Prefixes,CCSS.ELA.CCR.L.4
+English,Grade 3,"In ""The dogs bark loudly"" the subject is plural and the verb agrees.",Subject-verb agreement.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.3.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 3,"The sentence ""Where did you go"" needs a question mark at the end. {eng_tf_g3_q6.png}",Image: sentence missing question mark.,TrueFalse,TRUE,132,2,CCSS.ELA-LITERACY.L.3.2,Punctuation,CCSS.ELA.CCR.L.2
+English,Grade 3,"In the passage ""The bird built a nest. It laid three eggs."" the word ""It"" refers to the bird.",Pronoun reference.,TrueFalse,TRUE,128,2,CCSS.ELA-LITERACY.L.3.1,Pronoun reference,CCSS.ELA.CCR.L.1
+English,Grade 3,A compound sentence joins two related ideas with a comma and conjunction.,Compound sentence.,TrueFalse,TRUE,135,2,CCSS.ELA-LITERACY.L.3.1,Compound sentences,CCSS.ELA.CCR.L.1
+English,Grade 3,"The author wrote ""The sky turned dark"" mainly to show setting.",Author's purpose.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.RL.3.6,Author's purpose,CCSS.ELA.CCR.R.6
+English,Grade 3,"The sentence ""He don't like it"" uses correct grammar.",Standard grammar.,TrueFalse,FALSE,130,1,CCSS.ELA-LITERACY.L.3.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 4,A run-on sentence joins two or more sentences without correct punctuation or conjunction.,Definition of run-on.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.4.1,Run-on sentences,CCSS.ELA.CCR.L.1
+English,Grade 4,The comparative form of "big" is "bigger.",Comparative adjectives.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.4.1,Comparative adjectives,CCSS.ELA.CCR.L.1
+English,Grade 4,"In the text ""The storm damaged the roof. Repairs cost a lot."" the second sentence is a detail that supports the first.",Main idea and detail.,TrueFalse,TRUE,140,2,CCSS.ELA-LITERACY.RI.4.2,Main idea and details,CCSS.ELA.CCR.R.2
+English,Grade 4,A possessive noun shows ownership.,Possessive nouns.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.4.2,Possessives,CCSS.ELA.CCR.L.2
+English,Grade 4,"The sentence ""She goed to the store"" has a verb error.",Past tense verb.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.4.1,Verb tense,CCSS.ELA.CCR.L.1
+English,Grade 4,"The paragraph has a topic sentence followed by supporting details. {eng_tf_g4_q6.png}",Image: short paragraph structure.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.RI.4.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 4,"In ""The team won the game. They were happy."" the word ""They"" refers to the team.",Pronoun reference.,TrueFalse,TRUE,132,2,CCSS.ELA-LITERACY.L.4.1,Pronoun reference,CCSS.ELA.CCR.L.1
+English,Grade 4,"Revising for clarity means making the writing easier to understand.",Revision definition.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.W.4.5,Revise for clarity,CCSS.ELA.CCR.W.5
+English,Grade 4,"The word ""unnecessary"" has a prefix and a suffix.",Word structure.,TrueFalse,TRUE,135,1,CCSS.ELA-LITERACY.L.4.4,Prefixes and suffixes,CCSS.ELA.CCR.L.4
+English,Grade 4,"The sentence ""Me and him went"" uses correct pronoun case.",Pronoun case.,TrueFalse,FALSE,142,2,CCSS.ELA-LITERACY.L.4.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 5,A clause must have a subject and a verb.,Definition of clause.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.5.1,Clauses,CCSS.ELA.CCR.L.1
+English,Grade 5,Correlative conjunctions like "either...or" come in pairs.,Correlative conjunctions.,TrueFalse,TRUE,130,1,CCSS.ELA-LITERACY.L.5.1,Correlative conjunctions,CCSS.ELA.CCR.L.1
+English,Grade 5,"In the passage the narrator describes the forest as quiet and dark. So the mood is calm and cheerful.",Inference about mood.,TrueFalse,FALSE,155,2,CCSS.ELA-LITERACY.RL.5.1,Inference and mood,CCSS.ELA.CCR.R.1
+English,Grade 5,"The sentence ""The list includes apples oranges and bananas"" needs commas between items.",Commas in series.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.5.2,Commas in series,CCSS.ELA.CCR.L.2
+English,Grade 5,An idiom is a phrase whose meaning is different from the literal meaning of the words.,Definition of idiom.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.L.5.5,Idioms,CCSS.ELA.CCR.L.5
+English,Grade 5,"The author uses headings and subheadings to organize the article. {eng_tf_g5_q6.png}",Image: text with headings.,TrueFalse,TRUE,148,2,CCSS.ELA-LITERACY.RI.5.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 5,"In ""After the game we went home"" the word ""After"" begins a dependent clause.",Dependent clause.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.L.5.1,Dependent clauses,CCSS.ELA.CCR.L.1
+English,Grade 5,"The sentence ""Their going to the park"" has a spelling error that changes meaning.",Homophone their/there.,TrueFalse,TRUE,142,2,CCSS.ELA-LITERACY.L.5.2,Correct spelling,CCSS.ELA.CCR.L.2
+English,Grade 5,"Editing includes checking spelling punctuation and grammar.",Editing definition.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.W.5.5,Editing,CCSS.ELA.CCR.W.5
+English,Grade 5,"The word ""disagree"" has a prefix that means ""not"" or ""opposite.""",Prefix meaning.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.L.5.4,Prefix meaning,CCSS.ELA.CCR.L.4
+English,Grade 6,A pronoun must agree in number with its antecedent.,Pronoun-antecedent agreement.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.6.1,Pronoun agreement,CCSS.ELA.CCR.L.1
+English,Grade 6,"In ""The data shows a trend"" the singular subject ""data"" can take a singular verb in formal use.",Subject-verb agreement.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.6.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 6,"The author states ""Sales increased by 20%."" So the author is making a claim supported by data.",Identify claim in text.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.RI.6.1,Cite evidence,CCSS.ELA.CCR.R.1
+English,Grade 6,Active voice means the subject performs the action.,Active voice.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.6.3,Active voice,CCSS.ELA.CCR.L.3
+English,Grade 6,"The sentence ""She is older than me"" uses correct pronoun case after ""than.""",Pronoun case.,TrueFalse,FALSE,155,2,CCSS.ELA-LITERACY.L.6.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 6,"The passage uses cause-and-effect structure to explain the outcome. {eng_tf_g6_q6.png}",Image: short passage with cause-effect.,TrueFalse,TRUE,158,2,CCSS.ELA-LITERACY.RI.6.5,Text structure,CCSS.ELA.CCR.R.5
+English,Grade 6,A colon can introduce a list.,Use of colon.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.L.6.2,Colons,CCSS.ELA.CCR.L.2
+English,Grade 6,"In the story the character avoids conflict. So we can infer the character prefers peace.",Character inference.,TrueFalse,TRUE,152,2,CCSS.ELA-LITERACY.RL.6.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 6,"A thesis statement should state the main point of an essay.",Thesis statement.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.W.6.2,Thesis statement,CCSS.ELA.CCR.W.2
+English,Grade 6,"The word ""benevolent"" in ""a benevolent ruler"" likely means kind or generous.",Context clues.,TrueFalse,TRUE,142,2,CCSS.ELA-LITERACY.L.6.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 7,A modifier should be placed next to the word it modifies.,Misplaced modifier.,TrueFalse,TRUE,130,1,CCSS.ELA-LITERACY.L.7.1,Modifier placement,CCSS.ELA.CCR.L.1
+English,Grade 7,"In ""Neither the teacher nor the students were ready"" the verb agrees with the closer subject.",Subject-verb agreement.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.7.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 7,"The author compares the city to a beehive. So the author is using a simile.",Identify figurative language.,TrueFalse,TRUE,148,2,CCSS.ELA-LITERACY.RL.7.4,Figurative language,CCSS.ELA.CCR.R.4
+English,Grade 7,A semicolon can join two closely related independent clauses.,Semicolon use.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.7.2,Semicolons,CCSS.ELA.CCR.L.2
+English,Grade 7,"The sentence ""The reason is because"" is redundant.",Word choice.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.L.7.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 7,"The chart shows three main categories. {eng_tf_g7_q6.png}",Image: simple chart or diagram.,TrueFalse,TRUE,152,2,CCSS.ELA-LITERACY.RI.7.7,Integrate information,CCSS.ELA.CCR.R.7
+English,Grade 7,"In the argument the author gives two reasons and then a conclusion. So the structure is logical.",Argument structure.,TrueFalse,TRUE,155,2,CCSS.ELA-LITERACY.RI.7.8,Argument structure,CCSS.ELA.CCR.R.8
+English,Grade 7,"Using ""they"" as a singular pronoun for a known person is accepted in modern usage.",Pronoun usage.,TrueFalse,TRUE,142,1,CCSS.ELA-LITERACY.L.7.1,Pronoun usage,CCSS.ELA.CCR.L.1
+English,Grade 7,"A counterclaim presents an opposing view in an argument.",Counterclaim definition.,TrueFalse,TRUE,135,1,CCSS.ELA-LITERACY.W.7.1,Counterclaim,CCSS.ELA.CCR.W.1
+English,Grade 7,"The word ""audacious"" in ""an audacious plan"" likely means bold or daring.",Context clues.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.L.7.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 8,A verb in the subjunctive mood can express a wish or condition contrary to fact.,Subjunctive mood.,TrueFalse,TRUE,155,2,CCSS.ELA-LITERACY.L.8.1,Verb mood,CCSS.ELA.CCR.L.1
+English,Grade 8,"In ""If I were you I would go"" the verb ""were"" is correct in formal English.",Subjunctive.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.L.8.1,Subjunctive mood,CCSS.ELA.CCR.L.1
+English,Grade 8,"The author uses a first-person narrator. So the reader sees only that character's thoughts.",Point of view.,TrueFalse,TRUE,158,2,CCSS.ELA-LITERACY.RL.8.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 8,An ellipsis can show that words were omitted from a quotation.,Ellipsis use.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.L.8.2,Punctuation,CCSS.ELA.CCR.L.2
+English,Grade 8,"The sentence ""Each of the students has their book"" may be revised for formal agreement.",Pronoun agreement.,TrueFalse,TRUE,160,2,CCSS.ELA-LITERACY.L.8.1,Pronoun-antecedent,CCSS.ELA.CCR.L.1
+English,Grade 8,"The infographic summarizes the main steps. {eng_tf_g8_q6.png}",Image: infographic with steps.,TrueFalse,TRUE,162,2,CCSS.ELA-LITERACY.RI.8.7,Multiple sources,CCSS.ELA.CCR.R.7
+English,Grade 8,"In the passage the author appeals to logic by citing statistics. So this is an appeal to ethos.",Rhetorical appeal.,TrueFalse,FALSE,168,2,CCSS.ELA-LITERACY.RI.8.8,Rhetorical appeals,CCSS.ELA.CCR.R.8
+English,Grade 8,"The word ""ambiguous"" means unclear or having more than one meaning.",Vocabulary.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.8.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 8,"A strong conclusion restates the main idea and leaves a final thought.",Conclusion paragraph.,TrueFalse,TRUE,138,1,CCSS.ELA-LITERACY.W.8.2,Conclusion,CCSS.ELA.CCR.W.2
+English,Grade 8,"The phrase ""due to the fact that"" can often be replaced with ""because.""",Word choice and concision.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.8.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 9,"In ""The team are playing well"" British usage allows a collective noun with a plural verb.",Grammar variation.,TrueFalse,TRUE,165,2,CCSS.ELA-LITERACY.L.9-10.1,Grammar and usage,CCSS.ELA.CCR.L.1
+English,Grade 9,"The author uses dark imagery in the opening. So the tone is likely serious or somber.",Tone and imagery.,TrueFalse,TRUE,170,2,CCSS.ELA-LITERACY.RL.9-10.4,Tone and word choice,CCSS.ELA.CCR.R.4
+English,Grade 9,A dash can set off an abrupt break or emphasis in a sentence.,Dash use.,TrueFalse,TRUE,140,1,CCSS.ELA-LITERACY.L.9-10.2,Dashes,CCSS.ELA.CCR.L.2
+English,Grade 9,"The sentence ""Neither of the options are suitable"" has a subject-verb agreement error in formal writing.",Subject-verb agreement.,TrueFalse,TRUE,158,2,CCSS.ELA-LITERACY.L.9-10.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 9,"In the argument the author refutes the opposing view. So the author is addressing a counterclaim.",Counterclaim and refutation.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.RI.9-10.8,Argument and counterclaim,CCSS.ELA.CCR.R.8
+English,Grade 9,"The passage uses formal diction and complex sentences. {eng_tf_g9_q6.png}",Image: short passage; identify style.,TrueFalse,TRUE,178,2,CCSS.ELA-LITERACY.RL.9-10.4,Style and diction,CCSS.ELA.CCR.R.4
+English,Grade 9,"The word ""pragmatic"" in ""a pragmatic approach"" means practical.",Vocabulary in context.,TrueFalse,TRUE,152,2,CCSS.ELA-LITERACY.L.9-10.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 9,"Claims in an essay should be supported by evidence from the text or research.",Evidence for claims.,TrueFalse,TRUE,148,1,CCSS.ELA-LITERACY.W.9-10.1,Support claims,CCSS.ELA.CCR.W.1
+English,Grade 9,"Parallel structure means using the same grammatical form for items in a series.",Parallel structure.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.9-10.1,Parallel structure,CCSS.ELA.CCR.L.1
+English,Grade 9,"The phrase ""in order to"" can often be shortened to ""to.""",Concision.,TrueFalse,TRUE,162,2,CCSS.ELA-LITERACY.L.9-10.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 10,"Who" is used for subjects and ""whom"" for objects in formal English.,Who vs whom.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.9-10.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 10,"The author shifts from past to present tense to create immediacy. So the shift is intentional.",Author's craft.,TrueFalse,TRUE,178,2,CCSS.ELA-LITERACY.RL.9-10.5,Structure and style,CCSS.ELA.CCR.R.5
+English,Grade 10,A comma splice joins two independent clauses with only a comma.,Comma splice.,TrueFalse,TRUE,145,1,CCSS.ELA-LITERACY.L.9-10.2,Comma splice,CCSS.ELA.CCR.L.2
+English,Grade 10,"In ""The data suggest a trend"" the verb ""suggest"" agrees with the collective noun ""data.""",Subject-verb agreement.,TrueFalse,TRUE,168,2,CCSS.ELA-LITERACY.L.9-10.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 10,"The source is from a university. So it is likely credible for academic writing.",Evaluate source credibility.,TrueFalse,TRUE,182,2,CCSS.ELA-LITERACY.RI.9-10.8,Source credibility,CCSS.ELA.CCR.R.8
+English,Grade 10,"The sentence contains a nonrestrictive clause set off by commas. {eng_tf_g10_q6.png}",Image: sentence with commas.,TrueFalse,TRUE,172,2,CCSS.ELA-LITERACY.L.9-10.2,Nonrestrictive clause,CCSS.ELA.CCR.L.2
+English,Grade 10,"The word ""ubiquitous"" means rare or uncommon.",Vocabulary.,TrueFalse,FALSE,160,1,CCSS.ELA-LITERACY.L.9-10.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 10,"A works cited list gives full publication details for sources used.",Works cited.,TrueFalse,TRUE,138,1,CCSS.ELA-LITERACY.W.9-10.8,Research and citation,CCSS.ELA.CCR.W.8
+English,Grade 10,"The author uses irony when the character says the opposite of what is meant.",Irony.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.RL.9-10.4,Literary devices,CCSS.ELA.CCR.R.4
+English,Grade 10,"Avoiding plagiarism means giving credit when you use someone else's ideas or words.",Plagiarism.,TrueFalse,TRUE,150,1,CCSS.ELA-LITERACY.W.9-10.8,Plagiarism,CCSS.ELA.CCR.W.8
+English,Grade 11,"The subjunctive ""I suggest that he go"" is correct in formal English.",Subjunctive.,TrueFalse,TRUE,165,2,CCSS.ELA-LITERACY.L.11-12.1,Subjunctive,CCSS.ELA.CCR.L.1
+English,Grade 11,"The author alludes to a famous historical event. So the reader needs context to fully understand.",Allusion.,TrueFalse,TRUE,185,2,CCSS.ELA-LITERACY.RL.11-12.4,Allusion,CCSS.ELA.CCR.R.4
+English,Grade 11,"A restrictive clause is not set off by commas because it is essential to the meaning.",Restrictive vs nonrestrictive.,TrueFalse,TRUE,158,1,CCSS.ELA-LITERACY.L.11-12.2,Restrictive clause,CCSS.ELA.CCR.L.2
+English,Grade 11,"In the satire the author exaggerates flaws to criticize society.",Satire.,TrueFalse,TRUE,178,2,CCSS.ELA-LITERACY.RL.11-12.6,Author's purpose,CCSS.ELA.CCR.R.6
+English,Grade 11,"The sentence ""The committee has issued their report"" may be revised to avoid a pronoun agreement issue.",Pronoun agreement.,TrueFalse,TRUE,172,2,CCSS.ELA-LITERACY.L.11-12.1,Pronoun-antecedent,CCSS.ELA.CCR.L.1
+English,Grade 11,"The graph supports the author's claim about trends. {eng_tf_g11_q6.png}",Image: graph with claim.,TrueFalse,TRUE,192,2,CCSS.ELA-LITERACY.RI.11-12.7,Integrate sources,CCSS.ELA.CCR.R.7
+English,Grade 11,"The word ""paradigm"" often means a model or framework.",Vocabulary.,TrueFalse,TRUE,162,1,CCSS.ELA-LITERACY.L.11-12.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 11,"A synthesis essay combines ideas from multiple sources into a coherent argument.",Synthesis.,TrueFalse,TRUE,168,1,CCSS.ELA-LITERACY.W.11-12.8,Research and synthesis,CCSS.ELA.CCR.W.8
+English,Grade 11,"The author uses a periodic sentence to create emphasis by delaying the main idea.",Sentence variety.,TrueFalse,TRUE,188,2,CCSS.ELA-LITERACY.RL.11-12.5,Sentence structure,CCSS.ELA.CCR.R.5
+English,Grade 11,"The phrase ""at this point in time"" can be replaced with ""now.""",Concision.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.L.11-12.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 12,"The passive voice is appropriate when the doer of the action is unknown or less important.",Passive voice use.,TrueFalse,TRUE,170,2,CCSS.ELA-LITERACY.L.11-12.3,Passive voice,CCSS.ELA.CCR.L.3
+English,Grade 12,"The author uses stream of consciousness. So the narrative follows the character's thoughts closely.",Narrative technique.,TrueFalse,TRUE,195,2,CCSS.ELA-LITERACY.RL.11-12.5,Narrative technique,CCSS.ELA.CCR.R.5
+English,Grade 12,"An apostrophe is used to form the possessive of a plural noun ending in s.",Possessive apostrophe.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.11-12.2,Apostrophes,CCSS.ELA.CCR.L.2
+English,Grade 12,"In academic writing hedging language (e.g. ""may"" ""suggest"") can show appropriate caution.",Academic style.,TrueFalse,TRUE,182,2,CCSS.ELA-LITERACY.W.11-12.2,Academic writing,CCSS.ELA.CCR.W.2
+English,Grade 12,"The author appeals to pathos by describing emotional experiences.",Rhetorical appeal.,TrueFalse,TRUE,188,2,CCSS.ELA-LITERACY.RI.11-12.6,Rhetorical analysis,CCSS.ELA.CCR.R.6
+English,Grade 12,"The excerpt uses technical vocabulary appropriate for the discipline. {eng_tf_g12_q6.png}",Image: technical passage.,TrueFalse,TRUE,198,2,CCSS.ELA-LITERACY.L.11-12.6,Domain-specific vocabulary,CCSS.ELA.CCR.L.6
+English,Grade 12,"The word ""equivocate"" means to be vague or avoid commitment.",Vocabulary.,TrueFalse,TRUE,168,1,CCSS.ELA-LITERACY.L.11-12.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 12,"A primary source is a first-hand account or original document.",Primary vs secondary source.,TrueFalse,TRUE,160,1,CCSS.ELA-LITERACY.W.11-12.8,Source types,CCSS.ELA.CCR.W.8
+English,Grade 12,"The conclusion introduces new evidence that was not in the body.",Conclusion paragraph.,TrueFalse,FALSE,178,2,CCSS.ELA-LITERACY.W.11-12.2,Conclusion,CCSS.ELA.CCR.W.2
+English,Grade 12,"Varying sentence length can improve the rhythm and clarity of prose.",Style and sentence variety.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.L.11-12.3,Sentence variety,CCSS.ELA.CCR.L.3

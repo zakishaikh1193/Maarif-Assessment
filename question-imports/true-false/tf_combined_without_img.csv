@@ -1,0 +1,324 @@
+Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+English,Grade 1,A sentence begins with a capital letter.,Capitalization rule.,TrueFalse,TRUE,100,1,CCSS.ELA-LITERACY.L.1.2,Capitalization,CCSS.ELA.CCR.L.2
+English,Grade 1,A sentence ends with a period question mark or exclamation point.,End punctuation.,TrueFalse,TRUE,102,1,CCSS.ELA-LITERACY.L.1.2,End punctuation,CCSS.ELA.CCR.L.2
+English,Grade 1,"The word ""cat"" has three sounds.",Phonemic awareness.,TrueFalse,TRUE,105,1,CCSS.ELA-LITERACY.RF.1.2,Phonemic awareness,CCSS.ELA.CCR.R.2
+English,Grade 1,"In the sentence ""The dog runs"" the word ""runs"" tells what the dog does.",Verb identification.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.1.1,Verbs,CCSS.ELA.CCR.L.1
+English,Grade 1,"The word ""I"" is always written with a capital letter.",Capital I rule.,TrueFalse,TRUE,108,1,CCSS.ELA-LITERACY.L.1.2,Capital I,CCSS.ELA.CCR.L.2
+English,Grade 1,In the story a girl finds a red ball. The ball is red. So the main thing she found is a ball.,Main idea from short text.,TrueFalse,TRUE,118,2,CCSS.ELA-LITERACY.RL.1.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 1,Two words can have the same meaning.,Synonyms concept.,TrueFalse,TRUE,112,1,CCSS.ELA-LITERACY.L.1.5,Word relationships,CCSS.ELA.CCR.L.5
+English,Grade 1,"We write ""the dog"" not ""the Dog"" when it is not at the start of a sentence.",Capitalization rule.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.1.2,Capitalization,CCSS.ELA.CCR.L.2
+English,Grade 1,A question must end with a period.,End punctuation.,TrueFalse,FALSE,108,1,CCSS.ELA-LITERACY.L.1.2,Question punctuation,CCSS.ELA.CCR.L.2
+English,Grade 2,A noun names a person place or thing.,Definition of noun.,TrueFalse,TRUE,105,1,CCSS.ELA-LITERACY.L.2.1,Nouns,CCSS.ELA.CCR.L.1
+English,Grade 2,An adjective describes a noun.,Definition of adjective.,TrueFalse,TRUE,108,1,CCSS.ELA-LITERACY.L.2.1,Adjectives,CCSS.ELA.CCR.L.1
+English,Grade 2,"In ""The cats play"" the subject and verb agree.",Subject-verb agreement.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.2.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 2,"The word ""unhappy"" has a prefix that means ""not.""",Prefix meaning.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.2.4,Prefixes,CCSS.ELA.CCR.L.4
+English,Grade 2,"In the passage ""It was a rainy day. We stayed inside."" the two sentences are correctly separated.",Sentence boundaries.,TrueFalse,TRUE,118,2,CCSS.ELA-LITERACY.L.2.2,Sentence punctuation,CCSS.ELA.CCR.L.2
+English,Grade 2,"In ""She runs fast"" the word ""fast"" tells how she runs.",Adverb function.,TrueFalse,TRUE,112,1,CCSS.ELA-LITERACY.L.2.1,Adverbs,CCSS.ELA.CCR.L.1
+English,Grade 2,A comma is used between the day and year in a date.,Comma in date.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.L.2.2,Commas in dates,CCSS.ELA.CCR.L.2
+English,Grade 2,"The sentence ""The boy and the girl plays"" has correct subject-verb agreement.",Subject-verb agreement.,TrueFalse,FALSE,125,2,CCSS.ELA-LITERACY.L.2.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 2,In the short text the fox hid under a bush. So the fox was hiding.,Inference from short text.,TrueFalse,TRUE,130,2,CCSS.ELA-LITERACY.RL.2.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 3,The subject of a sentence tells who or what the sentence is about.,Definition of subject.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.3.1,Sentence parts,CCSS.ELA.CCR.L.1
+English,Grade 3,A paragraph can have more than one main idea.,Paragraph structure.,TrueFalse,FALSE,125,1,CCSS.ELA-LITERACY.RI.3.2,Main idea,CCSS.ELA.CCR.R.2
+English,Grade 3,Quotation marks are used around the exact words someone said.,Quotation marks.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.3.2,Quotation marks,CCSS.ELA.CCR.L.2
+English,Grade 3,"The word ""reread"" contains a prefix meaning ""again.""",Prefix meaning.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.L.3.4,Prefixes,CCSS.ELA.CCR.L.4
+English,Grade 3,"In ""The dogs bark loudly"" the subject is plural and the verb agrees.",Subject-verb agreement.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.3.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 3,"In the passage ""The bird built a nest. It laid three eggs."" the word ""It"" refers to the bird.",Pronoun reference.,TrueFalse,TRUE,128,2,CCSS.ELA-LITERACY.L.3.1,Pronoun reference,CCSS.ELA.CCR.L.1
+English,Grade 3,A compound sentence joins two related ideas with a comma and conjunction.,Compound sentence.,TrueFalse,TRUE,135,2,CCSS.ELA-LITERACY.L.3.1,Compound sentences,CCSS.ELA.CCR.L.1
+English,Grade 3,"The author wrote ""The sky turned dark"" mainly to show setting.",Author's purpose.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.RL.3.6,Author's purpose,CCSS.ELA.CCR.R.6
+English,Grade 3,"The sentence ""He don't like it"" uses correct grammar.",Standard grammar.,TrueFalse,FALSE,130,1,CCSS.ELA-LITERACY.L.3.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 4,A run-on sentence joins two or more sentences without correct punctuation or conjunction.,Definition of run-on.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.4.1,Run-on sentences,CCSS.ELA.CCR.L.1
+English,Grade 4,"The comparative form of ""big"" is ""bigger.""",Comparative adjectives.,TrueFalse,TRUE,115,1,CCSS.ELA-LITERACY.L.4.1,Comparative adjectives,CCSS.ELA.CCR.L.1
+English,Grade 4,"In the text ""The storm damaged the roof. Repairs cost a lot."" the second sentence is a detail that supports the first.",Main idea and detail.,TrueFalse,TRUE,140,2,CCSS.ELA-LITERACY.RI.4.2,Main idea and details,CCSS.ELA.CCR.R.2
+English,Grade 4,A possessive noun shows ownership.,Possessive nouns.,TrueFalse,TRUE,110,1,CCSS.ELA-LITERACY.L.4.2,Possessives,CCSS.ELA.CCR.L.2
+English,Grade 4,"The sentence ""She goed to the store"" has a verb error.",Past tense verb.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.4.1,Verb tense,CCSS.ELA.CCR.L.1
+English,Grade 4,"In ""The team won the game. They were happy."" the word ""They"" refers to the team.",Pronoun reference.,TrueFalse,TRUE,132,2,CCSS.ELA-LITERACY.L.4.1,Pronoun reference,CCSS.ELA.CCR.L.1
+English,Grade 4,Revising for clarity means making the writing easier to understand.,Revision definition.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.W.4.5,Revise for clarity,CCSS.ELA.CCR.W.5
+English,Grade 4,"The word ""unnecessary"" has a prefix and a suffix.",Word structure.,TrueFalse,TRUE,135,1,CCSS.ELA-LITERACY.L.4.4,Prefixes and suffixes,CCSS.ELA.CCR.L.4
+English,Grade 4,"The sentence ""Me and him went"" uses correct pronoun case.",Pronoun case.,TrueFalse,FALSE,142,2,CCSS.ELA-LITERACY.L.4.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 5,A clause must have a subject and a verb.,Definition of clause.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.5.1,Clauses,CCSS.ELA.CCR.L.1
+English,Grade 5,"Correlative conjunctions like ""either...or"" come in pairs.",Correlative conjunctions.,TrueFalse,TRUE,130,1,CCSS.ELA-LITERACY.L.5.1,Correlative conjunctions,CCSS.ELA.CCR.L.1
+English,Grade 5,In the passage the narrator describes the forest as quiet and dark. So the mood is calm and cheerful.,Inference about mood.,TrueFalse,FALSE,155,2,CCSS.ELA-LITERACY.RL.5.1,Inference and mood,CCSS.ELA.CCR.R.1
+English,Grade 5,"The sentence ""The list includes apples oranges and bananas"" needs commas between items.",Commas in series.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.5.2,Commas in series,CCSS.ELA.CCR.L.2
+English,Grade 5,An idiom is a phrase whose meaning is different from the literal meaning of the words.,Definition of idiom.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.L.5.5,Idioms,CCSS.ELA.CCR.L.5
+English,Grade 5,"In ""After the game we went home"" the word ""After"" begins a dependent clause.",Dependent clause.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.L.5.1,Dependent clauses,CCSS.ELA.CCR.L.1
+English,Grade 5,"The sentence ""Their going to the park"" has a spelling error that changes meaning.",Homophone their/there.,TrueFalse,TRUE,142,2,CCSS.ELA-LITERACY.L.5.2,Correct spelling,CCSS.ELA.CCR.L.2
+English,Grade 5,Editing includes checking spelling punctuation and grammar.,Editing definition.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.W.5.5,Editing,CCSS.ELA.CCR.W.5
+English,Grade 5,"The word ""disagree"" has a prefix that means ""not"" or ""opposite.""",Prefix meaning.,TrueFalse,TRUE,122,1,CCSS.ELA-LITERACY.L.5.4,Prefix meaning,CCSS.ELA.CCR.L.4
+English,Grade 6,A pronoun must agree in number with its antecedent.,Pronoun-antecedent agreement.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.6.1,Pronoun agreement,CCSS.ELA.CCR.L.1
+English,Grade 6,"In ""The data shows a trend"" the singular subject ""data"" can take a singular verb in formal use.",Subject-verb agreement.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.6.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 6,"The author states ""Sales increased by 20%."" So the author is making a claim supported by data.",Identify claim in text.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.RI.6.1,Cite evidence,CCSS.ELA.CCR.R.1
+English,Grade 6,Active voice means the subject performs the action.,Active voice.,TrueFalse,TRUE,120,1,CCSS.ELA-LITERACY.L.6.3,Active voice,CCSS.ELA.CCR.L.3
+English,Grade 6,"The sentence ""She is older than me"" uses correct pronoun case after ""than.""",Pronoun case.,TrueFalse,FALSE,155,2,CCSS.ELA-LITERACY.L.6.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 6,A colon can introduce a list.,Use of colon.,TrueFalse,TRUE,118,1,CCSS.ELA-LITERACY.L.6.2,Colons,CCSS.ELA.CCR.L.2
+English,Grade 6,In the story the character avoids conflict. So we can infer the character prefers peace.,Character inference.,TrueFalse,TRUE,152,2,CCSS.ELA-LITERACY.RL.6.1,Inference,CCSS.ELA.CCR.R.1
+English,Grade 6,A thesis statement should state the main point of an essay.,Thesis statement.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.W.6.2,Thesis statement,CCSS.ELA.CCR.W.2
+English,Grade 6,"The word ""benevolent"" in ""a benevolent ruler"" likely means kind or generous.",Context clues.,TrueFalse,TRUE,142,2,CCSS.ELA-LITERACY.L.6.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 7,A modifier should be placed next to the word it modifies.,Misplaced modifier.,TrueFalse,TRUE,130,1,CCSS.ELA-LITERACY.L.7.1,Modifier placement,CCSS.ELA.CCR.L.1
+English,Grade 7,"In ""Neither the teacher nor the students were ready"" the verb agrees with the closer subject.",Subject-verb agreement.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.7.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 7,The author compares the city to a beehive. So the author is using a simile.,Identify figurative language.,TrueFalse,TRUE,148,2,CCSS.ELA-LITERACY.RL.7.4,Figurative language,CCSS.ELA.CCR.R.4
+English,Grade 7,A semicolon can join two closely related independent clauses.,Semicolon use.,TrueFalse,TRUE,125,1,CCSS.ELA-LITERACY.L.7.2,Semicolons,CCSS.ELA.CCR.L.2
+English,Grade 7,"The sentence ""The reason is because"" is redundant.",Word choice.,TrueFalse,TRUE,138,2,CCSS.ELA-LITERACY.L.7.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 7,In the argument the author gives two reasons and then a conclusion. So the structure is logical.,Argument structure.,TrueFalse,TRUE,155,2,CCSS.ELA-LITERACY.RI.7.8,Argument structure,CCSS.ELA.CCR.R.8
+English,Grade 7,"Using ""they"" as a singular pronoun for a known person is accepted in modern usage.",Pronoun usage.,TrueFalse,TRUE,142,1,CCSS.ELA-LITERACY.L.7.1,Pronoun usage,CCSS.ELA.CCR.L.1
+English,Grade 7,A counterclaim presents an opposing view in an argument.,Counterclaim definition.,TrueFalse,TRUE,135,1,CCSS.ELA-LITERACY.W.7.1,Counterclaim,CCSS.ELA.CCR.W.1
+English,Grade 7,"The word ""audacious"" in ""an audacious plan"" likely means bold or daring.",Context clues.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.L.7.4,Context clues,CCSS.ELA.CCR.L.4
+English,Grade 8,A verb in the subjunctive mood can express a wish or condition contrary to fact.,Subjunctive mood.,TrueFalse,TRUE,155,2,CCSS.ELA-LITERACY.L.8.1,Verb mood,CCSS.ELA.CCR.L.1
+English,Grade 8,"In ""If I were you I would go"" the verb ""were"" is correct in formal English.",Subjunctive.,TrueFalse,TRUE,150,2,CCSS.ELA-LITERACY.L.8.1,Subjunctive mood,CCSS.ELA.CCR.L.1
+English,Grade 8,The author uses a first-person narrator. So the reader sees only that character's thoughts.,Point of view.,TrueFalse,TRUE,158,2,CCSS.ELA-LITERACY.RL.8.6,Point of view,CCSS.ELA.CCR.R.6
+English,Grade 8,An ellipsis can show that words were omitted from a quotation.,Ellipsis use.,TrueFalse,TRUE,132,1,CCSS.ELA-LITERACY.L.8.2,Punctuation,CCSS.ELA.CCR.L.2
+English,Grade 8,"The sentence ""Each of the students has their book"" may be revised for formal agreement.",Pronoun agreement.,TrueFalse,TRUE,160,2,CCSS.ELA-LITERACY.L.8.1,Pronoun-antecedent,CCSS.ELA.CCR.L.1
+English,Grade 8,In the passage the author appeals to logic by citing statistics. So this is an appeal to ethos.,Rhetorical appeal.,TrueFalse,FALSE,168,2,CCSS.ELA-LITERACY.RI.8.8,Rhetorical appeals,CCSS.ELA.CCR.R.8
+English,Grade 8,"The word ""ambiguous"" means unclear or having more than one meaning.",Vocabulary.,TrueFalse,TRUE,128,1,CCSS.ELA-LITERACY.L.8.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 8,A strong conclusion restates the main idea and leaves a final thought.,Conclusion paragraph.,TrueFalse,TRUE,138,1,CCSS.ELA-LITERACY.W.8.2,Conclusion,CCSS.ELA.CCR.W.2
+English,Grade 8,"The phrase ""due to the fact that"" can often be replaced with ""because.""",Word choice and concision.,TrueFalse,TRUE,145,2,CCSS.ELA-LITERACY.L.8.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 9,"In ""The team are playing well"" British usage allows a collective noun with a plural verb.",Grammar variation.,TrueFalse,TRUE,165,2,CCSS.ELA-LITERACY.L.9-10.1,Grammar and usage,CCSS.ELA.CCR.L.1
+English,Grade 9,The author uses dark imagery in the opening. So the tone is likely serious or somber.,Tone and imagery.,TrueFalse,TRUE,170,2,CCSS.ELA-LITERACY.RL.9-10.4,Tone and word choice,CCSS.ELA.CCR.R.4
+English,Grade 9,A dash can set off an abrupt break or emphasis in a sentence.,Dash use.,TrueFalse,TRUE,140,1,CCSS.ELA-LITERACY.L.9-10.2,Dashes,CCSS.ELA.CCR.L.2
+English,Grade 9,"The sentence ""Neither of the options are suitable"" has a subject-verb agreement error in formal writing.",Subject-verb agreement.,TrueFalse,TRUE,158,2,CCSS.ELA-LITERACY.L.9-10.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 9,In the argument the author refutes the opposing view. So the author is addressing a counterclaim.,Counterclaim and refutation.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.RI.9-10.8,Argument and counterclaim,CCSS.ELA.CCR.R.8
+English,Grade 9,"The word ""pragmatic"" in ""a pragmatic approach"" means practical.",Vocabulary in context.,TrueFalse,TRUE,152,2,CCSS.ELA-LITERACY.L.9-10.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 9,Claims in an essay should be supported by evidence from the text or research.,Evidence for claims.,TrueFalse,TRUE,148,1,CCSS.ELA-LITERACY.W.9-10.1,Support claims,CCSS.ELA.CCR.W.1
+English,Grade 9,Parallel structure means using the same grammatical form for items in a series.,Parallel structure.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.9-10.1,Parallel structure,CCSS.ELA.CCR.L.1
+English,Grade 9,"The phrase ""in order to"" can often be shortened to ""to.""",Concision.,TrueFalse,TRUE,162,2,CCSS.ELA-LITERACY.L.9-10.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 10,"Who is used for subjects and """"whom"""" for objects in formal English.",Who vs whom.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.9-10.1,Pronoun case,CCSS.ELA.CCR.L.1
+English,Grade 10,The author shifts from past to present tense to create immediacy. So the shift is intentional.,Author's craft.,TrueFalse,TRUE,178,2,CCSS.ELA-LITERACY.RL.9-10.5,Structure and style,CCSS.ELA.CCR.R.5
+English,Grade 10,A comma splice joins two independent clauses with only a comma.,Comma splice.,TrueFalse,TRUE,145,1,CCSS.ELA-LITERACY.L.9-10.2,Comma splice,CCSS.ELA.CCR.L.2
+English,Grade 10,"In ""The data suggest a trend"" the verb ""suggest"" agrees with the collective noun ""data.""",Subject-verb agreement.,TrueFalse,TRUE,168,2,CCSS.ELA-LITERACY.L.9-10.1,Subject-verb agreement,CCSS.ELA.CCR.L.1
+English,Grade 10,The source is from a university. So it is likely credible for academic writing.,Evaluate source credibility.,TrueFalse,TRUE,182,2,CCSS.ELA-LITERACY.RI.9-10.8,Source credibility,CCSS.ELA.CCR.R.8
+English,Grade 10,"The word ""ubiquitous"" means rare or uncommon.",Vocabulary.,TrueFalse,FALSE,160,1,CCSS.ELA-LITERACY.L.9-10.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 10,A works cited list gives full publication details for sources used.,Works cited.,TrueFalse,TRUE,138,1,CCSS.ELA-LITERACY.W.9-10.8,Research and citation,CCSS.ELA.CCR.W.8
+English,Grade 10,The author uses irony when the character says the opposite of what is meant.,Irony.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.RL.9-10.4,Literary devices,CCSS.ELA.CCR.R.4
+English,Grade 10,Avoiding plagiarism means giving credit when you use someone else's ideas or words.,Plagiarism.,TrueFalse,TRUE,150,1,CCSS.ELA-LITERACY.W.9-10.8,Plagiarism,CCSS.ELA.CCR.W.8
+English,Grade 11,"The subjunctive ""I suggest that he go"" is correct in formal English.",Subjunctive.,TrueFalse,TRUE,165,2,CCSS.ELA-LITERACY.L.11-12.1,Subjunctive,CCSS.ELA.CCR.L.1
+English,Grade 11,The author alludes to a famous historical event. So the reader needs context to fully understand.,Allusion.,TrueFalse,TRUE,185,2,CCSS.ELA-LITERACY.RL.11-12.4,Allusion,CCSS.ELA.CCR.R.4
+English,Grade 11,A restrictive clause is not set off by commas because it is essential to the meaning.,Restrictive vs nonrestrictive.,TrueFalse,TRUE,158,1,CCSS.ELA-LITERACY.L.11-12.2,Restrictive clause,CCSS.ELA.CCR.L.2
+English,Grade 11,In the satire the author exaggerates flaws to criticize society.,Satire.,TrueFalse,TRUE,178,2,CCSS.ELA-LITERACY.RL.11-12.6,Author's purpose,CCSS.ELA.CCR.R.6
+English,Grade 11,"The sentence ""The committee has issued their report"" may be revised to avoid a pronoun agreement issue.",Pronoun agreement.,TrueFalse,TRUE,172,2,CCSS.ELA-LITERACY.L.11-12.1,Pronoun-antecedent,CCSS.ELA.CCR.L.1
+English,Grade 11,"The word ""paradigm"" often means a model or framework.",Vocabulary.,TrueFalse,TRUE,162,1,CCSS.ELA-LITERACY.L.11-12.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 11,A synthesis essay combines ideas from multiple sources into a coherent argument.,Synthesis.,TrueFalse,TRUE,168,1,CCSS.ELA-LITERACY.W.11-12.8,Research and synthesis,CCSS.ELA.CCR.W.8
+English,Grade 11,The author uses a periodic sentence to create emphasis by delaying the main idea.,Sentence variety.,TrueFalse,TRUE,188,2,CCSS.ELA-LITERACY.RL.11-12.5,Sentence structure,CCSS.ELA.CCR.R.5
+English,Grade 11,"The phrase ""at this point in time"" can be replaced with ""now.""",Concision.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.L.11-12.3,Concision,CCSS.ELA.CCR.L.3
+English,Grade 12,The passive voice is appropriate when the doer of the action is unknown or less important.,Passive voice use.,TrueFalse,TRUE,170,2,CCSS.ELA-LITERACY.L.11-12.3,Passive voice,CCSS.ELA.CCR.L.3
+English,Grade 12,The author uses stream of consciousness. So the narrative follows the character's thoughts closely.,Narrative technique.,TrueFalse,TRUE,195,2,CCSS.ELA-LITERACY.RL.11-12.5,Narrative technique,CCSS.ELA.CCR.R.5
+English,Grade 12,An apostrophe is used to form the possessive of a plural noun ending in s.,Possessive apostrophe.,TrueFalse,TRUE,155,1,CCSS.ELA-LITERACY.L.11-12.2,Apostrophes,CCSS.ELA.CCR.L.2
+English,Grade 12,"In academic writing hedging language (e.g. ""may"" ""suggest"") can show appropriate caution.",Academic style.,TrueFalse,TRUE,182,2,CCSS.ELA-LITERACY.W.11-12.2,Academic writing,CCSS.ELA.CCR.W.2
+English,Grade 12,The author appeals to pathos by describing emotional experiences.,Rhetorical appeal.,TrueFalse,TRUE,188,2,CCSS.ELA-LITERACY.RI.11-12.6,Rhetorical analysis,CCSS.ELA.CCR.R.6
+English,Grade 12,"The word ""equivocate"" means to be vague or avoid commitment.",Vocabulary.,TrueFalse,TRUE,168,1,CCSS.ELA-LITERACY.L.11-12.4,Vocabulary,CCSS.ELA.CCR.L.4
+English,Grade 12,A primary source is a first-hand account or original document.,Primary vs secondary source.,TrueFalse,TRUE,160,1,CCSS.ELA-LITERACY.W.11-12.8,Source types,CCSS.ELA.CCR.W.8
+English,Grade 12,The conclusion introduces new evidence that was not in the body.,Conclusion paragraph.,TrueFalse,FALSE,178,2,CCSS.ELA-LITERACY.W.11-12.2,Conclusion,CCSS.ELA.CCR.W.2
+English,Grade 12,Varying sentence length can improve the rhythm and clarity of prose.,Style and sentence variety.,TrueFalse,TRUE,175,2,CCSS.ELA-LITERACY.L.11-12.3,Sentence variety,CCSS.ELA.CCR.L.3
+Maths,Grade 1,3 + 4 equals 7.,Basic addition fact.,TrueFalse,TRUE,100,1,CCSS.MATH.CONTENT.1.OA.A.1,Addition within 20,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 1,5 is greater than 8.,Comparing numbers.,TrueFalse,FALSE,105,1,CCSS.MATH.CONTENT.1.NBT.B.3,Compare two-digit numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 1,When you add zero to a number the number stays the same.,Property of zero.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.1.OA.B.3,Properties of addition,CCSS.MATH.MP.7 CCSS.MATH.DOM.OA
+Maths,Grade 1,10 can be written as one ten and zero ones.,Place value.,TrueFalse,TRUE,102,1,CCSS.MATH.CONTENT.1.NBT.B.2,Place value tens and ones,CCSS.MATH.MP.4 CCSS.MATH.DOM.NBT
+Maths,Grade 1,A square has 4 sides.,Shape attribute.,TrueFalse,TRUE,100,1,CCSS.MATH.CONTENT.1.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 1,2 + 3 is the same as 3 + 2.,Commutative property.,TrueFalse,TRUE,115,2,CCSS.MATH.CONTENT.1.OA.B.3,Commutative property of addition,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 1,The number 7 is less than 5.,Comparing numbers.,TrueFalse,FALSE,108,1,CCSS.MATH.CONTENT.1.NBT.B.3,Compare numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 1,A triangle has 3 corners.,Shape attribute.,TrueFalse,TRUE,102,1,CCSS.MATH.CONTENT.1.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 1,If you have 5 objects and add 0 more you still have 5.,Conceptual claim about zero.,TrueFalse,TRUE,118,2,CCSS.MATH.CONTENT.1.OA.A.1,Addition and identity,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 2,25 + 13 equals 38.,Two-digit addition.,TrueFalse,TRUE,110,1,CCSS.MATH.CONTENT.2.NBT.B.5,Fluently add within 100,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 2,100 is the same as 10 tens.,Place value.,TrueFalse,TRUE,105,1,CCSS.MATH.CONTENT.2.NBT.A.1,Place value hundreds,CCSS.MATH.MP.7 CCSS.MATH.DOM.NBT
+Maths,Grade 2,Half of 8 is 3.,Simple fraction.,TrueFalse,FALSE,115,1,CCSS.MATH.CONTENT.2.G.A.3,Partition circles and rectangles,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 2,When you subtract 0 from a number the number stays the same.,Property of subtraction.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.2.OA.B.2,Subtraction facts,CCSS.MATH.MP.7 CCSS.MATH.DOM.OA
+Maths,Grade 2,The length of 3 unit cubes in a row is 3 units.,Length measurement.,TrueFalse,TRUE,112,1,CCSS.MATH.CONTENT.2.MD.A.1,Measure length by units,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 2,67 is greater than 76.,Comparing two-digit numbers.,TrueFalse,FALSE,118,1,CCSS.MATH.CONTENT.2.NBT.A.4,Compare two three-digit numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 2,Adding 10 to 45 gives 55.,Mental math add 10.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.2.NBT.B.8,Mentally add 10 or 100,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 2,The order in which you add two numbers does not change the sum.,Commutative property reasoning.,TrueFalse,TRUE,122,2,CCSS.MATH.CONTENT.2.OA.B.2,Commutative property,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 2,A rectangle has 4 equal sides.,Rectangle attributes.,TrueFalse,FALSE,120,1,CCSS.MATH.CONTENT.2.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 3,7 × 4 equals 28.,Multiplication fact.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.3.OA.A.1,Interpret products,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 3,One half is greater than one third.,Compare fractions same numerator.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.3.NF.A.3,Compare fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 3,348 rounded to the nearest ten is 350.,Round to nearest ten.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.3.NBT.A.1,Round to nearest 10 or 100,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 3,6 ÷ 2 equals 4.,Division fact.,TrueFalse,FALSE,112,1,CCSS.MATH.CONTENT.3.OA.A.2,Interpret whole-number quotients,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 3,A square is a special kind of rectangle.,Relationship between shapes.,TrueFalse,TRUE,130,2,CCSS.MATH.CONTENT.3.G.A.1,Shape categories,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 3,The area of a rectangle 4 units by 3 units is 12 square units.,Area formula.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.3.MD.C.7,Area of rectangle,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 3,2/4 is equivalent to 1/2.,Equivalent fractions.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.3.NF.A.3,Equivalent fractions,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 3,When you multiply any number by 1 the product is that number.,Identity property of multiplication.,TrueFalse,TRUE,125,2,CCSS.MATH.CONTENT.3.OA.B.5,Properties of multiplication,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 3,1/4 is greater than 1/2.,Compare unit fractions.,TrueFalse,FALSE,128,1,CCSS.MATH.CONTENT.3.NF.A.3,Compare fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 4,35 × 10 equals 350.,Multiply by 10.,TrueFalse,TRUE,110,1,CCSS.MATH.CONTENT.4.NBT.B.5,Multiply by powers of 10,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 4,0.5 is the same as 1/2.,Decimal and fraction equivalence.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.4.NF.C.6,Decimal notation for tenths hundredths,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 4,An obtuse angle is greater than 90 degrees.,Definition of obtuse angle.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.4.G.A.1,Angles and rays,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 4,256 ÷ 4 equals 64.,Division.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.4.NBT.B.6,Find quotients and remainders,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 4,3/5 is less than 3/4 when comparing same numerator.,Compare fractions.,TrueFalse,TRUE,132,1,CCSS.MATH.CONTENT.4.NF.A.2,Compare two fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 4,The perimeter of a square with side 5 cm is 20 cm.,Perimeter of square.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.4.MD.A.3,Perimeter formula,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 4,A number is divisible by 2 if its ones digit is 0 2 4 6 or 8.,Divisibility rule.,TrueFalse,TRUE,138,2,CCSS.MATH.CONTENT.4.OA.B.4,Divisibility and factors,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 4,2.3 is greater than 2.30.,Compare decimals.,TrueFalse,FALSE,128,1,CCSS.MATH.CONTENT.4.NF.C.7,Compare decimals,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 5,1/2 + 1/4 equals 3/4.,Add fractions.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.5.NF.A.1,Add and subtract fractions,CCSS.MATH.MP.2 CCSS.MATH.DOM.NF
+Maths,Grade 5,The volume of a rectangular prism is length times width times height.,Volume formula.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.5.MD.C.5,Volume of rectangular prism,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 5,0.25 × 4 equals 1.,Multiply decimals.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.5.NBT.B.7,Multiply decimals,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 5,1/3 is greater than 2/5.,Compare fractions.,TrueFalse,FALSE,135,1,CCSS.MATH.CONTENT.5.NF.A.2,Compare and add fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 5,A parallelogram has two pairs of parallel sides.,Property of parallelogram.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.5.G.B.3,Properties of shapes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 5,10 to the power of 3 equals 1000.,Powers of 10.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.5.NBT.A.2,Powers of 10,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 5,When you multiply a number by 0.1 you get a smaller number.,Conceptual claim about decimals.,TrueFalse,TRUE,145,2,CCSS.MATH.CONTENT.5.NBT.A.1,Place value and decimals,CCSS.MATH.MP.3 CCSS.MATH.DOM.NBT
+Maths,Grade 5,2/6 in simplest form is 1/3.,Simplify fractions.,TrueFalse,TRUE,128,1,CCSS.MATH.CONTENT.5.NF.A.1,Equivalent fractions and simplify,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 5,The product of two fractions is always greater than each factor.,Multiplication of fractions.,TrueFalse,FALSE,150,2,CCSS.MATH.CONTENT.5.NF.B.4,Multiply fractions,CCSS.MATH.MP.3 CCSS.MATH.DOM.NF
+Maths,Grade 6,The ratio 2:3 is equivalent to 4:6.,Equivalent ratios.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.6.RP.A.3,Equivalent ratios,CCSS.MATH.MP.7 CCSS.MATH.DOM.RP
+Maths,Grade 6,-5 is less than -2.,Compare integers.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.6.NS.C.7,Order rational numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NS
+Maths,Grade 6,The absolute value of -7 is 7.,Absolute value.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.6.NS.C.7,Absolute value,CCSS.MATH.MP.6 CCSS.MATH.DOM.NS
+Maths,Grade 6,2x + 3 = 9 when x = 3.,Substitute and check equation.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.6.EE.A.2,Expressions and substitution,CCSS.MATH.MP.2 CCSS.MATH.DOM.EE
+Maths,Grade 6,The area of a triangle is base times height.,Area of triangle.,TrueFalse,FALSE,132,1,CCSS.MATH.CONTENT.6.G.A.1,Area of triangle,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 6,30% of 80 equals 24.,Percent of a number.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.6.RP.A.3,Find percent of quantity,CCSS.MATH.MP.2 CCSS.MATH.DOM.RP
+Maths,Grade 6,If a/b = c/d then ad = bc.,Cross-multiplication property.,TrueFalse,TRUE,155,2,CCSS.MATH.CONTENT.6.RP.A.2,Unit rate and ratios,CCSS.MATH.MP.3 CCSS.MATH.DOM.RP
+Maths,Grade 6,The mean of 4 6 and 8 is 6.,Mean of three numbers.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.6.SP.A.3,Mean and measure of center,CCSS.MATH.MP.2 CCSS.MATH.DOM.SP
+Maths,Grade 6,(-2) × (-3) equals -6.,Multiply negative integers.,TrueFalse,FALSE,140,1,CCSS.MATH.CONTENT.6.NS.C.5,Multiply integers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,The constant of proportionality in y = 5x is 5.,Identify constant of proportionality.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.7.RP.A.2,Proportional relationships,CCSS.MATH.MP.7 CCSS.MATH.DOM.RP
+Maths,Grade 7,-3 + (-4) equals -7.,Add negative numbers.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.7.NS.A.1,Add and subtract rational numbers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,The circumference of a circle is pi times diameter.,Circumference formula.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.7.G.B.4,Circumference and area of circle,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 7,x = -2 is a solution to 2x + 5 = 1.,Solve equation.,TrueFalse,TRUE,128,1,CCSS.MATH.CONTENT.7.EE.B.4,Solve linear equations,CCSS.MATH.MP.2 CCSS.MATH.DOM.EE
+Maths,Grade 7,The probability of an impossible event is 1.,Probability value.,TrueFalse,FALSE,135,1,CCSS.MATH.CONTENT.7.SP.C.5,Probability of events,CCSS.MATH.MP.6 CCSS.MATH.DOM.SP
+Maths,Grade 7,When you multiply both sides of an inequality by a negative number you must reverse the inequality.,Property of inequality.,TrueFalse,TRUE,155,2,CCSS.MATH.CONTENT.7.EE.B.4,Solve inequalities,CCSS.MATH.MP.3 CCSS.MATH.DOM.EE
+Maths,Grade 7,The area of a circle is pi times radius squared.,Area of circle.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.7.G.B.4,Area of circle,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 7,(-1) × (-1) equals 1.,Multiply negatives.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.7.NS.A.2,Multiply rational numbers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,If two angles are supplementary their sum is 180 degrees.,Definition of supplementary.,TrueFalse,TRUE,138,2,CCSS.MATH.CONTENT.7.G.B.5,Supplementary angles,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 8,The square root of 64 is 8.,Square root.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.8.NS.A.2,Square roots,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 8,Slope of the line through (0 0) and (2 4) is 2.,Slope formula.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.8.EE.B.5,Slope and similar triangles,CCSS.MATH.MP.4 CCSS.MATH.DOM.EE
+Maths,Grade 8,y = 2x + 1 is a linear function.,Identify linear function.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.8.F.A.3,Linear vs nonlinear,CCSS.MATH.MP.7 CCSS.MATH.DOM.F
+Maths,Grade 8,The Pythagorean theorem states that a squared + b squared = c squared in a right triangle.,Pythagorean theorem.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.8.G.B.6,Pythagorean theorem,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 8,A system of two linear equations always has exactly one solution.,Systems of equations.,TrueFalse,FALSE,160,2,CCSS.MATH.CONTENT.8.EE.C.8,Systems of equations,CCSS.MATH.MP.3 CCSS.MATH.DOM.EE
+Maths,Grade 8,The cube root of 27 is 3.,Cube root.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.8.NS.A.2,Cube roots,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 8,Vertical angles are always equal.,Property of vertical angles.,TrueFalse,TRUE,132,2,CCSS.MATH.CONTENT.8.G.A.5,Angles and parallel lines,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 8,0.3 repeating equals 1/3.,Convert repeating decimal to fraction.,TrueFalse,TRUE,145,1,CCSS.MATH.CONTENT.8.NS.A.1,Rational numbers and decimals,CCSS.MATH.MP.7 CCSS.MATH.DOM.NS
+Maths,Grade 8,The graph of y = x squared is a straight line.,Graph of quadratic.,TrueFalse,FALSE,150,1,CCSS.MATH.CONTENT.8.F.A.3,Linear vs nonlinear,CCSS.MATH.MP.6 CCSS.MATH.DOM.F
+Maths,Grade 9,x = 2 is a solution to x squared - 4 = 0.,Solve quadratic.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.HSA.REI.B.4,Solve quadratic equations,CCSS.MATH.MP.2 CCSS.MATH.A-REI
+Maths,Grade 9,The function f(x) = 2x + 1 has slope 2.,Slope of linear function.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.HSF.IF.C.7,Graph linear functions,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 9,(x + 2)(x - 2) equals x squared - 4.,Expand difference of squares.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.HSA.SSE.A.2,Equivalent expressions,CCSS.MATH.MP.7 CCSS.MATH.A-SSE
+Maths,Grade 9,In a right triangle the sine of an angle is opposite over hypotenuse.,Definition of sine.,TrueFalse,TRUE,140,1,CCSS.MATH.CONTENT.HSG.SRT.C.6,Trigonometric ratios,CCSS.MATH.MP.6 CCSS.MATH.G-SRT
+Maths,Grade 9,The sum of the angles in a triangle is 180 degrees.,Angle sum of triangle.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.HSG.CO.C.10,Angle sum theorem,CCSS.MATH.MP.4 CCSS.MATH.G-CO
+Maths,Grade 9,log base 10 of 100 equals 2.,Logarithm value.,TrueFalse,TRUE,145,1,CCSS.MATH.CONTENT.HSF.LE.A.4,Logarithms,CCSS.MATH.MP.2 CCSS.MATH.F-LE
+Maths,Grade 9,If two lines are parallel their slopes are equal.,Property of parallel lines.,TrueFalse,TRUE,150,2,CCSS.MATH.CONTENT.HSG.GPE.B.5,Parallel lines and slope,CCSS.MATH.MP.3 CCSS.MATH.G-GPE
+Maths,Grade 9,The discriminant b squared - 4ac tells how many real roots a quadratic has.,Discriminant.,TrueFalse,TRUE,165,2,CCSS.MATH.CONTENT.HSA.REI.B.4,Quadratic formula and discriminant,CCSS.MATH.MP.3 CCSS.MATH.A-REI
+Maths,Grade 9,2 to the power of 0 equals 0.,Zero exponent.,TrueFalse,FALSE,138,1,CCSS.MATH.CONTENT.HSN.RN.A.1,Properties of exponents,CCSS.MATH.MP.6 CCSS.MATH.N-RN
+Maths,Grade 10,The range of f(x) = x squared for real x is all non-negative real numbers.,Range of quadratic.,TrueFalse,TRUE,155,1,CCSS.MATH.CONTENT.HSF.IF.A.1,Domain and range,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 10,sin squared x + cos squared x = 1 for any angle x.,Pythagorean identity.,TrueFalse,TRUE,160,1,CCSS.MATH.CONTENT.HSF.TF.C.8,Pythagorean identity,CCSS.MATH.MP.7 CCSS.MATH.F-TF
+Maths,Grade 10,The median divides a data set into two equal halves.,Definition of median.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.HSS.ID.A.2,Median and center,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 10,The equation of a circle with center (0 0) and radius 5 is x squared + y squared = 25.,Equation of circle.,TrueFalse,TRUE,140,1,CCSS.MATH.CONTENT.HSG.GPE.A.1,Equation of circle,CCSS.MATH.MP.4 CCSS.MATH.G-GPE
+Maths,Grade 10,e to the power of (ln x) equals x for x greater than 0.,Inverse property.,TrueFalse,TRUE,170,2,CCSS.MATH.CONTENT.HSF.LE.A.4,Logarithms and exponentials,CCSS.MATH.MP.3 CCSS.MATH.F-LE
+Maths,Grade 10,Two events are independent if P(A and B) = P(A) times P(B).,Definition of independence.,TrueFalse,TRUE,175,2,CCSS.MATH.CONTENT.HSS.CP.A.2,Independent events,CCSS.MATH.MP.3 CCSS.MATH.S-CP
+Maths,Grade 10,The vertex of y = (x - 3) squared + 2 is (3 2).,Vertex form of parabola.,TrueFalse,TRUE,148,1,CCSS.MATH.CONTENT.HSF.IF.C.8,Vertex form,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 10,A function can have two different outputs for the same input.,Definition of function.,TrueFalse,FALSE,155,1,CCSS.MATH.CONTENT.HSF.IF.A.1,Definition of function,CCSS.MATH.MP.6 CCSS.MATH.F-IF
+Maths,Grade 11,The derivative of x cubed is 3x squared.,Power rule.,TrueFalse,TRUE,175,1,CCSS.MATH.CONTENT.HSF.C.7,Derivatives (Calculus),CCSS.MATH.MP.2 CCSS.MATH.F-IF
+Maths,Grade 11,In a right triangle the tangent of an angle is opposite over adjacent.,Definition of tangent.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.HSG.SRT.C.6,Trigonometric ratios,CCSS.MATH.MP.6 CCSS.MATH.G-SRT
+Maths,Grade 11,The sum of the first n positive integers is n(n+1)/2.,Formula for sum.,TrueFalse,TRUE,185,2,CCSS.MATH.CONTENT.HSA.SSE.B.4,Series and sequences,CCSS.MATH.MP.3 CCSS.MATH.A-SSE
+Maths,Grade 11,A correlation coefficient of -1 means a perfect negative linear relationship.,Correlation.,TrueFalse,TRUE,160,1,CCSS.MATH.CONTENT.HSS.ID.C.8,Correlation coefficient,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 11,The law of sines applies to any triangle.,Law of sines.,TrueFalse,TRUE,168,1,CCSS.MATH.CONTENT.HSG.SRT.D.11,Law of sines and cosines,CCSS.MATH.MP.4 CCSS.MATH.G-SRT
+Maths,Grade 11,If a line is perpendicular to another the product of their slopes is -1.,Perpendicular lines.,TrueFalse,TRUE,178,2,CCSS.MATH.CONTENT.HSG.GPE.B.5,Perpendicular lines,CCSS.MATH.MP.3 CCSS.MATH.G-GPE
+Maths,Grade 11,The standard deviation measures spread around the mean.,Definition of standard deviation.,TrueFalse,TRUE,152,1,CCSS.MATH.CONTENT.HSS.ID.A.4,Standard deviation,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 11,For any real a and b (a + b) squared equals a squared + b squared.,Expand binomial.,TrueFalse,FALSE,165,1,CCSS.MATH.CONTENT.HSA.APR.A.1,Polynomial identities,CCSS.MATH.MP.6 CCSS.MATH.A-APR
+Maths,Grade 12,The fundamental theorem of calculus relates integration and differentiation.,Fundamental theorem.,TrueFalse,TRUE,205,2,CCSS.MATH.CONTENT.HSF.C.9,Fundamental theorem of calculus,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,A continuous function on a closed interval attains a maximum and minimum.,Extreme value concept.,TrueFalse,TRUE,195,2,CCSS.MATH.CONTENT.HSF.IF.B.4,Behavior of functions,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,The conditional probability P(A given B) equals P(A and B) divided by P(B) when P(B) is not 0.,Conditional probability.,TrueFalse,TRUE,185,1,CCSS.MATH.CONTENT.HSS.CP.B.6,Conditional probability,CCSS.MATH.MP.7 CCSS.MATH.S-CP
+Maths,Grade 12,The volume of a cylinder is pi r squared h.,Volume of cylinder.,TrueFalse,TRUE,155,1,CCSS.MATH.CONTENT.HSG.GMD.A.3,Volume formulas,CCSS.MATH.MP.4 CCSS.MATH.G-GMD
+Maths,Grade 12,A 95% confidence interval means we are 95% confident the parameter lies in the interval.,Interpretation of confidence interval.,TrueFalse,TRUE,210,2,CCSS.MATH.CONTENT.HSS.IC.B.4,Confidence intervals,CCSS.MATH.MP.6 CCSS.MATH.S-IC
+Maths,Grade 12,The chain rule states that the derivative of f(g(x)) is f prime (g(x)) times g prime (x).,Chain rule.,TrueFalse,TRUE,215,2,CCSS.MATH.CONTENT.HSF.C.7,Chain rule,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,Two triangles are similar if their corresponding angles are equal.,Definition of similar triangles.,TrueFalse,TRUE,170,1,CCSS.MATH.CONTENT.HSG.SRT.A.2,Similarity criteria,CCSS.MATH.MP.3 CCSS.MATH.G-SRT
+Maths,Grade 12,The limit as x approaches 0 of sin(x)/x equals 1.,Important limit.,TrueFalse,TRUE,220,2,CCSS.MATH.CONTENT.HSF.C.7,Limits (Calculus),CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,A p-value greater than 0.05 means we fail to reject the null hypothesis at the 5% level.,Hypothesis testing.,TrueFalse,TRUE,218,2,CCSS.MATH.CONTENT.HSS.IC.B.5,Statistical significance,CCSS.MATH.MP.6 CCSS.MATH.S-IC
+Maths,Grade 12,The derivative of a constant function is zero.,Derivative of constant.,TrueFalse,TRUE,195,1,CCSS.MATH.CONTENT.HSF.C.7,Derivatives,CCSS.MATH.MP.2 CCSS.MATH.F-IF
+Maths,Grade 12,Two mutually exclusive events can both occur.,Mutually exclusive events.,TrueFalse,FALSE,180,1,CCSS.MATH.CONTENT.HSS.CP.A.2,Mutually exclusive events,CCSS.MATH.MP.6 CCSS.MATH.S-CP
+Maths,Grade 12,The integral of f prime (x) from a to b equals f(b) - f(a).,Fundamental theorem of calculus.,TrueFalse,TRUE,212,2,CCSS.MATH.CONTENT.HSF.C.9,Fundamental theorem,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Science,Grade 1,Plants need sunlight and water to grow.,What plants need to live.,TrueFalse,TRUE,105,1,1-LS1-1,Basic needs of plants,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 1,The Sun gives us light during the day.,Day and night pattern.,TrueFalse,TRUE,100,1,1-ESS1-1,Sun and daylight,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 1,Animals can live without air.,What animals need to breathe.,TrueFalse,FALSE,108,1,1-LS1-1,Basic needs of animals,NGSS.SEP.2 NGSS.DCI.LS1
+Science,Grade 1,Pushing an object can make it move.,Effect of a push.,TrueFalse,TRUE,102,1,K-PS2-1,Pushes and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 1,All living things need food to stay alive.,Needs of living things.,TrueFalse,TRUE,110,1,1-LS1-1,Needs of living things,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 1,The Moon gives off its own light.,Source of moonlight.,TrueFalse,FALSE,115,1,1-ESS1-1,Night sky and Moon,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 1,"In the experiment, seeds in the sunny cup grew more than seeds in the dark cup.",Claim from described dataset: sun vs dark.,TrueFalse,TRUE,132,2,K-ESS2-2,Data and plant growth,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 1,Rocks are living things.,Living vs nonliving.,TrueFalse,FALSE,118,1,K-ESS2-1,Living and nonliving,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 1,"The table showed that the plant with water grew taller; the statement ""plants need water to grow"" is supported.",Claim from described dataset.,TrueFalse,TRUE,128,2,1-LS1-1,Data claim about plant needs,NGSS.SEP.5 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 2,A habitat is where an animal lives.,Definition of habitat.,TrueFalse,TRUE,115,1,2-LS4-1,Habitats,NGSS.SEP.6 NGSS.DCI.LS2
+Science,Grade 2,Matter can be solid or liquid.,States of matter.,TrueFalse,TRUE,108,1,2-PS1-1,Solid and liquid,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 2,Gravity pulls things toward Earth.,Effect of gravity.,TrueFalse,TRUE,120,1,K-PS2-1,Gravity,NGSS.SEP.6 NGSS.DCI.PS2
+Science,Grade 2,Plants get water from the soil through their roots.,Plant parts and function.,TrueFalse,TRUE,112,1,2-LS2-1,Plant structure and function,NGSS.SEP.4 NGSS.DCI.LS2
+Science,Grade 2,Rocks can be different sizes.,Property of Earth materials.,TrueFalse,TRUE,105,1,2-ESS2-1,Properties of rocks,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 2,When we heat ice it stays as ice.,Effect of heating ice.,TrueFalse,FALSE,125,1,2-PS1-4,Heating and melting,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 2,Animals get energy from food.,Source of energy for animals.,TrueFalse,TRUE,118,1,2-LS2-1,Energy and food,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 2,"From the data table, the warmest place was outside in the sun and the coolest was in the shade.",Claim from described temperature data.,TrueFalse,TRUE,135,2,2-ESS2-3,Weather and temperature data,NGSS.SEP.5 NGSS.DCI.ESS2
+Science,Grade 2,"The data showed that the plant without water did not grow; the claim ""plants need water"" is correct.",Claim from described dataset.,TrueFalse,TRUE,130,2,2-LS2-1,Data claim about plant needs,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 3,A food chain shows how energy moves from one living thing to another.,Definition of food chain.,TrueFalse,TRUE,135,1,3-LS2-1,Food chains,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 3,Magnets have a north pole and a south pole.,Magnetic poles.,TrueFalse,TRUE,120,1,3-PS2-3,Magnetic poles,NGSS.SEP.6 NGSS.DCI.PS2
+Science,Grade 3,Rocks are made of minerals.,Composition of rocks.,TrueFalse,TRUE,115,1,3-ESS2-1,Earth materials,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 3,A force can make an object speed up or slow down.,Forces and motion.,TrueFalse,TRUE,125,1,3-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 3,All plants have flowers.,Plant structures.,TrueFalse,FALSE,130,1,3-LS1-1,Plant life cycles,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 3,Weather is the same in all places on Earth.,Weather and climate.,TrueFalse,FALSE,128,1,3-ESS2-2,Weather patterns,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 3,"In the experiment, the plant that got more light had more leaves; the claim ""light helps plants grow"" is supported.",Claim from described dataset.,TrueFalse,TRUE,142,2,3-LS2-1,Data claim about light and growth,NGSS.SEP.5 NGSS.DCI.LS2
+Science,Grade 3,Animals that look like their parents inherited traits.,Heredity.,TrueFalse,TRUE,138,1,3-LS3-1,Inheritance of traits,NGSS.SEP.4 NGSS.DCI.LS3
+Science,Grade 3,"The data table showed that the magnet picked up more paper clips when it was closer; the claim ""closer means stronger pull"" is correct.",Claim from described dataset.,TrueFalse,TRUE,148,2,3-PS2-2,Magnetic force and distance,NGSS.SEP.4 NGSS.DCI.PS2 NGSS.CCC.2
+Science,Grade 4,Energy can move from one object to another.,Transfer of energy.,TrueFalse,TRUE,130,1,4-PS3-2,Energy transfer,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 4,Plants use sunlight to make their own food.,Photosynthesis concept.,TrueFalse,TRUE,125,1,4-LS1-1,Plant energy and food,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 4,Rocks can be broken down by wind and water.,Weathering.,TrueFalse,TRUE,132,1,4-ESS2-1,Weathering and erosion,NGSS.SEP.2 NGSS.DCI.ESS2
+Science,Grade 4,Sound travels faster through air than through water.,Speed of sound.,TrueFalse,FALSE,145,1,4-PS4-1,Waves and sound,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 4,Animals have structures that help them survive in their environment.,Structures and function.,TrueFalse,TRUE,128,1,4-LS1-1,Animal structures,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 4,Fossils tell us about organisms that lived long ago.,What fossils show.,TrueFalse,TRUE,118,1,4-ESS1-1,Fossils and past life,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 4,"When the data showed that the ball rolled farther on the smooth surface than on the rough surface, the claim ""smoother surface means less friction"" is supported.",Claim from described dataset.,TrueFalse,TRUE,155,2,4-PS3-1,Friction and motion,NGSS.SEP.5 NGSS.DCI.PS3
+Science,Grade 4,"The table showed that the plant with fertilizer grew taller; the claim ""fertilizer helps plants grow"" is correct.",Claim from described dataset.,TrueFalse,TRUE,140,2,4-LS1-1,Data claim about plant growth,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 5,Matter is made of particles too small to see.,Particle model of matter.,TrueFalse,TRUE,135,1,5-PS1-1,Structure of matter,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 5,The amount of matter stays the same when it changes form.,Conservation of matter.,TrueFalse,TRUE,142,1,5-PS1-2,Conservation of matter,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 5,Organisms in an ecosystem depend on each other for food and shelter.,Ecosystem interactions.,TrueFalse,TRUE,138,1,5-LS2-1,Ecosystems,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 5,Earth's surface has changed over millions of years.,Earth history.,TrueFalse,TRUE,128,1,5-ESS2-1,Earth systems,NGSS.SEP.6 NGSS.DCI.ESS2
+Science,Grade 5,Gravity is a force that pulls objects toward each other.,Definition of gravity.,TrueFalse,TRUE,125,1,5-PS2-1,Gravity,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 5,The Sun is a star.,Nature of the Sun.,TrueFalse,TRUE,115,1,5-ESS1-1,Sun and stars,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 5,"When the data showed that the plant in the warm room grew faster than the one in the cold room, the claim ""warmer temperature increases growth rate"" is supported.",Claim from described dataset.,TrueFalse,TRUE,158,2,5-LS1-1,Data claim about temperature and growth,NGSS.SEP.5 NGSS.DCI.LS1
+Science,Grade 5,Plants get carbon dioxide from the soil.,Source of carbon dioxide for plants.,TrueFalse,FALSE,145,1,5-LS1-1,Photosynthesis inputs,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 5,"The experiment showed that the dissolved sugar increased as temperature increased; the claim ""higher temperature increases solubility"" is correct.",Claim from described dataset.,TrueFalse,TRUE,165,2,5-PS1-2,Data claim about solubility,NGSS.SEP.4 NGSS.DCI.PS1 NGSS.CCC.2
+Science,Grade 6,Atoms are the smallest units of matter.,Structure of matter.,TrueFalse,TRUE,140,1,MS-PS1-1,Atoms and matter,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 6,Chemical reactions can form new substances.,Chemical reactions.,TrueFalse,TRUE,135,1,MS-PS1-2,Chemical reactions,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 6,Living things are made of cells.,Cell theory.,TrueFalse,TRUE,125,1,MS-LS1-1,Cells and organisms,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 6,Energy cannot be created or destroyed only transferred or transformed.,Conservation of energy.,TrueFalse,TRUE,155,1,MS-PS3-1,Conservation of energy,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 6,Climate is the average weather over a long time.,Climate vs weather.,TrueFalse,TRUE,130,1,MS-ESS2-5,Climate and weather,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 6,Organisms with beneficial traits are more likely to survive and reproduce.,Natural selection.,TrueFalse,TRUE,160,1,MS-LS4-4,Natural selection,NGSS.SEP.6 NGSS.DCI.LS4
+Science,Grade 6,"When the data showed that the reaction was faster at higher temperature, the claim ""temperature affects reaction rate"" is supported.",Claim from described dataset.,TrueFalse,TRUE,165,2,MS-PS1-2,Data claim about reaction rate,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 6,The Moon orbits Earth.,Earth-Moon system.,TrueFalse,TRUE,118,1,MS-ESS1-1,Earth-Moon motion,NGSS.SEP.4 NGSS.DCI.ESS1
+Science,Grade 6,"The table showed that biodiversity was higher in the protected area; the claim ""protection supports more species"" is correct.",Claim from described dataset.,TrueFalse,TRUE,170,2,MS-LS2-4,Data claim about ecosystems,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 7,The periodic table organizes elements by their properties.,Periodic table.,TrueFalse,TRUE,138,1,MS-PS1-1,Periodic table,NGSS.SEP.6 NGSS.DCI.PS1
+Science,Grade 7,For every action force there is an equal and opposite reaction force.,Newton's third law.,TrueFalse,TRUE,165,1,MS-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 7,Photosynthesis converts light energy into chemical energy.,Photosynthesis.,TrueFalse,TRUE,145,1,MS-LS1-6,Photosynthesis,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 7,Ecosystems can be disrupted by natural events or human activity.,Ecosystem stability.,TrueFalse,TRUE,152,1,MS-LS2-4,Ecosystem disruption,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 7,Earth's layers have different compositions and properties.,Earth's structure.,TrueFalse,TRUE,140,1,MS-ESS2-2,Earth's layers,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 7,Waves transfer energy without transferring matter.,Waves and energy.,TrueFalse,TRUE,158,1,MS-PS4-1,Wave properties,NGSS.SEP.2 NGSS.DCI.PS4
+Science,Grade 7,"When the data showed that the population of prey decreased when the predator population increased, the claim ""predator and prey populations are linked"" is supported.",Claim from described dataset.,TrueFalse,TRUE,175,2,MS-LS2-2,Predator-prey dynamics,NGSS.SEP.5 NGSS.DCI.LS2
+Science,Grade 7,Genetic information is passed from parents to offspring.,Heredity.,TrueFalse,TRUE,135,1,MS-LS3-1,Heredity,NGSS.SEP.6 NGSS.DCI.LS3
+Science,Grade 7,"The graph showed that dissolved oxygen decreased as water temperature increased; the claim ""warmer water holds less oxygen"" is correct.",Claim from described dataset.,TrueFalse,TRUE,172,2,MS-ESS2-6,Data claim about water and oxygen,NGSS.SEP.4 NGSS.DCI.ESS2 NGSS.CCC.2
+Science,Grade 8,Mass is conserved in a chemical reaction.,Conservation of mass.,TrueFalse,TRUE,150,1,MS-PS1-5,Conservation of mass,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 8,The force of gravity between two objects depends on their masses and distance.,Gravity.,TrueFalse,TRUE,165,1,MS-PS2-4,Gravitational force,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 8,Natural selection can lead to changes in a species over time.,Evolution.,TrueFalse,TRUE,160,1,MS-LS4-4,Natural selection and evolution,NGSS.SEP.6 NGSS.DCI.LS4
+Science,Grade 8,Human activities can affect Earth's climate.,Human impact on climate.,TrueFalse,TRUE,155,1,MS-ESS3-5,Human impact and climate,NGSS.SEP.2 NGSS.DCI.ESS3
+Science,Grade 8,Light can be reflected refracted or absorbed.,Behavior of light.,TrueFalse,TRUE,145,1,MS-PS4-2,Light and matter,NGSS.SEP.4 NGSS.DCI.PS4
+Science,Grade 8,Engineers use criteria and constraints to design solutions.,Engineering design.,TrueFalse,TRUE,142,1,MS-ETS1-1,Engineering design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 8,"When the data showed that the pendulum's period increased with longer string length, the claim ""longer string means longer period"" is supported.",Claim from described dataset.,TrueFalse,TRUE,178,2,MS-PS2-2,Data claim about pendulums,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 8,Fossil evidence supports the idea that life has changed over time.,Evidence for evolution.,TrueFalse,TRUE,148,1,MS-LS4-1,Fossil evidence,NGSS.SEP.4 NGSS.DCI.LS4
+Science,Grade 8,"The table showed that the insulated cup kept the drink warm longer; the claim ""insulation reduces heat loss"" is correct.",Claim from described dataset.,TrueFalse,TRUE,170,2,MS-PS3-3,Data claim about insulation,NGSS.SEP.4 NGSS.DCI.PS3 NGSS.CCC.2
+Science,Grade 9,The nucleus of an atom contains protons and neutrons.,Atomic structure.,TrueFalse,TRUE,145,1,HS-PS1-1,Atomic structure,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 9,Chemical bonds form when atoms share or transfer electrons.,Chemical bonding.,TrueFalse,TRUE,160,1,HS-PS1-2,Chemical bonding,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 9,DNA carries genetic information.,Role of DNA.,TrueFalse,TRUE,135,1,HS-LS1-1,DNA and heredity,NGSS.SEP.6 NGSS.DCI.LS1
+Science,Grade 9,Energy is conserved in physical and chemical processes.,Conservation of energy.,TrueFalse,TRUE,170,1,HS-PS3-1,Conservation of energy,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 9,Plate tectonics explains the movement of Earth's lithosphere.,Plate tectonics.,TrueFalse,TRUE,155,1,HS-ESS2-1,Plate tectonics,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 9,Ecosystems have carrying capacities that limit population size.,Ecosystem limits.,TrueFalse,TRUE,165,1,HS-LS2-1,Ecosystem dynamics,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 9,"When the data showed that the rate of reaction doubled when concentration doubled, the claim ""reaction rate depends on concentration"" is supported.",Claim from described dataset.,TrueFalse,TRUE,185,2,HS-PS1-5,Data claim about reaction rate,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 9,The Big Bang theory describes the origin of the universe.,Cosmology.,TrueFalse,TRUE,150,1,HS-ESS1-2,Origin of universe,NGSS.SEP.6 NGSS.DCI.ESS1
+Science,Grade 9,"The graph showed that enzyme activity increased with temperature up to a point then decreased; the claim ""enzymes have an optimal temperature"" is correct.",Claim from described dataset.,TrueFalse,TRUE,190,2,HS-LS1-3,Data claim about enzymes,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 10,Elements in the same group of the periodic table have similar chemical properties.,Periodic table patterns.,TrueFalse,TRUE,155,1,HS-PS1-1,Periodic table,NGSS.SEP.4 NGSS.DCI.PS1
+Science,Grade 10,Newton's second law states that force equals mass times acceleration.,Newton's second law.,TrueFalse,TRUE,165,1,HS-PS2-1,Forces and motion,NGSS.SEP.2 NGSS.DCI.PS2
+Science,Grade 10,Cellular respiration releases energy from glucose.,Cellular respiration.,TrueFalse,TRUE,150,1,HS-LS1-7,Cellular respiration,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 10,Biodiversity contributes to ecosystem stability.,Biodiversity and ecosystems.,TrueFalse,TRUE,168,1,HS-LS2-2,Biodiversity,NGSS.SEP.2 NGSS.DCI.LS2
+Science,Grade 10,Earth's climate has changed over geologic time.,Climate change over time.,TrueFalse,TRUE,160,1,HS-ESS2-2,Earth's climate history,NGSS.SEP.4 NGSS.DCI.ESS2
+Science,Grade 10,Radioactive decay occurs at a predictable rate.,Radioactive decay.,TrueFalse,TRUE,158,1,HS-PS1-8,Nuclear processes,NGSS.SEP.6 NGSS.DCI.PS1
+Science,Grade 10,"When the data showed that the electric current increased when voltage increased with constant resistance, the claim ""current is proportional to voltage"" is supported.",Claim from described dataset.,TrueFalse,TRUE,188,2,HS-PS2-5,Ohm's law and data,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 10,Mutations can introduce new genetic variation.,Sources of variation.,TrueFalse,TRUE,162,1,HS-LS3-2,Mutations and variation,NGSS.SEP.4 NGSS.DCI.LS3
+Science,Grade 10,"The table showed that species richness was higher in the restored habitat; the claim ""restoration increased biodiversity"" is correct.",Claim from described dataset.,TrueFalse,TRUE,192,2,HS-LS2-6,Data claim about restoration,NGSS.SEP.4 NGSS.DCI.LS2 NGSS.CCC.2
+Science,Grade 11,The rate of a chemical reaction can be affected by temperature and concentration.,Reaction kinetics.,TrueFalse,TRUE,170,1,HS-PS1-5,Reaction rate factors,NGSS.SEP.2 NGSS.DCI.PS1
+Science,Grade 11,Electromagnetic waves can travel through a vacuum.,EM waves.,TrueFalse,TRUE,155,1,HS-PS4-1,Electromagnetic waves,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 11,Homeostasis helps organisms maintain stable internal conditions.,Homeostasis.,TrueFalse,TRUE,160,1,HS-LS1-3,Homeostasis,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 11,Evolution is supported by evidence from fossils genetics and comparative anatomy.,Evidence for evolution.,TrueFalse,TRUE,178,1,HS-LS4-1,Evidence for evolution,NGSS.SEP.2 NGSS.DCI.LS4
+Science,Grade 11,Human activities have increased the concentration of greenhouse gases in the atmosphere.,Human impact on atmosphere.,TrueFalse,TRUE,172,1,HS-ESS3-5,Greenhouse gases,NGSS.SEP.4 NGSS.DCI.ESS3
+Science,Grade 11,Engineering design involves defining problems and developing solutions.,Engineering design.,TrueFalse,TRUE,148,1,HS-ETS1-1,Engineering design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 11,"When the data showed that the half-life was constant regardless of initial amount, the claim ""half-life is independent of initial quantity"" is supported.",Claim from described dataset.,TrueFalse,TRUE,198,2,HS-PS1-8,Data claim about half-life,NGSS.SEP.5 NGSS.DCI.PS1
+Science,Grade 11,Energy flows through ecosystems while matter is cycled.,Energy and matter in ecosystems.,TrueFalse,TRUE,175,1,HS-LS2-3,Ecosystem energy and matter,NGSS.SEP.4 NGSS.DCI.LS2
+Science,Grade 11,"The graph showed that pH affected enzyme activity with an optimum near pH 7; the claim ""enzymes have an optimal pH"" is correct.",Claim from described dataset.,TrueFalse,TRUE,200,2,HS-LS1-3,Data claim about enzyme pH,NGSS.SEP.4 NGSS.DCI.LS1 NGSS.CCC.2
+Science,Grade 12,Entropy of an isolated system tends to increase over time.,Second law of thermodynamics.,TrueFalse,TRUE,195,1,HS-PS3-4,Thermodynamics,NGSS.SEP.2 NGSS.DCI.PS3
+Science,Grade 12,Quantum theory describes the behavior of matter and energy at very small scales.,Quantum mechanics.,TrueFalse,TRUE,210,1,HS-PS4-3,Quantum theory,NGSS.SEP.6 NGSS.DCI.PS4
+Science,Grade 12,Gene expression can be regulated by the cell.,Gene regulation.,TrueFalse,TRUE,180,1,HS-LS1-1,Gene expression,NGSS.SEP.4 NGSS.DCI.LS1
+Science,Grade 12,Climate models use scientific data to project future climate conditions.,Climate modeling.,TrueFalse,TRUE,185,1,HS-ESS3-5,Climate models,NGSS.SEP.2 NGSS.DCI.ESS3
+Science,Grade 12,The universe is expanding.,Cosmic expansion.,TrueFalse,TRUE,175,1,HS-ESS1-2,Expanding universe,NGSS.SEP.4 NGSS.DCI.ESS1
+Science,Grade 12,Sustainable design considers environmental and social impacts.,Sustainable engineering.,TrueFalse,TRUE,168,1,HS-ETS1-3,Sustainable design,NGSS.SEP.1 NGSS.DCI.ETS1
+Science,Grade 12,"When the data showed that the period of oscillation depended on spring constant and mass, the claim ""period depends on k and m"" is supported.",Claim from described dataset.,TrueFalse,TRUE,215,2,HS-PS2-1,Data claim about simple harmonic motion,NGSS.SEP.5 NGSS.DCI.PS2
+Science,Grade 12,Natural selection acts on heritable variation in a population.,Mechanism of evolution.,TrueFalse,TRUE,190,1,HS-LS4-2,Natural selection,NGSS.SEP.4 NGSS.DCI.LS4
+Science,Grade 12,"The table showed that coral bleaching increased with rising sea surface temperature; the claim ""warming oceans affect coral health"" is correct.",Claim from described dataset.,TrueFalse,TRUE,220,2,HS-ESS3-5,Data claim about climate and ecosystems,NGSS.SEP.4 NGSS.DCI.ESS3 NGSS.CCC.2

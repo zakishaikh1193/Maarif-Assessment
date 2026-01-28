@@ -25,7 +25,21 @@ const checkCircularReference = async (competencyId, parentId) => {
   return false;
 };
 
-// Get all competencies with pagination
+// Helper function to recursively fetch all descendants of a competency
+const getAllDescendants = async (parentId, allCompetencies) => {
+  const descendants = [];
+  const children = allCompetencies.filter(c => (c.parent_id || 0) === parentId);
+  
+  for (const child of children) {
+    descendants.push(child);
+    const grandChildren = await getAllDescendants(child.id, allCompetencies);
+    descendants.push(...grandChildren);
+  }
+  
+  return descendants;
+};
+
+// Get all competencies with pagination (only top-level competencies are paginated)
 export const getAllCompetencies = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -37,39 +51,93 @@ export const getAllCompetencies = async (req, res) => {
     const validatedLimit = Math.max(1, Math.min(1000, limit));
     const validatedOffset = Math.max(0, offset);
 
-    // Build WHERE clause for search
-    let whereClause = '';
-    let queryParams = [];
-    
-    if (searchTerm) {
-      whereClause = 'WHERE code LIKE ? OR name LIKE ? OR description LIKE ?';
-      const searchPattern = `%${searchTerm}%`;
-      queryParams = [searchPattern, searchPattern, searchPattern];
-    }
-
-    // Get total count
-    const countQuery = `SELECT COUNT(*) as total FROM competencies ${whereClause}`;
-    const countResult = await executeQuery(countQuery, queryParams);
-    const total = countResult[0]?.total || 0;
-
-    // Get paginated competencies - embed LIMIT and OFFSET directly to avoid parameter binding issues
-    const competenciesQuery = `
+    // Get all competencies first (needed for finding descendants and search logic)
+    const allCompetencies = await executeQuery(`
       SELECT id, parent_id, code, name, description, strong_threshold, neutral_threshold, is_active, created_at, updated_at 
       FROM competencies 
-      ${whereClause}
-      ORDER BY code ASC 
-      LIMIT ${validatedLimit} OFFSET ${validatedOffset}
-    `;
-    const competencies = await executeQuery(competenciesQuery, queryParams);
+      ORDER BY code ASC
+    `);
+
+    let topLevelCompetenciesToPaginate = [];
+    let searchParams = [];
+    
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      searchParams = [searchPattern, searchPattern, searchPattern];
+      
+      // Find all competencies that match the search
+      const matchingCompetencies = allCompetencies.filter(c => 
+        c.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      // Find all top-level competencies that either:
+      // 1. Match the search themselves, OR
+      // 2. Have a descendant that matches the search
+      const matchingIds = new Set(matchingCompetencies.map(c => c.id));
+      
+      // Helper to check if a competency has a matching descendant
+      const hasMatchingDescendant = (compId) => {
+        const children = allCompetencies.filter(c => (c.parent_id || 0) === compId);
+        for (const child of children) {
+          if (matchingIds.has(child.id)) return true;
+          if (hasMatchingDescendant(child.id)) return true;
+        }
+        return false;
+      };
+      
+      // Get all top-level competencies
+      topLevelCompetenciesToPaginate = allCompetencies.filter(c => 
+        (c.parent_id === 0 || c.parent_id === null) &&
+        (matchingIds.has(c.id) || hasMatchingDescendant(c.id))
+      );
+    } else {
+      // No search - get all top-level competencies
+      topLevelCompetenciesToPaginate = allCompetencies.filter(c => 
+        c.parent_id === 0 || c.parent_id === null
+      );
+    }
+
+    // Get total count of top-level competencies (after search filtering)
+    const total = topLevelCompetenciesToPaginate.length;
+
+    // Apply pagination to top-level competencies
+    const paginatedTopLevel = topLevelCompetenciesToPaginate.slice(
+      validatedOffset,
+      validatedOffset + validatedLimit
+    );
+
+    // For each paginated top-level competency, get all its descendants
+    const resultCompetencies = [];
+    for (const topLevel of paginatedTopLevel) {
+      resultCompetencies.push(topLevel);
+      
+      // Get all descendants of this top-level competency
+      const descendants = await getAllDescendants(topLevel.id, allCompetencies);
+      
+      // If searching, filter descendants to only show those that match the search
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const filteredDescendants = descendants.filter(desc => 
+          desc.code?.toLowerCase().includes(searchLower) ||
+          desc.name?.toLowerCase().includes(searchLower) ||
+          desc.description?.toLowerCase().includes(searchLower)
+        );
+        resultCompetencies.push(...filteredDescendants);
+      } else {
+        resultCompetencies.push(...descendants);
+      }
+    }
 
     const totalPages = Math.ceil(total / limit);
 
     res.json({
-      competencies,
+      competencies: resultCompetencies,
       pagination: {
         currentPage: page,
         totalPages,
-        total,
+        total, // Total count of top-level competencies
         limit,
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1

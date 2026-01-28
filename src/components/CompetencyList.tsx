@@ -434,7 +434,7 @@ const CompetencyList: React.FC<CompetencyListProps> = ({
           <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-2 text-sm text-gray-700">
               <span>
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, pagination.total || 0)} of {pagination.total || 0} competencies
+                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, pagination.total || 0)} of {pagination.total || 0} top-level competencies
               </span>
             </div>
             <div className="flex items-center space-x-2">

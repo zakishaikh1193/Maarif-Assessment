@@ -1,0 +1,121 @@
+Subject,Grade,QuestionText,Description,questionType,correctAnswer,difficultyLevel,dokLevel,standard,contentFocus,Competencies
+Maths,Grade 1,3 + 4 equals 7.,Basic addition fact.,TrueFalse,TRUE,100,1,CCSS.MATH.CONTENT.1.OA.A.1,Addition within 20,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 1,5 is greater than 8.,Comparing numbers.,TrueFalse,FALSE,105,1,CCSS.MATH.CONTENT.1.NBT.B.3,Compare two-digit numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 1,When you add zero to a number the number stays the same.,Property of zero.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.1.OA.B.3,Properties of addition,CCSS.MATH.MP.7 CCSS.MATH.DOM.OA
+Maths,Grade 1,10 can be written as one ten and zero ones.,Place value.,TrueFalse,TRUE,102,1,CCSS.MATH.CONTENT.1.NBT.B.2,Place value tens and ones,CCSS.MATH.MP.4 CCSS.MATH.DOM.NBT
+Maths,Grade 1,A square has 4 sides.,Shape attribute.,TrueFalse,TRUE,100,1,CCSS.MATH.CONTENT.1.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 1,"The number line shows that 6 is to the right of 4. {math_tf_g1_q6.png}",Image: number line 0–10 with 4 and 6 marked.,TrueFalse,TRUE,120,2,CCSS.MATH.CONTENT.1.NBT.B.3,Number line and order,CCSS.MATH.MP.4 CCSS.MATH.DOM.NBT
+Maths,Grade 1,2 + 3 is the same as 3 + 2.,Commutative property.,TrueFalse,TRUE,115,2,CCSS.MATH.CONTENT.1.OA.B.3,Commutative property of addition,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 1,The number 7 is less than 5.,Comparing numbers.,TrueFalse,FALSE,108,1,CCSS.MATH.CONTENT.1.NBT.B.3,Compare numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 1,A triangle has 3 corners.,Shape attribute.,TrueFalse,TRUE,102,1,CCSS.MATH.CONTENT.1.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 1,"If you have 5 objects and add 0 more you still have 5.",Conceptual claim about zero.,TrueFalse,TRUE,118,2,CCSS.MATH.CONTENT.1.OA.A.1,Addition and identity,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 2,25 + 13 equals 38.,Two-digit addition.,TrueFalse,TRUE,110,1,CCSS.MATH.CONTENT.2.NBT.B.5,Fluently add within 100,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 2,100 is the same as 10 tens.,Place value.,TrueFalse,TRUE,105,1,CCSS.MATH.CONTENT.2.NBT.A.1,Place value hundreds,CCSS.MATH.MP.7 CCSS.MATH.DOM.NBT
+Maths,Grade 2,Half of 8 is 3.,Simple fraction.,TrueFalse,FALSE,115,1,CCSS.MATH.CONTENT.2.G.A.3,Partition circles and rectangles,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 2,When you subtract 0 from a number the number stays the same.,Property of subtraction.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.2.OA.B.2,Subtraction facts,CCSS.MATH.MP.7 CCSS.MATH.DOM.OA
+Maths,Grade 2,The length of 3 unit cubes in a row is 3 units.,Length measurement.,TrueFalse,TRUE,112,1,CCSS.MATH.CONTENT.2.MD.A.1,Measure length by units,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 2,"The bar model shows that 7 + 5 = 12. {math_tf_g2_q6.png}",Image: bar model for 7 + 5.,TrueFalse,TRUE,125,2,CCSS.MATH.CONTENT.2.OA.A.1,Addition word problems,CCSS.MATH.MP.4 CCSS.MATH.DOM.OA
+Maths,Grade 2,67 is greater than 76.,Comparing two-digit numbers.,TrueFalse,FALSE,118,1,CCSS.MATH.CONTENT.2.NBT.A.4,Compare two three-digit numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 2,Adding 10 to 45 gives 55.,Mental math add 10.,TrueFalse,TRUE,108,1,CCSS.MATH.CONTENT.2.NBT.B.8,Mentally add 10 or 100,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 2,"The order in which you add two numbers does not change the sum.",Commutative property reasoning.,TrueFalse,TRUE,122,2,CCSS.MATH.CONTENT.2.OA.B.2,Commutative property,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 2,A rectangle has 4 equal sides.,Rectangle attributes.,TrueFalse,FALSE,120,1,CCSS.MATH.CONTENT.2.G.A.1,Shape attributes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 3,7 × 4 equals 28.,Multiplication fact.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.3.OA.A.1,Interpret products,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 3,One half is greater than one third.,Compare fractions same numerator.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.3.NF.A.3,Compare fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 3,348 rounded to the nearest ten is 350.,Round to nearest ten.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.3.NBT.A.1,Round to nearest 10 or 100,CCSS.MATH.MP.6 CCSS.MATH.DOM.NBT
+Maths,Grade 3,6 ÷ 2 equals 4.,Division fact.,TrueFalse,FALSE,112,1,CCSS.MATH.CONTENT.3.OA.A.2,Interpret whole-number quotients,CCSS.MATH.MP.2 CCSS.MATH.DOM.OA
+Maths,Grade 3,A square is a special kind of rectangle.,Relationship between shapes.,TrueFalse,TRUE,130,2,CCSS.MATH.CONTENT.3.G.A.1,Shape categories,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 3,"The array shows 3 rows of 5. {math_tf_g3_q6.png}",Image: 3×5 array of squares.,TrueFalse,TRUE,128,2,CCSS.MATH.CONTENT.3.OA.A.1,Arrays and multiplication,CCSS.MATH.MP.4 CCSS.MATH.DOM.OA
+Maths,Grade 3,The area of a rectangle 4 units by 3 units is 12 square units.,Area formula.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.3.MD.C.7,Area of rectangle,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 3,2/4 is equivalent to 1/2.,Equivalent fractions.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.3.NF.A.3,Equivalent fractions,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 3,"When you multiply any number by 1 the product is that number.",Identity property of multiplication.,TrueFalse,TRUE,125,2,CCSS.MATH.CONTENT.3.OA.B.5,Properties of multiplication,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 3,1/4 is greater than 1/2.,Compare unit fractions.,TrueFalse,FALSE,128,1,CCSS.MATH.CONTENT.3.NF.A.3,Compare fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 4,35 × 10 equals 350.,Multiply by 10.,TrueFalse,TRUE,110,1,CCSS.MATH.CONTENT.4.NBT.B.5,Multiply by powers of 10,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 4,0.5 is the same as 1/2.,Decimal and fraction equivalence.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.4.NF.C.6,Decimal notation for tenths hundredths,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 4,An obtuse angle is greater than 90 degrees.,Definition of obtuse angle.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.4.G.A.1,Angles and rays,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 4,256 ÷ 4 equals 64.,Division.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.4.NBT.B.6,Find quotients and remainders,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 4,3/5 is less than 3/4 when comparing same numerator.,Compare fractions.,TrueFalse,TRUE,132,1,CCSS.MATH.CONTENT.4.NF.A.2,Compare two fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 4,"The figure shows a right angle. {math_tf_g4_q6.png}",Image: angle marked as 90 degrees.,TrueFalse,TRUE,135,2,CCSS.MATH.CONTENT.4.G.A.1,Identify right angles,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 4,The perimeter of a square with side 5 cm is 20 cm.,Perimeter of square.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.4.MD.A.3,Perimeter formula,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 4,"A number is divisible by 2 if its ones digit is 0 2 4 6 or 8.",Divisibility rule.,TrueFalse,TRUE,138,2,CCSS.MATH.CONTENT.4.OA.B.4,Divisibility and factors,CCSS.MATH.MP.3 CCSS.MATH.DOM.OA
+Maths,Grade 4,2.3 is greater than 2.30.,Compare decimals.,TrueFalse,FALSE,128,1,CCSS.MATH.CONTENT.4.NF.C.7,Compare decimals,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 5,1/2 + 1/4 equals 3/4.,Add fractions.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.5.NF.A.1,Add and subtract fractions,CCSS.MATH.MP.2 CCSS.MATH.DOM.NF
+Maths,Grade 5,The volume of a rectangular prism is length times width times height.,Volume formula.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.5.MD.C.5,Volume of rectangular prism,CCSS.MATH.MP.4 CCSS.MATH.DOM.MD
+Maths,Grade 5,0.25 × 4 equals 1.,Multiply decimals.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.5.NBT.B.7,Multiply decimals,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 5,1/3 is greater than 2/5.,Compare fractions.,TrueFalse,FALSE,135,1,CCSS.MATH.CONTENT.5.NF.A.2,Compare and add fractions,CCSS.MATH.MP.6 CCSS.MATH.DOM.NF
+Maths,Grade 5,A parallelogram has two pairs of parallel sides.,Property of parallelogram.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.5.G.B.3,Properties of shapes,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 5,"The coordinate grid shows the point (3 4). {math_tf_g5_q6.png}",Image: coordinate grid with point (3 4).,TrueFalse,TRUE,140,2,CCSS.MATH.CONTENT.5.G.A.1,Coordinate system,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 5,10 to the power of 3 equals 1000.,Powers of 10.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.5.NBT.A.2,Powers of 10,CCSS.MATH.MP.2 CCSS.MATH.DOM.NBT
+Maths,Grade 5,"When you multiply a number by 0.1 you get a smaller number.",Conceptual claim about decimals.,TrueFalse,TRUE,145,2,CCSS.MATH.CONTENT.5.NBT.A.1,Place value and decimals,CCSS.MATH.MP.3 CCSS.MATH.DOM.NBT
+Maths,Grade 5,2/6 in simplest form is 1/3.,Simplify fractions.,TrueFalse,TRUE,128,1,CCSS.MATH.CONTENT.5.NF.A.1,Equivalent fractions and simplify,CCSS.MATH.MP.7 CCSS.MATH.DOM.NF
+Maths,Grade 5,The product of two fractions is always greater than each factor.,Multiplication of fractions.,TrueFalse,FALSE,150,2,CCSS.MATH.CONTENT.5.NF.B.4,Multiply fractions,CCSS.MATH.MP.3 CCSS.MATH.DOM.NF
+Maths,Grade 6,The ratio 2:3 is equivalent to 4:6.,Equivalent ratios.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.6.RP.A.3,Equivalent ratios,CCSS.MATH.MP.7 CCSS.MATH.DOM.RP
+Maths,Grade 6,-5 is less than -2.,Compare integers.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.6.NS.C.7,Order rational numbers,CCSS.MATH.MP.6 CCSS.MATH.DOM.NS
+Maths,Grade 6,The absolute value of -7 is 7.,Absolute value.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.6.NS.C.7,Absolute value,CCSS.MATH.MP.6 CCSS.MATH.DOM.NS
+Maths,Grade 6,2x + 3 = 9 when x = 3.,Substitute and check equation.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.6.EE.A.2,Expressions and substitution,CCSS.MATH.MP.2 CCSS.MATH.DOM.EE
+Maths,Grade 6,The area of a triangle is base times height.,Area of triangle.,TrueFalse,FALSE,132,1,CCSS.MATH.CONTENT.6.G.A.1,Area of triangle,CCSS.MATH.MP.6 CCSS.MATH.DOM.G
+Maths,Grade 6,"The number line shows -3 to the left of 0. {math_tf_g6_q6.png}",Image: number line with negative numbers.,TrueFalse,TRUE,128,2,CCSS.MATH.CONTENT.6.NS.C.6,Number line and integers,CCSS.MATH.MP.4 CCSS.MATH.DOM.NS
+Maths,Grade 6,30% of 80 equals 24.,Percent of a number.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.6.RP.A.3,Find percent of quantity,CCSS.MATH.MP.2 CCSS.MATH.DOM.RP
+Maths,Grade 6,"If a/b = c/d then ad = bc.",Cross-multiplication property.,TrueFalse,TRUE,155,2,CCSS.MATH.CONTENT.6.RP.A.2,Unit rate and ratios,CCSS.MATH.MP.3 CCSS.MATH.DOM.RP
+Maths,Grade 6,The mean of 4 6 and 8 is 6.,Mean of three numbers.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.6.SP.A.3,Mean and measure of center,CCSS.MATH.MP.2 CCSS.MATH.DOM.SP
+Maths,Grade 6,(-2) × (-3) equals -6.,Multiply negative integers.,TrueFalse,FALSE,140,1,CCSS.MATH.CONTENT.6.NS.C.5,Multiply integers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,The constant of proportionality in y = 5x is 5.,Identify constant of proportionality.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.7.RP.A.2,Proportional relationships,CCSS.MATH.MP.7 CCSS.MATH.DOM.RP
+Maths,Grade 7,-3 + (-4) equals -7.,Add negative numbers.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.7.NS.A.1,Add and subtract rational numbers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,The circumference of a circle is pi times diameter.,Circumference formula.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.7.G.B.4,Circumference and area of circle,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 7,x = -2 is a solution to 2x + 5 = 1.,Solve equation.,TrueFalse,TRUE,128,1,CCSS.MATH.CONTENT.7.EE.B.4,Solve linear equations,CCSS.MATH.MP.2 CCSS.MATH.DOM.EE
+Maths,Grade 7,The probability of an impossible event is 1.,Probability value.,TrueFalse,FALSE,135,1,CCSS.MATH.CONTENT.7.SP.C.5,Probability of events,CCSS.MATH.MP.6 CCSS.MATH.DOM.SP
+Maths,Grade 7,"The graph of a proportional relationship is a line through the origin. {math_tf_g7_q6.png}",Image: line through (0 0) and (2 6).,TrueFalse,TRUE,145,2,CCSS.MATH.CONTENT.7.RP.A.2,Proportional relationship graph,CCSS.MATH.MP.4 CCSS.MATH.DOM.RP
+Maths,Grade 7,When you multiply both sides of an inequality by a negative number you must reverse the inequality.,Property of inequality.,TrueFalse,TRUE,155,2,CCSS.MATH.CONTENT.7.EE.B.4,Solve inequalities,CCSS.MATH.MP.3 CCSS.MATH.DOM.EE
+Maths,Grade 7,The area of a circle is pi times radius squared.,Area of circle.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.7.G.B.4,Area of circle,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 7,(-1) × (-1) equals 1.,Multiply negatives.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.7.NS.A.2,Multiply rational numbers,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 7,"If two angles are supplementary their sum is 180 degrees.",Definition of supplementary.,TrueFalse,TRUE,138,2,CCSS.MATH.CONTENT.7.G.B.5,Supplementary angles,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 8,The square root of 64 is 8.,Square root.,TrueFalse,TRUE,115,1,CCSS.MATH.CONTENT.8.NS.A.2,Square roots,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 8,Slope of the line through (0 0) and (2 4) is 2.,Slope formula.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.8.EE.B.5,Slope and similar triangles,CCSS.MATH.MP.4 CCSS.MATH.DOM.EE
+Maths,Grade 8,y = 2x + 1 is a linear function.,Identify linear function.,TrueFalse,TRUE,120,1,CCSS.MATH.CONTENT.8.F.A.3,Linear vs nonlinear,CCSS.MATH.MP.7 CCSS.MATH.DOM.F
+Maths,Grade 8,The Pythagorean theorem states that a squared + b squared = c squared in a right triangle.,Pythagorean theorem.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.8.G.B.6,Pythagorean theorem,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 8,A system of two linear equations always has exactly one solution.,Systems of equations.,TrueFalse,FALSE,160,2,CCSS.MATH.CONTENT.8.EE.C.8,Systems of equations,CCSS.MATH.MP.3 CCSS.MATH.DOM.EE
+Maths,Grade 8,"The triangle shown has sides 3 4 and 5. {math_tf_g8_q6.png}",Image: right triangle with legs 3 and 4.,TrueFalse,TRUE,140,2,CCSS.MATH.CONTENT.8.G.B.6,Pythagorean triple,CCSS.MATH.MP.4 CCSS.MATH.DOM.G
+Maths,Grade 8,The cube root of 27 is 3.,Cube root.,TrueFalse,TRUE,122,1,CCSS.MATH.CONTENT.8.NS.A.2,Cube roots,CCSS.MATH.MP.2 CCSS.MATH.DOM.NS
+Maths,Grade 8,"Vertical angles are always equal.",Property of vertical angles.,TrueFalse,TRUE,132,2,CCSS.MATH.CONTENT.8.G.A.5,Angles and parallel lines,CCSS.MATH.MP.3 CCSS.MATH.DOM.G
+Maths,Grade 8,0.3 repeating equals 1/3.,Convert repeating decimal to fraction.,TrueFalse,TRUE,145,1,CCSS.MATH.CONTENT.8.NS.A.1,Rational numbers and decimals,CCSS.MATH.MP.7 CCSS.MATH.DOM.NS
+Maths,Grade 8,The graph of y = x squared is a straight line.,Graph of quadratic.,TrueFalse,FALSE,150,1,CCSS.MATH.CONTENT.8.F.A.3,Linear vs nonlinear,CCSS.MATH.MP.6 CCSS.MATH.DOM.F
+Maths,Grade 9,x = 2 is a solution to x squared - 4 = 0.,Solve quadratic.,TrueFalse,TRUE,130,1,CCSS.MATH.CONTENT.HSA.REI.B.4,Solve quadratic equations,CCSS.MATH.MP.2 CCSS.MATH.A-REI
+Maths,Grade 9,The function f(x) = 2x + 1 has slope 2.,Slope of linear function.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.HSF.IF.C.7,Graph linear functions,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 9,(x + 2)(x - 2) equals x squared - 4.,Expand difference of squares.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.HSA.SSE.A.2,Equivalent expressions,CCSS.MATH.MP.7 CCSS.MATH.A-SSE
+Maths,Grade 9,In a right triangle the sine of an angle is opposite over hypotenuse.,Definition of sine.,TrueFalse,TRUE,140,1,CCSS.MATH.CONTENT.HSG.SRT.C.6,Trigonometric ratios,CCSS.MATH.MP.6 CCSS.MATH.G-SRT
+Maths,Grade 9,The sum of the angles in a triangle is 180 degrees.,Angle sum of triangle.,TrueFalse,TRUE,118,1,CCSS.MATH.CONTENT.HSG.CO.C.10,Angle sum theorem,CCSS.MATH.MP.4 CCSS.MATH.G-CO
+Maths,Grade 9,"The parabola opens upward when the coefficient of x squared is positive. {math_tf_g9_q6.png}",Image: parabola opening up.,TrueFalse,TRUE,155,2,CCSS.MATH.CONTENT.HSF.IF.C.7,Graph quadratic functions,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 9,log base 10 of 100 equals 2.,Logarithm value.,TrueFalse,TRUE,145,1,CCSS.MATH.CONTENT.HSF.LE.A.4,Logarithms,CCSS.MATH.MP.2 CCSS.MATH.F-LE
+Maths,Grade 9,"If two lines are parallel their slopes are equal.",Property of parallel lines.,TrueFalse,TRUE,150,2,CCSS.MATH.CONTENT.HSG.GPE.B.5,Parallel lines and slope,CCSS.MATH.MP.3 CCSS.MATH.G-GPE
+Maths,Grade 9,The discriminant b squared - 4ac tells how many real roots a quadratic has.,Discriminant.,TrueFalse,TRUE,165,2,CCSS.MATH.CONTENT.HSA.REI.B.4,Quadratic formula and discriminant,CCSS.MATH.MP.3 CCSS.MATH.A-REI
+Maths,Grade 9,2 to the power of 0 equals 0.,Zero exponent.,TrueFalse,FALSE,138,1,CCSS.MATH.CONTENT.HSN.RN.A.1,Properties of exponents,CCSS.MATH.MP.6 CCSS.MATH.N-RN
+Maths,Grade 10,The range of f(x) = x squared for real x is all non-negative real numbers.,Range of quadratic.,TrueFalse,TRUE,155,1,CCSS.MATH.CONTENT.HSF.IF.A.1,Domain and range,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 10,sin squared x + cos squared x = 1 for any angle x.,Pythagorean identity.,TrueFalse,TRUE,160,1,CCSS.MATH.CONTENT.HSF.TF.C.8,Pythagorean identity,CCSS.MATH.MP.7 CCSS.MATH.F-TF
+Maths,Grade 10,The median divides a data set into two equal halves.,Definition of median.,TrueFalse,TRUE,125,1,CCSS.MATH.CONTENT.HSS.ID.A.2,Median and center,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 10,The equation of a circle with center (0 0) and radius 5 is x squared + y squared = 25.,Equation of circle.,TrueFalse,TRUE,140,1,CCSS.MATH.CONTENT.HSG.GPE.A.1,Equation of circle,CCSS.MATH.MP.4 CCSS.MATH.G-GPE
+Maths,Grade 10,e to the power of (ln x) equals x for x greater than 0.,Inverse property.,TrueFalse,TRUE,170,2,CCSS.MATH.CONTENT.HSF.LE.A.4,Logarithms and exponentials,CCSS.MATH.MP.3 CCSS.MATH.F-LE
+Maths,Grade 10,"The histogram shows a roughly symmetric distribution. {math_tf_g10_q6.png}",Image: symmetric histogram.,TrueFalse,TRUE,165,2,CCSS.MATH.CONTENT.HSS.ID.A.1,Interpret histograms,CCSS.MATH.MP.4 CCSS.MATH.S-ID
+Maths,Grade 10,Two events are independent if P(A and B) = P(A) times P(B).,Definition of independence.,TrueFalse,TRUE,175,2,CCSS.MATH.CONTENT.HSS.CP.A.2,Independent events,CCSS.MATH.MP.3 CCSS.MATH.S-CP
+Maths,Grade 10,The vertex of y = (x - 3) squared + 2 is (3 2).,Vertex form of parabola.,TrueFalse,TRUE,148,1,CCSS.MATH.CONTENT.HSF.IF.C.8,Vertex form,CCSS.MATH.MP.4 CCSS.MATH.F-IF
+Maths,Grade 10,A function can have two different outputs for the same input.,Definition of function.,TrueFalse,FALSE,155,1,CCSS.MATH.CONTENT.HSF.IF.A.1,Definition of function,CCSS.MATH.MP.6 CCSS.MATH.F-IF
+Maths,Grade 11,The derivative of x cubed is 3x squared.,Power rule.,TrueFalse,TRUE,175,1,CCSS.MATH.CONTENT.HSF.C.7,Derivatives (Calculus),CCSS.MATH.MP.2 CCSS.MATH.F-IF
+Maths,Grade 11,In a right triangle the tangent of an angle is opposite over adjacent.,Definition of tangent.,TrueFalse,TRUE,135,1,CCSS.MATH.CONTENT.HSG.SRT.C.6,Trigonometric ratios,CCSS.MATH.MP.6 CCSS.MATH.G-SRT
+Maths,Grade 11,The sum of the first n positive integers is n(n+1)/2.,Formula for sum.,TrueFalse,TRUE,185,2,CCSS.MATH.CONTENT.HSA.SSE.B.4,Series and sequences,CCSS.MATH.MP.3 CCSS.MATH.A-SSE
+Maths,Grade 11,A correlation coefficient of -1 means a perfect negative linear relationship.,Correlation.,TrueFalse,TRUE,160,1,CCSS.MATH.CONTENT.HSS.ID.C.8,Correlation coefficient,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 11,The law of sines applies to any triangle.,Law of sines.,TrueFalse,TRUE,168,1,CCSS.MATH.CONTENT.HSG.SRT.D.11,Law of sines and cosines,CCSS.MATH.MP.4 CCSS.MATH.G-SRT
+Maths,Grade 11,"The unit circle shows that cos(0) = 1. {math_tf_g11_q6.png}",Image: unit circle with angle 0.,TrueFalse,TRUE,172,2,CCSS.MATH.CONTENT.HSF.TF.A.2,Unit circle,CCSS.MATH.MP.4 CCSS.MATH.F-TF
+Maths,Grade 11,If a line is perpendicular to another the product of their slopes is -1.,Perpendicular lines.,TrueFalse,TRUE,178,2,CCSS.MATH.CONTENT.HSG.GPE.B.5,Perpendicular lines,CCSS.MATH.MP.3 CCSS.MATH.G-GPE
+Maths,Grade 11,The standard deviation measures spread around the mean.,Definition of standard deviation.,TrueFalse,TRUE,152,1,CCSS.MATH.CONTENT.HSS.ID.A.4,Standard deviation,CCSS.MATH.MP.6 CCSS.MATH.S-ID
+Maths,Grade 11,For any real a and b (a + b) squared equals a squared + b squared.,Expand binomial.,TrueFalse,FALSE,165,1,CCSS.MATH.CONTENT.HSA.APR.A.1,Polynomial identities,CCSS.MATH.MP.6 CCSS.MATH.A-APR
+Maths,Grade 12,The fundamental theorem of calculus relates integration and differentiation.,Fundamental theorem.,TrueFalse,TRUE,205,2,CCSS.MATH.CONTENT.HSF.C.9,Fundamental theorem of calculus,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,A continuous function on a closed interval attains a maximum and minimum.,Extreme value concept.,TrueFalse,TRUE,195,2,CCSS.MATH.CONTENT.HSF.IF.B.4,Behavior of functions,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,The conditional probability P(A given B) equals P(A and B) divided by P(B) when P(B) is not 0.,Conditional probability.,TrueFalse,TRUE,185,1,CCSS.MATH.CONTENT.HSS.CP.B.6,Conditional probability,CCSS.MATH.MP.7 CCSS.MATH.S-CP
+Maths,Grade 12,The volume of a cylinder is pi r squared h.,Volume of cylinder.,TrueFalse,TRUE,155,1,CCSS.MATH.CONTENT.HSG.GMD.A.3,Volume formulas,CCSS.MATH.MP.4 CCSS.MATH.G-GMD
+Maths,Grade 12,A 95% confidence interval means we are 95% confident the parameter lies in the interval.,Interpretation of confidence interval.,TrueFalse,TRUE,210,2,CCSS.MATH.CONTENT.HSS.IC.B.4,Confidence intervals,CCSS.MATH.MP.6 CCSS.MATH.S-IC
+Maths,Grade 12,"The normal curve is symmetric about its mean. {math_tf_g12_q6.png}",Image: normal distribution curve.,TrueFalse,TRUE,200,2,CCSS.MATH.CONTENT.HSS.ID.A.4,Normal distribution,CCSS.MATH.MP.4 CCSS.MATH.S-ID
+Maths,Grade 12,The chain rule states that the derivative of f(g(x)) is f prime (g(x)) times g prime (x).,Chain rule.,TrueFalse,TRUE,215,2,CCSS.MATH.CONTENT.HSF.C.7,Chain rule,CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,Two triangles are similar if their corresponding angles are equal.,Definition of similar triangles.,TrueFalse,TRUE,170,1,CCSS.MATH.CONTENT.HSG.SRT.A.2,Similarity criteria,CCSS.MATH.MP.3 CCSS.MATH.G-SRT
+Maths,Grade 12,The limit as x approaches 0 of sin(x)/x equals 1.,Important limit.,TrueFalse,TRUE,220,2,CCSS.MATH.CONTENT.HSF.C.7,Limits (Calculus),CCSS.MATH.MP.3 CCSS.MATH.F-IF
+Maths,Grade 12,A p-value greater than 0.05 means we fail to reject the null hypothesis at the 5% level.,Hypothesis testing.,TrueFalse,TRUE,218,2,CCSS.MATH.CONTENT.HSS.IC.B.5,Statistical significance,CCSS.MATH.MP.6 CCSS.MATH.S-IC
+Maths,Grade 12,The derivative of a constant function is zero.,Derivative of constant.,TrueFalse,TRUE,195,1,CCSS.MATH.CONTENT.HSF.C.7,Derivatives,CCSS.MATH.MP.2 CCSS.MATH.F-IF
+Maths,Grade 12,Two mutually exclusive events can both occur.,Mutually exclusive events.,TrueFalse,FALSE,180,1,CCSS.MATH.CONTENT.HSS.CP.A.2,Mutually exclusive events,CCSS.MATH.MP.6 CCSS.MATH.S-CP
+Maths,Grade 12,The integral of f prime (x) from a to b equals f(b) - f(a).,Fundamental theorem of calculus.,TrueFalse,TRUE,212,2,CCSS.MATH.CONTENT.HSF.C.9,Fundamental theorem,CCSS.MATH.MP.3 CCSS.MATH.F-IF

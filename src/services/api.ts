@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Subject, Question, Assessment, AssessmentResponse, DashboardData, AdminStats, School, Grade, AssessmentConfiguration, Competency, CompetencyStats, PaginationInfo, StartAssessmentResponse } from '../types';
 
-// const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
- const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://maarif-assessment.legatolxp.online/api/';
+//  const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
