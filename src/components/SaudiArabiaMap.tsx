@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { School } from '../types';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import mapImage from '../images/map-patch2.png';
-import bluePinIcon from '../images/blue.png';
+import locationIcon from '../images/location icon.png';
 
 interface SaudiArabiaMapProps {
   schools: School[];
@@ -66,7 +66,7 @@ const getSchoolCoordinates = (school: School): { x: number; y: number } => {
   
   // Special case: Ajyal International - place exactly above Saudi International School
   if (school.name && (school.name.toLowerCase().includes('ajyal international') || school.name.toLowerCase().includes('ajyal'))) {
-    return { x: 72, y: 26 }; // Exactly above Saudi International School (same x, lower y)
+    return { x: 67, y: 26 }; // Exactly above Saudi International School (same x, lower y)
   }
   
   // Special case: Manarat Al-Khobar - place to the right side of the map
@@ -81,12 +81,12 @@ const getSchoolCoordinates = (school: School): { x: number; y: number } => {
   
   // Special case: Green Hills International - place at lower left side of the map
   if (school.name && (school.name.toLowerCase().includes('green hills international') || school.name.toLowerCase().includes('green hills'))) {
-    return { x: 12.5, y: 67 }; // Lower left side of the map
+    return { x: 15.5, y: 65 }; // Lower left side of the map
   }
   
   // Special case: Sherborne School Jeddah - place exactly above Green Hills International
   if (school.name && (school.name.toLowerCase().includes('sherborne school jeddah') || school.name.toLowerCase().includes('sherborne'))) {
-    return { x: 9, y: 64 }; // Exactly above Green Hills International (same x, lower y)
+    return { x: 9, y: 62 }; // Exactly above Green Hills International (same x, lower y)
   }
   
   // Special case: Manarat Jeddah - place exactly below and to the right of Green Hills International
@@ -96,12 +96,12 @@ const getSchoolCoordinates = (school: School): { x: number; y: number } => {
   
   // Special case: Ibn Khaldun Schools - place in the lower/southern region of the map
   if (school.name && (school.name.toLowerCase().includes('ibn khaldun') || school.name.toLowerCase().includes('khaldun'))) {
-    return { x: 55, y: 53 }; // Lower/southern region of the map
+    return { x: 54, y: 54 }; // Lower/southern region of the map
   }
   
   // Special case: Manarat Al-Riyadh - place exactly below Ibn Khaldun Schools
   if (school.name && (school.name.toLowerCase().includes('manarat al-riyadh') || school.name.toLowerCase().includes('manarat alriyadh') || school.name.toLowerCase().includes('manarat riyadh'))) {
-    return { x: 60, y: 48 }; // Exactly below Ibn Khaldun Schools (same x, higher y)
+    return { x: 62, y: 48 }; // Exactly below Ibn Khaldun Schools (same x, higher y)
   }
   
   const city = extractCityFromAddress(school.address || '');
@@ -117,14 +117,15 @@ const getSchoolCoordinates = (school: School): { x: number; y: number } => {
 const getSchoolTypeFilter = (schoolType?: string): string => {
   switch (schoolType) {
     case 'National & International': 
-      // Blue - match bg-blue-600 (#2563eb) / bg-blue-500 (#3b82f6)
-      return 'brightness(0.95) saturate(1.3) hue-rotate(-5deg)';
+      // Blue - convert red icon to blue (#2563eb / #3b82f6)
+      // Red (0deg) to Blue (240deg) = rotate by 240deg
+      return 'brightness(1.0) saturate(1.4) hue-rotate(240deg)';
     case 'National': 
+      // Pink - vibrant pink color (rotate from red towards pink)
+      return 'brightness(1.2) saturate(1.3) hue-rotate(-20deg)';
+    case 'International': 
       // Green - match bg-green-600 (#16a34a) / bg-green-500 (#22c55e) - vibrant green
       return 'brightness(1.15) saturate(1.6) hue-rotate(130deg)';
-    case 'International': 
-      // Purple - match bg-purple-600 (#9333ea) / bg-purple-500 (#a855f7) - vibrant purple
-      return 'brightness(1.1) saturate(1.7) hue-rotate(255deg)';
     default: 
       return 'brightness(0.8) saturate(0.5)';
   }
@@ -133,7 +134,7 @@ const getSchoolTypeFilter = (schoolType?: string): string => {
 const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [zoom, setZoom] = useState(0.8);
-  const [clickedSchool, setClickedSchool] = useState<School | null>(null);
+  const [clickedSchoolId, setClickedSchoolId] = useState<number | null>(null);
 
   const filteredSchools = useMemo(() => {
     if (selectedFilter === 'All') return schools;
@@ -163,7 +164,7 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
     } else if (value === 'National & International') {
       return `${baseStyle} ${isActive ? 'bg-blue-600' : 'bg-blue-500'}`;
     } else if (value === 'National') {
-      return `${baseStyle} ${isActive ? 'bg-purple-600' : 'bg-purple-500'}`;
+      return `${baseStyle} ${isActive ? 'bg-pink-600' : 'bg-pink-500'}`;
     } else if (value === 'International') {
       return `${baseStyle} ${isActive ? 'bg-green-600' : 'bg-green-500'}`;
     }
@@ -209,7 +210,7 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
 
       <div 
         className="absolute inset-0 flex items-center justify-center pl-[260px] pr-4"
-        onClick={() => setClickedSchool(null)}
+        onClick={() => setClickedSchoolId(null)}
       >
         <div className="relative" style={{ transform: `scale(${zoom})`, transition: 'transform 0.3s ease' }}>
           {/* Map Image */}
@@ -237,118 +238,88 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
               {filteredSchools.map((school, index) => {
                 const coords = getSchoolCoordinates(school);
                 const colorFilter = getSchoolTypeFilter(school.school_type);
-                const isClicked = clickedSchool?.id === school.id;
+                const isClicked = clickedSchoolId === school.id;
                 
                 return (
-                  <g 
-                    key={school.id || index} 
-                    className="school-pin group" 
-                    style={{ pointerEvents: 'auto', cursor: 'pointer', overflow: 'visible' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setClickedSchool(isClicked ? null : school);
-                    }}
-                  >
-                    {/* Pin Icon Image - Using blue.png with color filter based on school type - Much larger size */}
-                    <image
-                      href={bluePinIcon}
-                      x={coords.x - (isClicked ? 11.5 : 10)}
-                      y={coords.y - (isClicked ? 20.75 : 18)}
-                      width={isClicked ? "23" : "20"}
-                      height={isClicked ? "28.75" : "25"}
-                      className="hover:opacity-90 transition-opacity"
-                      style={{ 
-                        filter: `${colorFilter} drop-shadow(0 4px 8px rgba(0,0,0,0.5))`,
-                        pointerEvents: 'auto',
-                        cursor: 'pointer',
-                        opacity: isClicked ? 1 : 0.9,
-                        transition: 'opacity 0.2s ease, width 0.2s ease, height 0.2s ease, x 0.2s ease, y 0.2s ease'
+                  <React.Fragment key={school.id || index}>
+                    <g 
+                      className="school-pin group" 
+                      style={{ pointerEvents: 'auto', cursor: 'pointer', overflow: 'visible' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setClickedSchoolId(isClicked ? null : (school.id || null));
                       }}
-                    />
+                    >
+                      {/* Pin Icon Image - Using location icon.png with color filter based on school type */}
+                      <image
+                        href={locationIcon}
+                        x={coords.x - 10}
+                        y={coords.y - 18}
+                        width="20"
+                        height="25"
+                        className="hover:opacity-90 transition-opacity"
+                        style={{ 
+                          filter: `${colorFilter} drop-shadow(0 4px 8px rgba(0,0,0,0.5))`,
+                          pointerEvents: 'auto',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      {/* School Name Tooltip (for accessibility) */}
+                      <title>{school.name} - {school.address || 'No address'} - {school.school_type || 'Unknown type'}</title>
+                    </g>
                     
-                    {/* Clicked Overlay - Show school name and address in a card with black background - Positioned above the pin */}
+                    {/* Click Tooltip - School name and address text only (no background) - shown when clicked - Rendered after pin group to ensure it's on top */}
                     {isClicked && (
-                      <g className="pointer-events-none" style={{ zIndex: 1000 }}>
-                        {/* Calculate card dimensions based on text length */}
+                      <g className="pointer-events-none" style={{ opacity: 1 }}>
+                        {/* Position text well above the pin icon */}
                         {(() => {
-                          const nameLength = school.name?.length || 0;
-                          const addressLength = school.address?.length || 0;
-                          const maxLength = Math.max(nameLength, addressLength);
-                          // Better width calculation: base width + character-based width (increased significantly for longer addresses)
-                          // Use larger multiplier for addresses to ensure they fit completely
-                          const baseWidth = 40;
-                          // For very long addresses, use wider character spacing
-                          const charWidth = addressLength > 40 ? 0.8 : (addressLength > 25 ? 0.7 : 0.65);
-                          // Increased max width to 100 to accommodate very long addresses
-                          const cardWidth = Math.max(45, Math.min(100, baseWidth + (maxLength * charWidth)));
-                          const cardHeight = school.address ? 9 : 5.5;
-                          const padding = 2;
-                          // Position card well above the pin - account for clicked pin height (28.75)
-                          const pinTopY = coords.y - 20.75; // Top of clicked pin
-                          const gap = 2; // Gap between pin and card
-                          let cardY = pinTopY - cardHeight - padding - gap; // Position card above pin
-                          let cardX = coords.x - cardWidth / 2;
+                          // Pin icon dimensions: starts at coords.y - 18, height is 25
+                          // Pin top is at: coords.y - 18
+                          // Pin bottom is at: coords.y - 18 + 25 = coords.y + 7
+                          // In SVG, y increases downward, so smaller y = higher on screen
+                          const pinTopY = coords.y - 18;
                           
-                          // If card would go above viewBox (y < 3), position it below the pin instead
-                          if (cardY < 3) {
-                            const pinBottomY = coords.y + 5; // Bottom of pin
-                            cardY = pinBottomY + gap;
-                          }
+                          // Position school name well above the pin top
+                          // Font size is 5.0, text baseline needs to be much higher
+                          // Add very large gap to ensure text appears well above pin
+                          const nameFontSize = 5.0;
+                          const gap = 20; // Very large gap to ensure text is well above pin
+                          const nameY = pinTopY - gap; // This will be coords.y - 18 - 20 = coords.y - 38
                           
-                          // Ensure card is within viewBox bounds (0-100)
-                          const finalCardY = Math.max(2, Math.min(95, cardY)); // Keep within y bounds
-                          // Adjust x position to keep card within bounds, but allow it to extend if needed
-                          let finalCardX = cardX;
-                          if (finalCardX - cardWidth/2 < 2) {
-                            finalCardX = cardWidth/2 + 2; // Shift right if too far left
-                          } else if (finalCardX + cardWidth/2 > 98) {
-                            finalCardX = 98 - cardWidth/2; // Shift left if too far right
-                          }
+                          // Position address below school name with proper spacing
+                          const addressY = nameY + (nameFontSize + 3); // Spacing between name and address
                           
                           return (
                             <>
-                              {/* Black background card with rounded corners and padding */}
-                              <rect
-                                x={finalCardX - padding}
-                                y={finalCardY - padding}
-                                width={cardWidth + (padding * 2)}
-                                height={cardHeight + (padding * 2)}
-                                rx="2"
-                                ry="2"
-                                fill="#000000"
-                                opacity="0.95"
-                                style={{
-                                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
-                                  pointerEvents: 'none'
-                                }}
-                              />
-                              {/* School Name - White text on black background */}
+                              {/* School Name - Black text only, no background - positioned above pin */}
                               <text
                                 x={coords.x}
-                                y={finalCardY + 3.5}
+                                y={nameY}
                                 textAnchor="middle"
-                                fontSize="3.8"
-                                fill="#FFFFFF"
+                                fontSize="5.0"
+                                fill="#000000"
                                 fontWeight="900"
                                 style={{ 
                                   pointerEvents: 'none',
-                                  fontFamily: 'system-ui, -apple-system, sans-serif'
+                                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                                  textShadow: '0 1px 3px rgba(255,255,255,0.8), 0 1px 1px rgba(255,255,255,0.9)'
                                 }}
                               >
                                 {school.name || 'Unknown School'}
                               </text>
-                              {/* Address - Light gray text on black background - Full address with no truncation */}
+                              {/* Address - Black text only, no background - positioned below school name */}
                               {school.address && (
                                 <text
                                   x={coords.x}
-                                  y={finalCardY + 7.5}
+                                  y={addressY}
                                   textAnchor="middle"
-                                  fontSize="2.4"
-                                  fill="#E5E7EB"
+                                  fontSize="3.2"
+                                  fill="#000000"
                                   fontWeight="600"
                                   style={{ 
                                     pointerEvents: 'none',
-                                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                                    textShadow: '0 1px 3px rgba(255,255,255,0.8), 0 1px 1px rgba(255,255,255,0.9)'
                                   }}
                                 >
                                   {school.address}
@@ -359,10 +330,7 @@ const SaudiArabiaMap: React.FC<SaudiArabiaMapProps> = ({ schools }) => {
                         })()}
                       </g>
                     )}
-                    
-                    {/* School Name Tooltip (for accessibility) */}
-                    <title>{school.name} - {school.address || 'No address'} - {school.school_type || 'Unknown type'}</title>
-                  </g>
+                  </React.Fragment>
                 );
               })}
             </svg>
